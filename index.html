@@ -11905,7 +11905,8 @@ const TOYYIBPAY_CONFIG = {
   // 'php'     — guna PHP (toyyibpay_create_bill.php + toyyibpay_callback.php)
   // 'cloudfn' — guna Firebase Cloud Function (toyyibpay_webhook_cloudfunction.js)
   // 'netlify' — guna Netlify Function (netlify/functions/toyyibpay-create-bill.js)
-  backend: 'netlify',
+  // 'vercel'  — guna Vercel Serverless Function (api/toyyibpay-create-bill.js)
+  backend: 'vercel',
 
   // User Secret Key dari dashboard ToyyibPay (hanya guna utk direct API fallback)
   secretKey: 'YOUR-TOYYIBPAY-SECRET-KEY-HERE',
@@ -11922,12 +11923,13 @@ const TOYYIBPAY_CONFIG = {
   cloudFunctionUrl: 'https://us-central1-heromath-e4573.cloudfunctions.net/toyyibpayCreateBill',
 
   // ── Netlify Function mode ──
-  // Ganti URL ni dengan site functions payment kau
-  // Contoh: https://heromathpay.netlify.app/.netlify/functions/toyyibpay-create-bill
   netlifyFunctionUrl: 'https://heromathpay.netlify.app/.netlify/functions/toyyibpay-create-bill',
 
+  // ── Vercel Serverless Function mode ──
+  vercelFunctionUrl: window.location.origin + '/api/toyyibpay-create-bill',
+
   // ── Verify payment (lepas redirect dari ToyyibPay) ──
-  verifyFunctionUrl: 'https://heromathpay.netlify.app/.netlify/functions/toyyibpay-verify',
+  verifyFunctionUrl: window.location.origin + '/api/toyyibpay-verify',
 
   // ── URL untuk redirect selepas bayar (kembali ke game) ──
   returnUrl: window.location.href.split('?')[0] + '?payment_return=1',
@@ -12441,6 +12443,8 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
       apiUrl = TOYYIBPAY_CONFIG.cloudFunctionUrl;
     } else if(TOYYIBPAY_CONFIG.backend === 'netlify'){
       apiUrl = TOYYIBPAY_CONFIG.netlifyFunctionUrl;
+    } else if(TOYYIBPAY_CONFIG.backend === 'vercel'){
+      apiUrl = TOYYIBPAY_CONFIG.vercelFunctionUrl;
     } else {
       // PHP mode — hantar extra fields untuk PHP proxy
       apiUrl = TOYYIBPAY_CONFIG.phpProxyUrl;

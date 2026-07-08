@@ -18,9 +18,14 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'POST required' });
 
   try {
-    const { orderId, billName, billDescription, billAmount, billTo, billEmail, billPhone } = req.body || {};
+    // Vercel @vercel/node mungkin tak auto-parse JSON body
+    let body = {};
+    try { body = typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}'); } catch(e) { body = {}; }
+
+    const { orderId, billName, billDescription, billAmount, billTo, billEmail, billPhone } = body;
 
     if (!orderId || !billAmount) {
+      console.error('Missing fields, body:', JSON.stringify(body));
       return res.status(400).json({ success: false, error: 'Missing orderId or billAmount' });
     }
 

@@ -93,9 +93,12 @@ module.exports = async (req, res) => {
       username = (req.query.username || '').toUpperCase();
       qty = parseInt(req.query.qty) || 0;
     } else {
-      billCode = req.body.billCode;
-      username = (req.body.username || '').toUpperCase();
-      qty = parseInt(req.body.qty) || 0;
+      // Vercel @vercel/node mungkin tak auto-parse JSON body
+      let body = {};
+      try { body = typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}'); } catch(e) { body = {}; }
+      billCode = body.billCode;
+      username = (body.username || '').toUpperCase();
+      qty = parseInt(body.qty) || 0;
     }
 
     // If we have orderId, read from Firebase

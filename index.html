@@ -12408,11 +12408,12 @@ function shopBuyTopup(itemId){
       document.getElementById('shopMsg').textContent='⚠ Gagal cipta bil ToyyibPay. Cuba lagi.';
       shopRender();
     }
-  }).catch(err=>{
-    console.error('Topup error:', err);
-    document.getElementById('shopMsg').textContent='⚠ Ralat: '+err.message;
-    shopRender();
-  });
+    }).catch(err=>{
+      console.error('Topup error:', err);
+      document.getElementById('shopMsg').textContent='⚠ Ralat: '+err.message;
+      alert('Topup gagal: '+err.message+'\n\nSemak Console (F12) untuk detail.');
+      shopRender();
+    });
 }
 
 // Panggil ToyyibPay createBill API — sokong PHP, Cloud Function, atau Netlify Function

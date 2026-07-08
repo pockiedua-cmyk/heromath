@@ -96,21 +96,40 @@ module.exports = async (req, res) => {
       // Vercel @vercel/node mungkin tak auto-parse JSON body
       let body = {};
       try { body = typeof req.body === 'object' ? req.body : JSON.parse(req.body || '{}'); } catch(e) { body = {}; }
-      billCode = body.billCode;
+      billCode = body.billCode || '';
       username = (body.username || '').toUpperCase();
       qty = parseInt(body.qty) || 0;
+      orderId = body.orderId || '';
     }
 
-    // If we have orderId, read from Firebase
-    if (!orderId && !username) {
-      // Maybe they passed just billCode — try to find order in Firebase
-      if (!billCode) return res.status(400).json({ success: false, error: 'billCode required' });
+    // If we have orderId, try to read order from Firebase for username/billCode/qty
+    if (orderId && (!username || !billCode)) {
+      try {
+        const order = await fbGet('orders/' + orderId);
+        if (order) {
+          if (!username) username = (order.username || '').toUpperCase();
+          if (!billCode) billCode = order.billCode || '';
+          if (!qty) qty = parseInt(order.qty) || 0;
+        }
+      } catch(e) {
+        console.error('Failed to read order:', e.message);
+      }
     }
+
+    if (!billCode) return res.status(400).json({ success: false, error: 'billCode required' });
+    if (!username) return res.status(400).json({ success: false, error: 'username required' });
 
     // Check bill with ToyyibPay
     const result = await checkBillPaid(billCode);
     if (result.paid) {
-      if (!qty) qty = parseInt(result.amount) || 10;
+      // If qty still not known, try to derive from amount (cents) via package mapping
+      if (!qty && result.amount) {
+        const cents = parseInt(result.amount) || 0;
+        // Package mapping: RM2=200cents→10coins, RM5=500→30, RM8=800→50, RM15=1500→100, RM65=6500→500
+        const pkgMap = { 200: 10, 500: 30, 800: 50, 1500: 100, 6500: 500 };
+        qty = pkgMap[cents] || Math.round(cents / 50) || 10;
+      }
+      if (!qty) qty = 10;
 
       const currentCoin = await fbGet('tracking/' + username + '/shop/rare_coin');
       const newBalance = (currentCoin || 0) + qty;

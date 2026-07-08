@@ -12522,7 +12522,7 @@ function mmoCheckPendingOrder(){
     fetch(verifyUrl, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({orderId, billCode: billCode || ''})
+      body: JSON.stringify({orderId, username: shopGetUsername(), billCode: billCode || '', qty: qty || 0})
     })
     .then(r=>r.json())
     .then(res=>{

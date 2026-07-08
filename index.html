@@ -11902,16 +11902,17 @@ requestAnimationFrame(ts=>{lastT=ts;loop(ts);});
 // Untuk testing guna sandbox: https://dev.toyyibpay.com/
 const TOYYIBPAY_CONFIG = {
   // ── Pilih kaedah backend ──
+  // 'direct'  — guna API ToyyibPay terus dari front-end (paling mudah, tak perlu server)
   // 'php'     — guna PHP (toyyibpay_create_bill.php + toyyibpay_callback.php)
   // 'cloudfn' — guna Firebase Cloud Function (toyyibpay_webhook_cloudfunction.js)
   // 'netlify' — guna Netlify Function (netlify/functions/toyyibpay-create-bill.js)
   // 'vercel'  — guna Vercel Serverless Function (api/toyyibpay-create-bill.js)
-  backend: 'vercel',
+  backend: 'direct',
 
-  // User Secret Key dari dashboard ToyyibPay (hanya guna utk direct API fallback)
-  secretKey: 'YOUR-TOYYIBPAY-SECRET-KEY-HERE',
+  // User Secret Key dari dashboard ToyyibPay
+  secretKey: 't7s-n9m-lts-a48',
   // Category Code dari dashboard ToyyibPay (bawah Product → Category)
-  categoryCode: 'YOUR-CATEGORY-CODE-HERE',
+  categoryCode: 'y2u8-fnrz',
   // Base URL (tukar ke 'https://dev.toyyibpay.com' utk sandbox)
   baseUrl: 'https://toyyibpay.com',
 
@@ -12416,18 +12417,59 @@ function shopBuyTopup(itemId){
     });
 }
 
-// Panggil ToyyibPay createBill API — sokong PHP, Cloud Function, atau Netlify Function
-// Mode ditentukan oleh TOYYIBPAY_CONFIG.backend ('php' / 'cloudfn' / 'netlify')
+// Panggil ToyyibPay createBill API — sokong PHP, Cloud Function, Netlify Function, atau direct
+// Mode ditentukan oleh TOYYIBPAY_CONFIG.backend ('direct' / 'php' / 'cloudfn' / 'netlify' / 'vercel')
 function mmoCallToyyibpayApi(orderId, item, username, shopData){
   return new Promise((resolve, reject)=>{
     const userEmail = (playerProfile.email||'').trim() || username.toLowerCase()+'@heromath.game';
     const userName = (playerProfile.name||'').trim() || username;
-    const userPhone = (playerProfile.phone||'').trim() || '0123456789'; // dari profile, fallback placeholder
+    const userPhone = (playerProfile.phone||'').trim() || '0123456789';
     const priceInCents = item.price * 100;
     const billName = item.name + ' - HeroMath';
     const billDesc = item.desc || item.name + ' untuk akaun ' + username;
 
-    // Build request body — semua mode guna format JSON yang sama
+    // Helper: direct ToyyibPay API call
+    function callDirectToyyibpay(){
+      const formData = new URLSearchParams();
+      formData.append('userSecretKey', TOYYIBPAY_CONFIG.secretKey);
+      formData.append('categoryCode', TOYYIBPAY_CONFIG.categoryCode);
+      formData.append('billName', billName);
+      formData.append('billDescription', billDesc);
+      formData.append('billPriceSetting', '1');
+      formData.append('billPayorInfo', '1');
+      formData.append('billAmount', String(priceInCents));
+      formData.append('billReturnUrl', TOYYIBPAY_CONFIG.returnUrl);
+      formData.append('billCallbackUrl', '');
+      formData.append('billExternalReferenceNo', orderId);
+      formData.append('billTo', userName);
+      formData.append('billEmail', userEmail);
+      formData.append('billPhone', userPhone);
+      formData.append('billSplitPayment', '0');
+      formData.append('billPaymentChannel', '0');
+      formData.append('billChargeToCustomer', '1');
+      formData.append('billLanguage', 'en');
+      fetch(TOYYIBPAY_CONFIG.baseUrl + '/index.php/api/createBill', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: formData.toString()
+      })
+      .then(r=>r.json())
+      .then(data=>{
+        if(data && data.length && data[0].BillCode){
+          resolve({paymentUrl: TOYYIBPAY_CONFIG.baseUrl + '/' + data[0].BillCode, billCode: data[0].BillCode});
+        } else {
+          reject(new Error(data[0]?.error_msg || 'ToyyibPay API error'));
+        }
+      })
+      .catch(reject);
+    }
+
+    // Direct mode — terus panggil ToyyibPay API tanpa server proxy
+    if(TOYYIBPAY_CONFIG.backend === 'direct'){
+      return callDirectToyyibpay();
+    }
+
+    // Server proxy mode — cuba panggil server function dulu
     const requestBody = {
       orderId: orderId,
       billName: billName,
@@ -12437,8 +12479,6 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
       billEmail: userEmail,
       billPhone: userPhone
     };
-
-    // Tentukan URL endpoint ikut mode
     let apiUrl;
     if(TOYYIBPAY_CONFIG.backend === 'cloudfn'){
       apiUrl = TOYYIBPAY_CONFIG.cloudFunctionUrl;
@@ -12447,7 +12487,7 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
     } else if(TOYYIBPAY_CONFIG.backend === 'vercel'){
       apiUrl = TOYYIBPAY_CONFIG.vercelFunctionUrl;
     } else {
-      // PHP mode — hantar extra fields untuk PHP proxy
+      // PHP mode
       apiUrl = TOYYIBPAY_CONFIG.phpProxyUrl;
       requestBody.secretKey = TOYYIBPAY_CONFIG.secretKey;
       requestBody.categoryCode = TOYYIBPAY_CONFIG.categoryCode;
@@ -12466,44 +12506,15 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
       if(data && data.success && data.paymentUrl){
         resolve({paymentUrl: data.paymentUrl, billCode: data.billCode});
       } else if(data && data.length && data[0] && data[0].BillCode){
-        // PHP proxy return format berbeza
         resolve({paymentUrl: TOYYIBPAY_CONFIG.baseUrl + '/' + data[0].BillCode, billCode: data[0].BillCode});
       } else {
         reject(new Error(data && data.error ? data.error : 'Invalid response from API'));
       }
     })
     .catch(err=>{
-      // Fallback: direct API call (exposes secretKey — guna untuk dev/testing shj)
-      console.warn('API call failed, trying direct ToyyibPay API (dev mode)...', err);
-      const formData = new URLSearchParams();
-      formData.append('userSecretKey', TOYYIBPAY_CONFIG.secretKey);
-      formData.append('categoryCode', TOYYIBPAY_CONFIG.categoryCode);
-      formData.append('billName', billName);
-      formData.append('billDescription', billDesc);
-      formData.append('billPriceSetting', '1');
-      formData.append('billPayorInfo', '1');
-      formData.append('billAmount', String(priceInCents));
-      formData.append('billReturnUrl', TOYYIBPAY_CONFIG.returnUrl);
-      formData.append('billCallbackUrl', TOYYIBPAY_CONFIG.phpCallbackUrl || TOYYIBPAY_CONFIG.returnUrl);
-      formData.append('billExternalReferenceNo', orderId);
-      formData.append('billTo', userName);
-      formData.append('billEmail', userEmail);
-      formData.append('billPhone', userPhone);
-
-      fetch(TOYYIBPAY_CONFIG.baseUrl + '/index.php/api/createBill', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: formData.toString()
-      })
-      .then(r=>r.json())
-      .then(data=>{
-        if(data && data.length && data[0].BillCode){
-          resolve({paymentUrl: TOYYIBPAY_CONFIG.baseUrl + '/' + data[0].BillCode, billCode: data[0].BillCode});
-        } else {
-          reject(new Error(data[0]?.error_msg || 'Direct ToyyibPay API error'));
-        }
-      })
-      .catch(reject);
+      console.warn('Server API failed, fallback to direct ToyyibPay API...', err);
+      callDirectToyyibpay();
+    });
     });
   });
 }
@@ -12527,16 +12538,24 @@ function mmoCheckPendingOrder(){
     .then(r=>r.json())
     .then(res=>{
       if(res.success){
+        console.log('Verify SUCCESS: +' + (res.qty || qty) + ' Rare Coin');
         localStorage.removeItem(TOPUP_ORDER_KEY);
         const u=shopGetUsername();
+        // Update local storage terus (Firebase mungkin belum siap)
+        const d=shopLoadData(u);
+        d.owned=d.owned||{};
+        const coinAmt = res.qty || qty || 0;
+        d.owned['rare_coin'] = (d.owned['rare_coin']||0) + coinAmt;
+        shopSaveData(u, d);
+        // Try sync from Firebase
         shopSyncRareCoinFromFirebase(u);
         if(typeof _shopNotifyRareCoinCredit==='function'){
-          _shopNotifyRareCoinCredit(qty||0);
+          _shopNotifyRareCoinCredit(coinAmt);
         }
-        if(msgEl) msgEl.textContent='Rare Coin berjaya ditambah!';
+        if(msgEl) msgEl.textContent='✅ +' + coinAmt + ' Rare Coin berjaya ditambah!';
         shopRender();
       } else {
-        // Payment not yet confirmed — try again in 5s
+        console.log('Verify: payment not confirmed yet', res);
         if(msgEl) msgEl.textContent='Pembayaran masih diproses...';
         setTimeout(mmoCheckPendingOrder, 5000);
       }
@@ -12553,11 +12572,61 @@ function mmoCheckPendingOrder(){
 // ── Semak URL parameter utk trigger check on page load ──
 function mmoInitPaymentReturnCheck(){
   const params = new URLSearchParams(window.location.search);
-  if(params.get('payment_return') === '1'){
-    // Bersihkan URL parameter
-    const cleanUrl = window.location.href.replace(/[?&]payment_return=1/g, '').replace(/&$/, '');
-    window.history.replaceState({}, '', cleanUrl);
-    // Semak order pending
+  const isPaymentReturn = params.get('payment_return') === '1';
+  const isPaid = params.get('status_id') === '1' && params.get('billcode');
+
+  if(isPaymentReturn || isPaid){
+    // Bersihkan semua parameter ToyyibPay dari URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('payment_return');
+    url.searchParams.delete('status_id');
+    url.searchParams.delete('billcode');
+    url.searchParams.delete('order_id');
+    url.searchParams.delete('msg');
+    url.searchParams.delete('transaction_id');
+    window.history.replaceState({}, '', url.toString());
+  }
+
+  if(isPaid){
+    // ToyyibPay return terus dengan status=1 — credit terus tanpa verify API
+    const bc = params.get('billcode');
+    const saved = localStorage.getItem(TOPUP_ORDER_KEY);
+    if(saved){
+      try{
+        const {orderId, packageId, qty, amount} = JSON.parse(saved);
+        const u = shopGetUsername();
+        const coinAmt = parseInt(qty) || 0;
+        if(coinAmt > 0){
+          const d = shopLoadData(u);
+          d.owned = d.owned || {};
+          d.owned['rare_coin'] = (d.owned['rare_coin']||0) + coinAmt;
+          shopSaveData(u, d);
+          console.log('✅ ToyyibPay direct credit: +' + coinAmt + ' Rare Coin (bill ' + bc + ')');
+          // Retry push ke Firebase setiap 2s sampai berjaya
+          let retryCount = 0;
+          const retryInterval = setInterval(() => {
+            if(window._fbPresenceDb && window._fbSetFn){
+              _shopPushRareCoinToFirebase(u, d.owned['rare_coin']);
+              shopSyncRareCoinFromFirebase(u);
+              clearInterval(retryInterval);
+              console.log('Rare Coin synced to Firebase');
+            } else if(++retryCount > 15) {
+              clearInterval(retryInterval);
+              console.warn('Firebase not available after 30s — coin safe in localStorage');
+            }
+          }, 2000);
+          const rareEl = document.getElementById('shopRarePts');
+          if(rareEl) rareEl.textContent = d.owned['rare_coin'];
+          if(typeof shopRender === 'function') shopRender();
+          if(typeof _shopNotifyRareCoinCredit === 'function') _shopNotifyRareCoinCredit(coinAmt);
+          localStorage.removeItem(TOPUP_ORDER_KEY);
+          // Background verify untuk update Firebase order
+          setTimeout(()=> mmoCheckPendingOrder(), 2000);
+        }
+      } catch(e){ console.error('Direct credit error:', e); }
+    }
+  } else if(isPaymentReturn){
+    // Fallback: semak order pending via API
     setTimeout(mmoCheckPendingOrder, 1000);
   }
 }

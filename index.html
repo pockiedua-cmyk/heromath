@@ -11907,13 +11907,16 @@ const TOYYIBPAY_CONFIG = {
   // 'cloudfn' — guna Firebase Cloud Function (toyyibpay_webhook_cloudfunction.js)
   // 'netlify' — guna Netlify Function (netlify/functions/toyyibpay-create-bill.js)
   // 'vercel'  — guna Vercel Serverless Function (api/toyyibpay-create-bill.js)
-  backend: 'direct',
+  backend: 'vercel',
 
-  // User Secret Key dari dashboard ToyyibPay
+  // ══ NOTE ══
+  // backend:'vercel' mode guna process.env.* dari Vercel Dashboard.
+  // Nilai di bawah hanya guna untuk fallback direct (kalau API function 404).
+  // Set Vercel env vars ikut persekitaran:
+  //   Sandbox: TOYYIBPAY_SECRET_KEY=4xu54xci..., TOYYIBPAY_CATEGORY_CODE=zer61y4r, TOYYIBPAY_BASE_URL=https://dev.toyyibpay.com
+  //   Production: TOYYIBPAY_SECRET_KEY=yiv02..., TOYYIBPAY_CATEGORY_CODE=8u34v2nv, TOYYIBPAY_BASE_URL=https://toyyibpay.com
   secretKey: '4xu54xci-jc6z-uvtq-azbv-md1vzfpdubwz',
-  // Category Code dari dashboard ToyyibPay (bawah Product → Category)
   categoryCode: 'zer61y4r',
-  // Base URL (tukar ke 'https://dev.toyyibpay.com' utk sandbox)
   baseUrl: 'https://dev.toyyibpay.com',
 
   // ── PHP mode ──

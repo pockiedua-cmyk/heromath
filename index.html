@@ -714,6 +714,18 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 .shop-btn:disabled{background:#333;color:#555;cursor:not-allowed;}
 #shopInventorySection{margin-top:10px;}
 
+/* ── Vehicle Button & Panel ── */
+#smapVehicleBtn{position:absolute;width:56px;height:56px;border-radius:12px;border:3px solid rgba(255,255,255,0.7);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;-webkit-tap-highlight-color:transparent;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.2;z-index:10;transition:all .1s;bottom:calc(226px + env(safe-area-inset-bottom));right:calc(16px + env(safe-area-inset-right));background:radial-gradient(circle at 35% 35%,rgba(150,80,255,0.7),rgba(80,0,180,0.85));box-shadow:0 2px 12px rgba(150,80,255,0.5);}
+#smapVehicleBtn.mounted{background:radial-gradient(circle at 35% 35%,rgba(255,60,60,0.8),rgba(150,0,0,0.9));box-shadow:0 2px 14px rgba(255,60,60,0.6);}
+#smapVehicleBtn:active{transform:scale(0.92);}
+#vehiclePanelOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:610;align-items:center;justify-content:center;}
+#vehiclePanelOverlay.show{display:flex;}
+.veh-box{background:linear-gradient(160deg,#150a24 0%,#0a0a1e 100%);border:4px solid #9c4dff;box-shadow:0 0 0 1px rgba(156,77,255,.3),0 0 50px rgba(156,77,255,.25),8px 8px 0 #3a1a6e;padding:16px;max-width:min(560px,94vw);width:100%;max-height:88vh;overflow-y:auto;border-radius:4px;}
+.veh-box h3{color:#ffd700;font-size:clamp(9px,2vw,13px);margin-bottom:4px;text-shadow:2px 2px 0 #000;text-align:center;}
+.veh-box p{color:#bb99ff;font-size:clamp(5px,1.2vw,8px);text-align:center;margin-bottom:12px;}
+#vehiclePanelClose{display:block;margin:14px auto 0;background:#e52521;color:#fff;border:3px solid #fff;padding:8px 20px;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,9px);cursor:pointer;}
+#vehiclePanelClose:hover{background:#ffd700;color:#000;}
+
 /* ── Dam Invite System ── */
 #damInviteModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:400;align-items:center;justify-content:center;}
 #damInviteModal.show{display:flex;}
@@ -1617,6 +1629,60 @@ window.addEventListener('error', function(e){
 </script>
 <script>
 // ══════════════════════════════════════════════════════════════════
+//  FIREBASE FALLBACK — dipasang SEGERA (bukan lepas 5 saat)
+//  --------------------------------------------------------------
+//  MASALAH ASAL: stub keselamatan hanya dipasang 5 saat selepas load.
+//  Sepanjang tempoh 0–5 saat itu, jika rangkaian disekat/offline,
+//  window._fbRefFn dan kawan-kawan kekal 'undefined' (bukan fungsi),
+//  jadi mana-mana kod yang sempat berjalan dalam tempoh itu (contoh:
+//  init permainan, migration, dsb.) akan menyebabkan:
+//    "Uncaught TypeError: window._fbRefFn is not a function"
+//
+//  FIX: pasang stub no-op SEGERA (sebelum modul Firebase cuba load
+//  langsung), supaya window._fbRefFn dsb. SENTIASA menjadi fungsi yang
+//  sah dari saat pertama — tiada lagi tingkap masa (race window) untuk
+//  crash tersebut. Bila modul Firebase sebenar berjaya load, ia akan
+//  menimpa (overwrite) stub ini dengan fungsi sebenar seperti biasa.
+//
+//  PENTING: window._fbReady dan window._fbModuleLoaded kekal SATU-SATUNYA
+//  penanda yang boleh dipercayai untuk "Firebase sebenar sudah sedia".
+//  Jangan guna "typeof window._fbRefFn==='function'" atau
+//  "window._fbPresenceDb && window._fbRefFn && window._fbSetFn" sebagai
+//  penanda kesediaan sebenar — selepas fix ini, semua fungsi tersebut
+//  SENTIASA wujud (stub atau sebenar), jadi semakan sedemikian akan
+//  sentiasa true walaupun Firebase sebenarnya belum/tidak sedia.
+// ══════════════════════════════════════════════════════════════════
+(function(){
+  window._fbReady = false;
+  window._fbModuleLoaded = false;
+  window._fbPresenceDb    = window._fbPresenceDb    || {};
+  window._fbRefFn         = window._fbRefFn         || function(){ return {}; };
+  window._fbSetFn         = window._fbSetFn         || function(){ return Promise.resolve(); };
+  window._fbGetFn         = window._fbGetFn         || function(){ return Promise.resolve({ val: function(){ return null; } }); };
+  window._fbRemoveFn      = window._fbRemoveFn      || function(){ return Promise.resolve(); };
+  window._fbOnValueFn     = window._fbOnValueFn     || function(){ return function(){}; };
+  window._fbPush          = window._fbPush          || function(){ return Promise.resolve(); };
+  window._fbOnValueModule = window._fbOnValueModule || { onValue: function(){ return function(){}; } };
+  window._fbGetModule     = window._fbGetModule     || function(){ return { get: window._fbGetFn }; };
+  window._fbTransactionFn = window._fbTransactionFn || function(){ return Promise.resolve(); };
+  window._fbQuery         = window._fbQuery         || function(r){ return r; };
+  window._fbLimitToLast   = window._fbLimitToLast   || function(){ return null; };
+  window._fbOnChildAdded  = window._fbOnChildAdded  || function(){ return function(){}; };
+  window._fbServerTimestamp = window._fbServerTimestamp || function(){ return Date.now(); };
+  window._fbWorldRef      = window._fbWorldRef      || {};
+
+  // Selepas tempoh munasabah, jika modul sebenar masih belum load
+  // (mis. CDN disekat/offline), makluman kepada pemain bahawa mod
+  // offline sedang digunakan. Stub sudah sedia sejak saat pertama —
+  // ini cuma untuk paparan mesej mesra pengguna, bukan pemasangan stub.
+  setTimeout(function(){
+    if (window._fbModuleLoaded && window._fbReady) return; // Firebase OK
+    console.warn('[Firebase] Modul gagal dimuat / rangkaian disekat — ciri multiplayer/online dilumpuhkan, permainan diteruskan secara offline.');
+  }, 5000);
+})();
+</script>
+<script>
+// ══════════════════════════════════════════════════════════════════
 //  SISTEM BAHASA / DUAL LANGUAGE (MS/EN)
 // ══════════════════════════════════════════════════════════════════
 const _LANG_STORAGE_KEY = 'heromath_lang_v1';
@@ -1894,6 +1960,8 @@ setTimeout(()=>{
     <div class="shop-grid" id="shopGridSpecial"></div>
     <div class="shop-section-title">🌀 SKIN ISTIMEWA <span style="font-size:0.75em;color:#ffd700">(dibeli dengan 🪙 Rare Coin)</span></div>
     <div class="shop-grid" id="shopGridSkin"></div>
+    <div class="shop-section-title">🏍️ KENDERAAN SEKOLAH <span style="font-size:0.75em;color:#ffd700">(100 Rare Coin — boleh naik & bawa keliling peta sekolah!)</span></div>
+    <div class="shop-grid" id="shopGridVehicle"></div>
     <div class="shop-section-title">💎 BATU BERLIAN MMORPG <span style="font-size:0.75em;color:#ffd700">(🪙 Rare Coin)</span></div>
     <div class="shop-grid" id="shopGridMmo"></div>
     <div class="shop-section-title">💳 ISI ULANG RARE COIN <span style="font-size:0.75em;color:#ffd700">(beli guna Touch 'n Go / kad)</span></div>
@@ -1903,7 +1971,15 @@ setTimeout(()=>{
   </div>
 </div>
 
-
+<!-- ── VEHICLE PICKER PANEL ── -->
+<div id="vehiclePanelOverlay">
+  <div class="veh-box">
+    <h3>🏍️ GARAJ KENDERAAN</h3>
+    <p>Pilih kenderaan untuk ditunggang keliling peta sekolah!</p>
+    <div class="shop-grid" id="vehiclePanelGrid"></div>
+    <button id="vehiclePanelClose" onclick="vehiclePanelClose()">✖ TUTUP</button>
+  </div>
+</div>
 
 <!-- ── AUTH SCREEN ── -->
 <div id="loginScreen">
@@ -2610,6 +2686,8 @@ setTimeout(()=>{
       <div id="smapStatBtn" onclick="heroStatOpen()">📊<br><span style="font-size:7px;">STAT</span></div>
       <!-- BAG button -->
       <div id="smapBagBtn" onclick="heroBagOpen()">🎒<br><span style="font-size:7px;">BAG</span></div>
+      <!-- VEHICLE button (tunggang/turun kenderaan) -->
+      <div id="smapVehicleBtn" onclick="vehicleHudPress()" style="display:none;">🏍️<br><span style="font-size:6px;">KENDERAAN</span></div>
       <!-- Papan Dam button (shows when near board) -->
       <div id="smapDamBtn" onclick="damGameOpen()" style="display:none;position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));left:calc(172px + env(safe-area-inset-left));width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,215,0,0.7),rgba(180,120,0,0.85));border:3px solid #fff;color:#000;font-size:16px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.3;z-index:10;box-shadow:0 2px 14px rgba(255,200,0,0.6);">♟<br><span style="font-size:8px;">MAIN</span></div>
       <!-- Papan Catur button (shows when near chess board) -->
@@ -3272,6 +3350,10 @@ function playSound(type){
       sfx_win:     {t:'square',  f:[523,1047],g:[0.18,0.001],d:0.50},
       sfx_lose:    {t:'sawtooth',f:[400,60], g:[0.20,0.001],d:0.40},
       sfx_check:   {t:'square',  f:[880,1320],g:[0.14,0.001],d:0.10},
+      // Vehicle sounds
+      veh_mount:   {t:'sawtooth',f:[80,320],  g:[0.20,0.001],d:0.35},
+      veh_dismount:{t:'square',  f:[300,90],  g:[0.14,0.001],d:0.18},
+      veh_honk:    {t:'square',  f:[520,440], g:[0.18,0.001],d:0.22},
     };
     const c=cfg[type];if(!c)return;
     osc.type=c.t;
@@ -5867,10 +5949,12 @@ function endGame(){
   const resumeMsg=document.getElementById('goResumeMsg');
   const newGameBtn=document.getElementById('goBtn');
   if(level>=2){
-    document.getElementById('goResumeLvl').textContent=level;
+    const dropLevel=Math.max(1,level-1);
+    document.getElementById('goResumeLvl').textContent=dropLevel;
     resumeBtn.style.display='';
-    resumeMsg.textContent='🔒 Kau sudah di Tahap '+level+'! Cuba lagi dari tahap ini!';
+    resumeMsg.textContent='💀 Kau tewas di Menara '+level+'! Sambung dari Menara '+dropLevel+'.';
     newGameBtn.textContent='🆕 MULA SEMULA (Lv1)';
+    window._pendingResumeLevel=dropLevel;
   } else {
     resumeBtn.style.display='none';
     resumeMsg.textContent='';
@@ -5934,11 +6018,14 @@ function initLevel(){
   document.getElementById('bossHud').style.display='none';
 }
 
-// If level >= 2, restart from current level (keep level, reset score+lives)
-// Only full restart (new game) resets to level 1
+// If level >= 2, resume from ONE menara below where the player was defeated
+// (e.g. tewas di Menara 3 → sambung dari Menara 2). Only full restart (new game) resets to level 1.
 function restartFromCurrentLevel(){
   score=0;lives=3;
-  // level stays as-is
+  if(window._pendingResumeLevel){
+    level=window._pendingResumeLevel;
+    window._pendingResumeLevel=null;
+  }
   ['goOverlay','winOverlay','lvlOverlay','bossIntro'].forEach(id=>document.getElementById(id).classList.remove('show'));
   initLevel();
 }
@@ -9782,12 +9869,14 @@ function smapBuild3D(){
   let _presLastX=null,_presLastZ=null,_presLastFacing=null,_presLastHat='',_presLastShirt='';
   let _presLastWriteTs=0; // BUGFIX: heartbeat — pastikan ts sentiasa segar walau diam
 
-  function presenceWrite(x,z,facing){
+  let _presLastVehicle='';
+  function presenceWrite(x,z,facing,force){
     const me=smapGetPlayerName();
     const u=shopGetUsername?shopGetUsername():me;
     const d=shopLoadData(u);
     const eq=(d&&d.equipped)||{};
     const hat=eq.hat||'', shirt=eq.shirt||'';
+    const vehicle=(window._vehState&&window._vehState.mountedId)||'';
 
     // OPTIMASI: Skip Firebase write jika posisi/kostum tidak berubah (jimat reads/writes)
     // BUGFIX: tapi tetap hantar "heartbeat" tiap 10 saat — jika tidak, ts jadi stale
@@ -9795,13 +9884,14 @@ function smapBuild3D(){
     // damRenderOnlineList walaupun mereka masih online — sebab itu kawan "hilang" dari peta.
     const rx=Math.round(x*10)/10, rz=Math.round(z*10)/10;
     const _now=Date.now();
-    if(rx===_presLastX && rz===_presLastZ && facing===_presLastFacing && hat===_presLastHat && shirt===_presLastShirt && (_now-_presLastWriteTs)<10000){
+    if(!force && rx===_presLastX && rz===_presLastZ && facing===_presLastFacing && hat===_presLastHat && shirt===_presLastShirt && vehicle===_presLastVehicle && (_now-_presLastWriteTs)<10000){
       return; // tiada perubahan & belum sampai masa heartbeat — jangan tulis
     }
     _presLastX=rx; _presLastZ=rz; _presLastFacing=facing; _presLastHat=hat; _presLastShirt=shirt;
+    _presLastVehicle=vehicle;
     _presLastWriteTs=_now;
 
-    const data={who:me,x:rx,z:rz,facing,hat,shirt,ts:_now};
+    const data={who:me,x:rx,z:rz,facing,hat,shirt,vehicle,ts:_now};
 
     // Firebase — tulis presence
     if(window._fbPresenceDb){
@@ -9875,10 +9965,15 @@ function smapBuild3D(){
       const g=ghostMeshes[name];
       const dx=p.x-g.lastX,dz=p.z-g.lastZ;
       g.lastX=p.x; g.lastZ=p.z;
-      g.mesh.position.set(p.x,0,p.z);
+      // BUGFIX: kalau kawan tunggang kenderaan, naikkan dia ke atas seat (elak nampak tenggelam)
+      const gVehDef=p.vehicle?VEHICLE_DEFS.find(v=>v.id===p.vehicle):null;
+      const gSeatY=gVehDef?(gVehDef.seatY||0.85)*0.8:0;
+      g.mesh.position.set(p.x,gSeatY,p.z);
       g.mesh.rotation.y=p.facing||0;
       const moved2=Math.sqrt(dx*dx+dz*dz)>0.05;
-      if(moved2){
+      if(p.vehicle){
+        // Kawan sedang tunggang kenderaan — kekal pose duduk, animasi roda di syncGhostVehicle
+      } else if(moved2){
         g.animT+=0.15;
         const ph=Math.sin(g.animT*8);
         if(g.mesh.legL)g.mesh.legL.rotation.x=ph*0.5;
@@ -9890,18 +9985,266 @@ function smapBuild3D(){
       }
       g.sprite.position.set(p.x,2.7,p.z);
       applyGhostCostume(g.mesh,p.hat,p.shirt);
+      if(typeof syncGhostVehicle==='function') syncGhostVehicle(name,g.mesh,p.vehicle);
     });
     Object.keys(ghostMeshes).forEach(name=>{
       if(!seen.has(name)){
         smScene.remove(ghostMeshes[name].mesh);
         smScene.remove(ghostMeshes[name].sprite);
         delete ghostMeshes[name];
+        if(sm3.ghostVehicles&&sm3.ghostVehicles[name]){
+          smScene.remove(sm3.ghostVehicles[name]);
+          delete sm3.ghostVehicles[name];
+        }
       }
     });
   }
   sm3.ghostMeshes=ghostMeshes;
   sm3.syncGhostHeroes=syncGhostHeroes;
   sm3.presenceReadFriends=presenceReadFriends;
+
+  // ════════════════════════════════════════════════════
+  //  🏍️ SISTEM KENDERAAN — beli di kedai, tunggang keliling peta sekolah
+  //  Laju > player, ada bunyi enjin, animasi roda/thruster, nampak oleh kawan.
+  // ════════════════════════════════════════════════════
+  const VEHICLE_DEFS=[
+    {id:'veh_neonmoto',   name:'MOTOSIKAL NEON RACER',    icon:'🏍️', color:0x2979ff, accent:0xff00ff, speedMult:2.6, build:'moto',    collR:0.68, seatY:0.78},
+    {id:'veh_hoverboard', name:'PAPAN HOVER ANTI-GRAVITI', icon:'🛹', color:0x00e5ff, accent:0xffee00, speedMult:2.3, build:'hover',   collR:0.75, seatY:0.55},
+    {id:'veh_buggy',      name:'ATV BUGGY GEMPAK',         icon:'🚙', color:0xff5722, accent:0xffd600, speedMult:2.9, build:'buggy',   collR:0.95, seatY:0.82},
+    {id:'veh_jetscooter', name:'JET SCOOTER TURBO',        icon:'🛴', color:0x00c853, accent:0x00e5ff, speedMult:2.4, build:'jet',     collR:0.62, seatY:0.4},
+    {id:'veh_speeder',    name:'SPEEDER BIKE FUTURISTIK',  icon:'🏎️', color:0x7c4dff, accent:0xffd700, speedMult:3.0, build:'speeder', collR:0.85, seatY:0.94},
+  ];
+  window.VEHICLE_DEFS=VEHICLE_DEFS;
+
+  function buildVehicleMesh(def){
+    const g=new THREE.Group();
+    const bodyMat=new THREE.MeshPhongMaterial({color:def.color,shininess:80,emissive:def.color,emissiveIntensity:0.18});
+    const accentMat=new THREE.MeshPhongMaterial({color:def.accent,emissive:def.accent,emissiveIntensity:0.9});
+    const darkMat=new THREE.MeshLambertMaterial({color:0x141414});
+    const wheelMat=new THREE.MeshPhongMaterial({color:0x0a0a0a});
+    const spin=[]; // meshes that spin (wheels/thrusters)
+    const glow=[]; // meshes that pulse
+    let seatY=0.55, sit=true;
+
+    if(def.build==='moto'){
+      const body=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.32,1.3),bodyMat); body.position.y=0.48; g.add(body);
+      const tank=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.24,0.38),accentMat); tank.position.set(0,0.7,0.12); g.add(tank);
+      const headlight=new THREE.Mesh(new THREE.SphereGeometry(0.13,8,8),new THREE.MeshPhongMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:1})); headlight.position.set(0,0.6,0.68); g.add(headlight);
+      const seat=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.09,0.48),darkMat); seat.position.set(0,0.7,-0.24); g.add(seat);
+      const bar=new THREE.Mesh(new THREE.BoxGeometry(0.58,0.05,0.05),darkMat); bar.position.set(0,0.84,0.52); g.add(bar);
+      const wheelGeo=new THREE.CylinderGeometry(0.3,0.3,0.18,16);
+      const wF=new THREE.Mesh(wheelGeo,wheelMat); wF.rotation.z=Math.PI/2; wF.position.set(0,0.3,0.58); g.add(wF); spin.push(wF);
+      const wB=new THREE.Mesh(wheelGeo,wheelMat); wB.rotation.z=Math.PI/2; wB.position.set(0,0.3,-0.58); g.add(wB); spin.push(wB);
+      [wF,wB].forEach(w=>{const ring=new THREE.Mesh(new THREE.TorusGeometry(0.31,0.025,6,16),accentMat); ring.rotation.y=Math.PI/2; w.add(ring); glow.push(ring);});
+      const exhaust=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.07,0.36,8),new THREE.MeshPhongMaterial({color:0x999999})); exhaust.rotation.z=Math.PI/2; exhaust.position.set(0.18,0.38,-0.7); g.add(exhaust);
+      seatY=0.78;
+    } else if(def.build==='hover'){
+      const board=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.08,1.45),bodyMat); board.position.y=0.4; g.add(board);
+      const stripe=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.03,1.35),accentMat); stripe.position.y=0.45; g.add(stripe);
+      const ringGeo=new THREE.TorusGeometry(0.2,0.05,8,20);
+      [[0,0.26,0.52],[0,0.26,-0.52]].forEach(p=>{
+        const ring=new THREE.Mesh(ringGeo,accentMat); ring.rotation.x=Math.PI/2; ring.position.set(p[0],p[1],p[2]); g.add(ring); glow.push(ring); spin.push(ring);
+      });
+      seatY=0.85; sit=false;
+    } else if(def.build==='buggy'){
+      const chassis=new THREE.Mesh(new THREE.BoxGeometry(0.85,0.32,1.55),bodyMat); chassis.position.y=0.48; g.add(chassis);
+      const cage=new THREE.Mesh(new THREE.BoxGeometry(0.66,0.46,0.95),new THREE.MeshBasicMaterial({color:0x222222,wireframe:true})); cage.position.set(0,0.92,-0.1); g.add(cage);
+      const nose=new THREE.Mesh(new THREE.ConeGeometry(0.38,0.46,4),accentMat); nose.rotation.x=Math.PI/2; nose.rotation.z=Math.PI/4; nose.position.set(0,0.52,0.86); g.add(nose);
+      const wheelGeo=new THREE.CylinderGeometry(0.26,0.26,0.22,12);
+      [[-0.48,0.26,0.58],[0.48,0.26,0.58],[-0.48,0.26,-0.58],[0.48,0.26,-0.58]].forEach(p=>{
+        const w=new THREE.Mesh(wheelGeo,wheelMat); w.rotation.z=Math.PI/2; w.position.set(p[0],p[1],p[2]); g.add(w); spin.push(w);
+      });
+      seatY=0.82;
+    } else if(def.build==='jet'){
+      const deck=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.07,1.05),bodyMat); deck.position.y=0.38; g.add(deck);
+      const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,0.72,8),darkMat); pole.position.set(0,0.75,0.38); g.add(pole);
+      const bar=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.045,0.045),darkMat); bar.position.set(0,1.12,0.38); g.add(bar);
+      const wheelGeo=new THREE.CylinderGeometry(0.15,0.15,0.09,12);
+      const wF=new THREE.Mesh(wheelGeo,wheelMat); wF.rotation.z=Math.PI/2; wF.position.set(0,0.15,0.48); g.add(wF); spin.push(wF);
+      const wB=new THREE.Mesh(wheelGeo,wheelMat); wB.rotation.z=Math.PI/2; wB.position.set(0,0.15,-0.48); g.add(wB); spin.push(wB);
+      const flame=new THREE.Mesh(new THREE.ConeGeometry(0.11,0.46,8),new THREE.MeshBasicMaterial({color:def.accent,transparent:true,opacity:0.85}));
+      flame.rotation.x=-Math.PI/2; flame.position.set(0,0.2,-0.62); g.add(flame); glow.push(flame);
+      seatY=0.4; sit=false;
+    } else if(def.build==='speeder'){
+      const body=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.3,1.65,10),bodyMat); body.rotation.x=Math.PI/2; body.position.y=0.6; g.add(body);
+      const fin=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.28,0.55),accentMat); fin.position.set(0,0.86,-0.38); g.add(fin);
+      const seat=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.09,0.38),darkMat); seat.position.set(0,0.82,-0.05); g.add(seat);
+      const podGeo=new THREE.CylinderGeometry(0.09,0.13,0.46,8);
+      [[-0.28,0.52,-0.58],[0.28,0.52,-0.58]].forEach(p=>{
+        const pod=new THREE.Mesh(podGeo,accentMat); pod.rotation.x=Math.PI/2; pod.position.set(p[0],p[1],p[2]); g.add(pod); glow.push(pod); spin.push(pod);
+      });
+      seatY=0.94;
+    }
+    seatY=def.seatY!==undefined?def.seatY:seatY; // def.seatY ialah sumber kebenaran (elak hero tenggelam)
+    g.userData={spin,glow,seatY,sit,def};
+    g.castShadow=true;
+    return g;
+  }
+  sm3.buildVehicleMesh=buildVehicleMesh;
+
+  // ── Vehicle mount state (player sendiri) ──
+  window._vehState=window._vehState||{mountedId:null,mesh:null,def:null,animT:0};
+  smHeroState._baseMoveSpd=smHeroState.moveSpd;
+
+  // ── Bunyi enjin looping (Web Audio) ──
+  const vehEngine={osc:null,osc2:null,gain:null,filter:null,active:false};
+  function vehEngineStart(){
+    try{
+      const ctx=_audio(); if(!ctx) return;
+      vehEngineStop();
+      const osc=ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=60;
+      const osc2=ctx.createOscillator(); osc2.type='square'; osc2.frequency.value=120;
+      const filt=ctx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=400;
+      const gain=ctx.createGain(); gain.gain.value=0.05;
+      osc.connect(filt); osc2.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc2.start();
+      vehEngine.osc=osc; vehEngine.osc2=osc2; vehEngine.gain=gain; vehEngine.filter=filt; vehEngine.active=true;
+    }catch(e){}
+  }
+  function vehEngineUpdate(speedFrac){
+    if(!vehEngine.active) return;
+    try{
+      const ctx=_audio();
+      const f=60+speedFrac*160;
+      vehEngine.osc.frequency.setTargetAtTime(f,ctx.currentTime,0.05);
+      vehEngine.osc2.frequency.setTargetAtTime(f*2,ctx.currentTime,0.05);
+      vehEngine.filter.frequency.setTargetAtTime(300+speedFrac*900,ctx.currentTime,0.08);
+      vehEngine.gain.gain.setTargetAtTime(0.035+speedFrac*0.05,ctx.currentTime,0.08);
+    }catch(e){}
+  }
+  function vehEngineStop(){
+    if(vehEngine.osc){ try{vehEngine.osc.stop();}catch(e){} vehEngine.osc=null; }
+    if(vehEngine.osc2){ try{vehEngine.osc2.stop();}catch(e){} vehEngine.osc2=null; }
+    if(vehEngine.gain){ try{vehEngine.gain.disconnect();}catch(e){} vehEngine.gain=null; }
+    vehEngine.active=false;
+  }
+
+  function vehicleUpdateHudBtn(){
+    const btn=document.getElementById('smapVehicleBtn');
+    if(!btn) return;
+    const owned=SHOP_ITEMS.filter(i=>i.cat==='vehicle').some(i=>{const d=shopLoadData(shopGetUsername());return d.owned&&d.owned[i.id];});
+    btn.style.display=owned?'flex':'none';
+    if(window._vehState.mountedId){ btn.classList.add('mounted'); btn.innerHTML='🛑<br><span style="font-size:6px;">TURUN</span>'; }
+    else { btn.classList.remove('mounted'); btn.innerHTML='🏍️<br><span style="font-size:6px;">KENDERAAN</span>'; }
+  }
+  window.vehicleUpdateHudBtn=vehicleUpdateHudBtn;
+
+  function vehicleMount(vehId){
+    if(!smapActive) return;
+    const def=VEHICLE_DEFS.find(v=>v.id===vehId); if(!def) return;
+    const d=shopLoadData(shopGetUsername());
+    if(!d.owned||!d.owned[vehId]) return;
+    vehicleDismount(true);
+    const mesh=buildVehicleMesh(def);
+    smScene.add(mesh);
+    window._vehState.mountedId=vehId;
+    window._vehState.mesh=mesh;
+    window._vehState.def=def;
+    window._vehState.animT=0;
+    smHeroState.moveSpd=smHeroState._baseMoveSpd*def.speedMult;
+    if(smHero.legL){smHero.legL.rotation.x=-1.15;smHero.legR.rotation.x=-1.15;}
+    if(smHero.armL){smHero.armL.rotation.x=-0.7;smHero.armR.rotation.x=-0.7;}
+    vehEngineStart();
+    playSound('veh_mount');
+    d.equipped=d.equipped||{}; d.equipped.vehicle=vehId; shopSaveData(shopGetUsername(),d);
+    vehicleUpdateHudBtn();
+    vehiclePanelClose();
+    if(sm3.presenceWrite) sm3.presenceWrite(smHeroState.x,smHeroState.z,smHeroState.facing,true);
+  }
+  window.vehicleMount=vehicleMount;
+
+  function vehicleDismount(silent){
+    const vs=window._vehState;
+    if(vs.mesh){ smScene.remove(vs.mesh); vs.mesh=null; }
+    vs.mountedId=null; vs.def=null;
+    if(smHeroState._baseMoveSpd) smHeroState.moveSpd=smHeroState._baseMoveSpd;
+    if(smHero.legL){smHero.legL.rotation.x=0;smHero.legR.rotation.x=0;}
+    if(smHero.armL){smHero.armL.rotation.x=0;smHero.armR.rotation.x=0;}
+    vehEngineStop();
+    if(!silent) playSound('veh_dismount');
+    vehicleUpdateHudBtn();
+    if(sm3.presenceWrite) sm3.presenceWrite(smHeroState.x,smHeroState.z,smHeroState.facing,true);
+  }
+  window.vehicleDismount=vehicleDismount;
+
+  function vehicleOwnedList(){
+    const d=shopLoadData(shopGetUsername());
+    return SHOP_ITEMS.filter(i=>i.cat==='vehicle'&&d.owned&&d.owned[i.id]);
+  }
+
+  function vehicleHudPress(){
+    if(window._vehState.mountedId){ vehicleDismount(); return; }
+    const owned=vehicleOwnedList();
+    if(!owned.length){
+      const msg=document.getElementById('smapLocLabel');
+      vehiclePanelOpen();
+      return;
+    }
+    if(owned.length===1){ vehicleMount(owned[0].id); return; }
+    vehiclePanelOpen();
+  }
+  window.vehicleHudPress=vehicleHudPress;
+
+  function vehiclePanelOpen(){
+    smapKeys={};
+    vehiclePanelRender();
+    document.getElementById('vehiclePanelOverlay').classList.add('show');
+  }
+  window.vehiclePanelOpen=vehiclePanelOpen;
+  function vehiclePanelClose(){
+    document.getElementById('vehiclePanelOverlay').classList.remove('show');
+  }
+  window.vehiclePanelClose=vehiclePanelClose;
+  function vehiclePanelRender(){
+    const grid=document.getElementById('vehiclePanelGrid');
+    if(!grid) return;
+    const owned=vehicleOwnedList();
+    if(!owned.length){
+      grid.innerHTML='<div style="grid-column:1/-1;color:#bb99ff;font-size:clamp(6px,1.4vw,9px);padding:16px;text-align:center;">Anda belum ada kenderaan. Beli di 🛒 KEDAI PELAJAR (bahagian Kenderaan Sekolah)!</div>';
+      return;
+    }
+    grid.innerHTML=owned.map(item=>{
+      const isMounted=window._vehState.mountedId===item.id;
+      return `<div class="shop-item${isMounted?' equipped':''}" style="${isMounted?'border:2px solid #ffa500;':'border:2px solid #00e676;'}">
+        <span class="item-icon" style="font-size:2.2em;">${item.icon}</span>
+        <div class="item-name" style="color:#ffd700;">${item.name}</div>
+        ${isMounted
+          ?`<button class="shop-btn" style="background:#333;color:#ffd700;" onclick="vehicleDismount()">🛑 TURUN</button>`
+          :`<button class="shop-btn equip-btn" onclick="vehicleMount('${item.id}')">🏍️ TUNGGANG</button>`}
+      </div>`;
+    }).join('');
+  }
+  window.vehiclePanelRender=vehiclePanelRender;
+
+  // ── Ghost (kawan) vehicle meshes — dibina/dikemaskini dlm syncGhostHeroes ──
+  const ghostVehicles={};
+  function syncGhostVehicle(name,g,vehId){
+    if(vehId && VEHICLE_DEFS.find(v=>v.id===vehId)){
+      if(!ghostVehicles[name] || ghostVehicles[name]._id!==vehId){
+        if(ghostVehicles[name]){ smScene.remove(ghostVehicles[name]); delete ghostVehicles[name]; }
+        const def=VEHICLE_DEFS.find(v=>v.id===vehId);
+        const gv=buildVehicleMesh(def);
+        gv.scale.setScalar(0.8);
+        gv._id=vehId;
+        smScene.add(gv);
+        ghostVehicles[name]=gv;
+        if(g.legL){g.legL.rotation.x=-1.15;g.legR.rotation.x=-1.15;}
+        if(g.armL){g.armL.rotation.x=-0.7;g.armR.rotation.x=-0.7;}
+      }
+      const gv=ghostVehicles[name];
+      gv.position.copy(g.position);
+      gv.rotation.y=g.rotation.y;
+      const spin=gv.userData.spin||[];
+      spin.forEach(w=>{w.rotation.x+=0.35;});
+    } else if(ghostVehicles[name]){
+      smScene.remove(ghostVehicles[name]);
+      delete ghostVehicles[name];
+      if(g.legL){g.legL.rotation.x=0;g.legR.rotation.x=0;}
+      if(g.armL){g.armL.rotation.x=0;g.armR.rotation.x=0;}
+    }
+  }
+  sm3.syncGhostVehicle=syncGhostVehicle;
+  sm3.ghostVehicles=ghostVehicles;
 
   // ── INTERACTION INDICATOR (ring) — default position jauh dari flagpole
   const indicatorMat=new THREE.MeshLambertMaterial({color:0x00ff88,emissive:0x00ff88,emissiveIntensity:0.6,transparent:true,opacity:0.7});
@@ -10049,14 +10392,14 @@ function smapBuild3D(){
     {xmin: -9.2,xmax: -6.8,zmin:-51.2,zmax:-48.8},
     {xmin:  6.8,xmax:  9.2,zmin:-51.2,zmax:-48.8},
   ];
-  function smIsWalkable(x,z){
-    const r=0.5; // radius hero
+  function smIsWalkable(x,z,r){
+    r=(typeof r==='number')?r:0.5; // radius hero (atau kenderaan bila menunggang)
     // Semasa futsal aktif, skip semua collision — hero boleh bergerak bebas
     if(window._fss&&window._fss.running) return true;
     for(const b of BUILDING_BOUNDS){
       if(x+r>b.xmin&&x-r<b.xmax&&z+r>b.zmin&&z-r<b.zmax) return false;
     }
-    return Math.abs(x)<110&&Math.abs(z)<110;
+    return Math.abs(x)<110-r&&Math.abs(z)<110-r;
   }
 
   // ── NPC NEAR DETECTION ──
@@ -10114,15 +10457,19 @@ function smapBuild3D(){
         wdx*=mag; wdz*=mag;
       }
     } else {
-      // Keyboard 4-direction
+      // Keyboard 4-direction (guna formula sama macam joystick: camera-relative)
       let dx=0, dz=0;
       if(smapKeys['ArrowLeft']||smapKeys['a']||smapKeys['A']) dx-=1;
       if(smapKeys['ArrowRight']||smapKeys['d']||smapKeys['D']) dx+=1;
       if(smapKeys['ArrowUp']||smapKeys['w']||smapKeys['W'])  dz-=1;
       if(smapKeys['ArrowDown']||smapKeys['s']||smapKeys['S']) dz+=1;
-      const cos=Math.cos(camState.yaw+Math.PI), sin=Math.sin(camState.yaw+Math.PI);
-      wdx=dx*cos-dz*sin;
-      wdz=dx*sin+dz*cos;
+      // camState.yaw points FROM hero TO camera, so negate to get hero's forward direction
+      const camFwdX=-Math.sin(camState.yaw);
+      const camFwdZ=-Math.cos(camState.yaw);
+      const camRgtX=Math.cos(camState.yaw);
+      const camRgtZ=-Math.sin(camState.yaw);
+      wdx=-dz*camFwdX+dx*camRgtX;
+      wdz=-dz*camFwdZ+dx*camRgtZ;
       const kLen=Math.sqrt(wdx*wdx+wdz*wdz);
       if(kLen>0.001){wdx/=kLen;wdz/=kLen;}
     }
@@ -10148,20 +10495,31 @@ function smapBuild3D(){
     const len=Math.sqrt(wdx*wdx+wdz*wdz);
     let moved=false;
     if(len>0.01){
+      const _vsColl=window._vehState;
+      const _collR=(_vsColl&&_vsColl.mountedId&&_vsColl.def)?_vsColl.def.collR:0.5;
       const nx=smHeroState.x+wdx*smHeroState.moveSpd*dt;
       const nz=smHeroState.z+wdz*smHeroState.moveSpd*dt;
-      if(smIsWalkable(nx,smHeroState.z)){smHeroState.x=nx;moved=true;}
-      if(smIsWalkable(smHeroState.x,nz)){smHeroState.z=nz;moved=true;}
+      if(smIsWalkable(nx,smHeroState.z,_collR)){smHeroState.x=nx;moved=true;}
+      if(smIsWalkable(smHeroState.x,nz,_collR)){smHeroState.z=nz;moved=true;}
       smHeroState.facing=Math.atan2(wdx,wdz);
     }
 
     // ── Hero mesh sync ──
     // ── Floor Y detection ──
     const floorY=smGetFloorY(smHeroState.x,smHeroState.z);
-    smHero.position.set(smHeroState.x, floorY, smHeroState.z);
+    const _vs=window._vehState;
+    const _mounted=_vs&&_vs.mountedId;
+    // BUGFIX: hero mesti duduk/berdiri di ATAS kenderaan (guna seatY penuh),
+    // bukan sekadar sedikit offset — kalau tidak hero nampak "tenggelam" masuk kenderaan/lantai.
+    smHero.position.set(smHeroState.x, floorY+(_mounted?_vs.mesh.userData.seatY:0), smHeroState.z);
     smHero.rotation.y=smHeroState.facing;
-    // Leg animation
-    if(moved){
+    // Leg/arm animation
+    if(_mounted){
+      // Kekal duduk/berdiri di atas kenderaan; goyang halus ikut kelajuan
+      _vs.animT+=dt*(moved?10:2);
+      const bob=Math.sin(_vs.animT)*(moved?0.02:0.005);
+      smHero.position.y+=bob;
+    } else if(moved){
       smHeroState.animT+=dt*8;
       const ph=Math.sin(smHeroState.animT);
       if(smHero.legL) smHero.legL.rotation.x=ph*0.5;
@@ -10172,6 +10530,33 @@ function smapBuild3D(){
       if(smHero.legL){smHero.legL.rotation.x=0;smHero.legR.rotation.x=0;}
     }
     sm3.heroSprite.position.set(smHeroState.x, floorY+2.7, smHeroState.z);
+
+    // ── Vehicle mesh follow + roda/thruster + bank lean + bunyi enjin ──
+    if(_mounted && _vs.mesh){
+      const vmesh=_vs.mesh;
+      vmesh.position.set(smHeroState.x, floorY, smHeroState.z);
+      // Bank/lean masa pusing
+      if(typeof _vs._prevFacing!=='number') _vs._prevFacing=smHeroState.facing;
+      let fdiff=smHeroState.facing-_vs._prevFacing;
+      while(fdiff>Math.PI) fdiff-=Math.PI*2;
+      while(fdiff<-Math.PI) fdiff+=Math.PI*2;
+      _vs._prevFacing=smHeroState.facing;
+      const targetLean=moved?Math.max(-0.35,Math.min(0.35,-fdiff*6)):0;
+      vmesh.rotation.z+=(targetLean-vmesh.rotation.z)*Math.min(1,8*dt);
+      vmesh.rotation.y=smHeroState.facing;
+      // Roda/thruster spin ikut kelajuan
+      const spinSpeed=moved?smHeroState.moveSpd*dt*3.2:0.02;
+      (vmesh.userData.spin||[]).forEach(w=>{w.rotation.x+=spinSpeed;});
+      // Glow pulse (neon breathing)
+      (vmesh.userData.glow||[]).forEach((gm,i)=>{
+        if(gm.material&&gm.material.emissiveIntensity!==undefined){
+          gm.material.emissiveIntensity=0.7+Math.sin(ts*0.006+i)*0.3;
+        }
+      });
+      // Bunyi enjin — kuat bila bergerak, idle bila diam
+      const speedFrac=moved?1:0.15;
+      vehEngineUpdate(speedFrac);
+    }
 
     // ── Presence broadcast (OPTIMASI: throttled ~3s, skip jika tak bergerak) ──
     if(!sm3._presenceTick) sm3._presenceTick=0;
@@ -11434,6 +11819,7 @@ function smapOpen(){
     if(typeof applyNarutoSkin==='function') applyNarutoSkin();
     if(typeof applyKafkaVisuals==='function') applyKafkaVisuals();
     if(typeof applyKiritoVisuals==='function') applyKiritoVisuals();
+    if(typeof vehicleUpdateHudBtn==='function') vehicleUpdateHudBtn();
   }, 200);
 
   // Defer build/resize so overlay is fully painted and canvas has real dimensions
@@ -11495,6 +11881,8 @@ function smapClose(){
   stopBGM();
   smapActive=false;
   smapStopWorldPoller();
+  // Turun kenderaan (jika ada) & hentikan bunyi enjin sebelum keluar peta
+  if(typeof vehicleDismount==='function') vehicleDismount(true);
   // Clear own presence so ghost disappears from friends
   if(sm3&&sm3.presenceClear) sm3.presenceClear();
   if(smapRAF)cancelAnimationFrame(smapRAF);
@@ -11966,6 +12354,12 @@ const SHOP_ITEMS = [
   {id:'skin_sasuke', cat:'skin', icon:'⚡', name:'SKIN SASUKE', desc:'Jadi Sasuke Uchiha! Tembakan → Chidori⚡ di Arena & Menara (50 Rare Coin)', price:50, currency:'rare', type:'wearable'},
    {id:'skin_kafka', cat:'skin', icon:'✊', name:'SKIN KAFKA HIBINO', desc:'Jadi Kafka drpd Kaijuu No.8! Serangan → Power Punch✊ (50 Rare Coin)', price:50, currency:'rare', type:'wearable'},
    {id:'skin_kirito', cat:'skin', icon:'⚔️', name:'SKIN KIRITO', desc:'Jadi Kirito! Serangan → DUAL SWORD AURA⚔️ (50 Rare Coin)', price:50, currency:'rare', type:'wearable'},
+  // ── Kenderaan Sekolah (Rare Coin) — boleh ditunggang keliling peta sekolah ──
+  {id:'veh_neonmoto',   cat:'vehicle', icon:'🏍️', name:'MOTOSIKAL NEON RACER', desc:'Motor sport neon biru-ungu, laju & bergaya! (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
+  {id:'veh_hoverboard', cat:'vehicle', icon:'🛹', name:'PAPAN HOVER ANTI-GRAVITI', desc:'Papan hoverboard terapung dgn cincin tenaga neon (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
+  {id:'veh_buggy',      cat:'vehicle', icon:'🚙', name:'ATV BUGGY GEMPAK', desc:'Buggy 4-roda kukuh dgn roll-cage, paling laju! (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
+  {id:'veh_jetscooter', cat:'vehicle', icon:'🛴', name:'JET SCOOTER TURBO', desc:'Scooter jet dgn ekzos api biru menyala (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
+  {id:'veh_speeder',    cat:'vehicle', icon:'🏎️', name:'SPEEDER BIKE FUTURISTIK', desc:'Speeder bike sci-fi terapung, plasma ungu-emas (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
   // ── MMORPG Upgrade Stones (Rare Coin) ──
   {id:'sunstone_pack', cat:'mmo', icon:'☀️', name:'5x SUNSTONE', desc:'Batu peningkatan senjata — 5 biji (5 Rare Coin)', price:5, currency:'rare', type:'mmoStone', stoneId:'sunstone', qty:5},
    {id:'moonstone_pack', cat:'mmo', icon:'🌙', name:'5x MOONSTONE', desc:'Batu pemasangan gem — 5 biji (5 Rare Coin)', price:5, currency:'rare', type:'mmoStone', stoneId:'moonstone', qty:5},
@@ -12228,6 +12622,34 @@ function shopRender(){
     }).join('');
   }
 
+  // ── Vehicle section (Rare Coin) ──
+  const vehGrid=document.getElementById('shopGridVehicle');
+  if(vehGrid){
+    const vehItems=SHOP_ITEMS.filter(i=>i.cat==='vehicle');
+    vehGrid.innerHTML=vehItems.map(item=>{
+      const isOwned=!!(d.owned&&d.owned[item.id]);
+      const isMounted=!!(window._vehState&&window._vehState.mountedId===item.id);
+      const canAfford=rarePts>=item.price;
+      let btnHtml='';
+      if(isOwned){
+        btnHtml=isMounted
+          ?`<button class="shop-btn equipped-btn" disabled>✅ SEDANG DITUNGGANG</button>`
+          :`<button class="shop-btn equip-btn" onclick="shopClose();vehicleMount('${item.id}')">🏍️ TUNGGANG</button>`;
+      } else {
+        btnHtml=`<button class="shop-btn buy-btn" style="${canAfford?'':'opacity:0.5;cursor:not-allowed;'}" ${canAfford?'':'disabled'} onclick="shopBuyVehicle('${item.id}')">🪙 BELI ${item.price} RARE COIN</button>`;
+      }
+      return `<div class="shop-item${isOwned?' owned':''}${isMounted?' equipped':''}" style="${isMounted?'border:2px solid #ffa500;':isOwned?'border:2px solid #00e676;':''}">
+        <span class="item-icon" style="font-size:2.2em;">${item.icon}</span>
+        <div class="item-name" style="color:#ffd700;">${item.name}</div>
+        <div class="item-desc">${item.desc}</div>
+        <div class="item-price" style="${isOwned?'color:#00e676;':'color:#ff8c00;'}">
+          ${isOwned?'✅ DIMILIKI':'🪙 '+item.price+' RARE COIN'}
+        </div>
+        ${btnHtml}
+      </div>`;
+    }).join('');
+  }
+
   // ── MMO Stone section (Rare Coin) ──
   const mmoGrid=document.getElementById('shopGridMmo');
   if(mmoGrid){
@@ -12337,6 +12759,26 @@ function shopBuySkin(itemId){
   shopSaveData(u,d);
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! 🌀';
   shopRender();
+}
+
+// ── Beli Kenderaan dengan Rare Coin ──
+function shopBuyVehicle(itemId){
+  const u=shopGetUsername();
+  const d=shopLoadData(u);
+  const item=SHOP_ITEMS.find(i=>i.id===itemId);
+  if(!item) return;
+  const rarePts=(d.owned&&d.owned['rare_coin'])||0;
+  if(rarePts<item.price){
+    document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi! Tonton iklan untuk dapatkan 🪙';
+    return;
+  }
+  d.owned=d.owned||{};
+  d.owned['rare_coin']=rarePts-item.price;
+  d.owned[itemId]=1;
+  shopSaveData(u,d);
+  document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! 🏍️ Tekan butang KENDERAAN utk tunggang.';
+  shopRender();
+  if(typeof vehicleUpdateHudBtn==='function') vehicleUpdateHudBtn();
 }
 
 // ── Beli MMO Stone dengan Rare Coin ──
@@ -14240,7 +14682,7 @@ function heroStatRecordScore(sc, lv){
 const _orig_showWin2=showWin;
 showWin=function(){
   heroStatRecordScore(score,level);
-  // 10 Rare Coin ganjaran setiap kali pertama clear menara (M1-M10)
+  // 5 Rare Coin ganjaran setiap kali pertama clear menara (M1-M10)
   if(level>=1&&level<=10){
     try{
       const u=shopGetUsername();
@@ -14249,7 +14691,7 @@ showWin=function(){
       if(!d.owned.menaraRare)d.owned.menaraRare=[];
       if(!d.owned.menaraRare.includes(level)){
         d.owned.menaraRare.push(level);
-        d.owned['rare_coin']=(d.owned['rare_coin']||0)+10;
+        d.owned['rare_coin']=(d.owned['rare_coin']||0)+5;
         shopSaveData(u,d);
         // Toast notification
         try{
@@ -14260,7 +14702,7 @@ showWin=function(){
             nt.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:rgba(0,0,0,0.92);border:2px solid #ffd700;border-radius:14px;padding:20px 34px;text-align:center;font-family:Press Start 2P,monospace;pointer-events:none;transition:opacity .5s;';
             document.body.appendChild(nt);
           }
-          nt.innerHTML='<div style="font-size:clamp(20px,4vw,32px);color:#ffd700;margin-bottom:8px;">⭐ MENARA '+level+' CLEAR!</div><div style="font-size:clamp(12px,2vw,18px);color:#fff;">+10 <span style="color:#ffd700;">Rare Coin</span></div>';
+          nt.innerHTML='<div style="font-size:clamp(20px,4vw,32px);color:#ffd700;margin-bottom:8px;">⭐ MENARA '+level+' CLEAR!</div><div style="font-size:clamp(12px,2vw,18px);color:#fff;">+5 <span style="color:#ffd700;">Rare Coin</span></div>';
           nt.style.display='block';nt.style.opacity='1';
           clearTimeout(nt._t);nt._t=setTimeout(function(){nt.style.opacity='0';},2500);
         }catch(e){}
@@ -14564,7 +15006,7 @@ function _trackSaveToFirebase(username, data){
   window._fbTrackCache[username] = data;
 
   // Simpan ke Firebase (async)
-  if(window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
+  if(window._fbReady && window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
     try{
       const userTrackRef = window._fbRefFn(window._fbPresenceDb, 'tracking/'+username);
       Promise.resolve(window._fbSetFn(userTrackRef, data))
@@ -16819,7 +17261,7 @@ function _damMigrateLegacySifir(){
 }
 // Jalankan migration bila Firebase ready
 (function waitFbForMigration(){
-  if(window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
+  if(window._fbReady && window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
     setTimeout(_damMigrateLegacySifir, 2000);
   } else {
     setTimeout(waitFbForMigration, 500);
@@ -16840,7 +17282,7 @@ function damLogSifirMastery(playerName, sifir, betul){
 
   // ── PENTING: Simpan juga ke tracking Firebase supaya Dashboard Guru boleh baca ──
   // Path: tracking/{USERNAME}/sifir/{sifirNum}
-  if(window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
+  if(window._fbReady && window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
     try{
       // Baca tracking semasa dari cache, kemas kini field sifir, tulis balik
       const allTracking = (window._fbTrackCache && Object.keys(window._fbTrackCache).length > 0)
@@ -42461,7 +42903,7 @@ function mmoLogMathAnswer(zoneId, betul, bab){
     try{ localStorage.setItem(TRACK_KEY, JSON.stringify(local)); }catch(e){}
 
     // Tulis ke Firebase supaya Dashboard Guru boleh baca
-    if(window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
+    if(window._fbReady && window._fbPresenceDb && window._fbSetFn && window._fbRefFn){
       const mmoRef = window._fbRefFn(window._fbPresenceDb, 'tracking/'+key+'/mmorpg');
       Promise.resolve(window._fbSetFn(mmoRef, ud.mmorpg))
         .catch(e=>console.warn('mmoLogMathAnswer: gagal tulis mmorpg ke Firebase:', e));
@@ -49594,15 +50036,15 @@ function mmoCoopShowQuestion(state,myName){
   const qDiv=document.createElement('div');
   qDiv.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;font-family:monospace;';
   qDiv.innerHTML='<div style="color:#ffaa44;font-size:12px;">'+qHeader+'</div>'+
-    '<div style="color:#fff;font-size:14px;text-align:center;padding:8px 16px;background:rgba(0,0,0,0.3);border-radius:8px;max-width:400px;">'+q.question+'</div>'+
+    '<div style="color:#fff;font-size:14px;text-align:center;padding:8px 16px;background:rgba(0,0,0,0.3);border-radius:8px;max-width:400px;">'+q.q+'</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:360px;width:100%;">'+
-    q.options.map((opt,i)=>'<button id="coopAns'+i+'" style="padding:8px;border:1px solid #556;border-radius:6px;background:#223;color:#ddd;font:11px monospace;cursor:pointer;">'+opt+'</button>').join('')+
+    q.o.map((opt,i)=>'<button id="coopAns'+i+'" style="padding:8px;border:1px solid #556;border-radius:6px;background:#223;color:#ddd;font:11px monospace;cursor:pointer;">'+opt+'</button>').join('')+
     '</div>';
   _bossCoopUI.appendChild(qDiv);
-  q.options.forEach((opt,i)=>{
+  q.o.forEach((opt,i)=>{
     const btn=document.getElementById('coopAns'+i);
     if(btn)btn.onclick=function(){
-      const correct=(i===q.correct);
+      const correct=(i===q.a);
       _bossCoopQuestionAns=correct;
       bossShowToast(correct?'✅ Jawapan betul!':'❌ Jawapan salah!');
       // Submit answer to Firebase (listener will evaluate when all answered)
@@ -51398,17 +51840,34 @@ let _roomSavedUsername=null,_roomTouchStart=null,_roomTouchMoved=false;
 function _rUser(){return window.username||localStorage.getItem('heroUsername')||'guest';}
 function roomLoadData(cb){
   const me=_rUser();_roomSavedUsername=me;
-  const ref=window._fbRefFn(window._fbPresenceDb,'users/'+me+'/room');
-  window._fbGetFn(ref).then(snap=>{
-    let d=snap.val();
-    if(!d){d={furniture:[],wallColor:'#87CEEB',floorType:'wood',name:'Bilik '+me};window._fbSetFn(ref,d);}
-    _roomData=d;if(cb)cb(d);
-  });
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbGetFn||!window._fbSetFn){
+    // Firebase belum sedia (offline / gagal dimuat) — guna bilik kosong secara tempatan
+    _roomData={furniture:[],wallColor:'#87CEEB',floorType:'wood',name:'Bilik '+me};
+    if(cb)cb(_roomData);
+    return;
+  }
+  try{
+    const ref=window._fbRefFn(window._fbPresenceDb,'users/'+me+'/room');
+    window._fbGetFn(ref).then(snap=>{
+      let d=snap.val();
+      if(!d){d={furniture:[],wallColor:'#87CEEB',floorType:'wood',name:'Bilik '+me};window._fbSetFn(ref,d);}
+      _roomData=d;if(cb)cb(d);
+    }).catch(()=>{
+      _roomData={furniture:[],wallColor:'#87CEEB',floorType:'wood',name:'Bilik '+me};
+      if(cb)cb(_roomData);
+    });
+  }catch(e){
+    _roomData={furniture:[],wallColor:'#87CEEB',floorType:'wood',name:'Bilik '+me};
+    if(cb)cb(_roomData);
+  }
 }
 function roomSaveData(){
   if(!_roomData)return;
-  const ref=window._fbRefFn(window._fbPresenceDb,'users/'+(_roomSavedUsername||_rUser())+'/room');
-  window._fbSetFn(ref,_roomData);
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn)return;
+  try{
+    const ref=window._fbRefFn(window._fbPresenceDb,'users/'+(_roomSavedUsername||_rUser())+'/room');
+    window._fbSetFn(ref,_roomData);
+  }catch(e){}
 }
 function roomOpen(){
   if(_roomActive||typeof smapActive==='undefined'||!smapActive)return;

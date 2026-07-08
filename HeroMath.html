@@ -11922,8 +11922,9 @@ const TOYYIBPAY_CONFIG = {
   cloudFunctionUrl: 'https://us-central1-heromath-e4573.cloudfunctions.net/toyyibpayCreateBill',
 
   // ── Netlify Function mode ──
-  // Ganti "heromath" dgn Netlify site name anda
-  netlifyFunctionUrl: window.location.origin + '/.netlify/functions/toyyibpay-create-bill',
+  // Ganti URL ni dengan site functions payment kau
+  // Contoh: https://heromathpay.netlify.app/.netlify/functions/toyyibpay-create-bill
+  netlifyFunctionUrl: 'https://heromathpay.netlify.app/.netlify/functions/toyyibpay-create-bill',
 
   // ── URL untuk redirect selepas bayar (kembali ke game) ──
   returnUrl: window.location.href.split('?')[0] + '?payment_return=1',

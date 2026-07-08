@@ -12453,7 +12453,14 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: formData.toString()
       })
-      .then(r=>r.json())
+      .then(r=>{
+        return r.text().then(text => {
+          console.log('ToyyibPay raw response:', text.substring(0,500));
+          try{ return JSON.parse(text); }catch(e){
+            throw new Error('ToyyibPay returned non-JSON: ' + text.substring(0,200));
+          }
+        });
+      })
       .then(data=>{
         if(data && data.length && data[0].BillCode){
           resolve({paymentUrl: TOYYIBPAY_CONFIG.baseUrl + '/' + data[0].BillCode, billCode: data[0].BillCode});

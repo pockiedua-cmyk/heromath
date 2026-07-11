@@ -2064,7 +2064,7 @@ setTimeout(()=>{
   <div id="shopTopBar">
     <span id="shopTopTitle">🛒 KEDAI PELAJAR</span>
     <span id="shopPointsBadge">💰 MATA: <span id="shopPts">0</span></span>
-    <span id="shopRareBadge" style="background:rgba(255,140,0,0.15);border:1px solid #ff8c00;padding:4px 10px;font-size:clamp(5px,1.2vw,8px);">🪙 RARE: <span id="shopRarePts">0</span></span>
+    <span id="shopRareBadge" style="background:rgba(255,140,0,0.15);border:1px solid #ff8c00;padding:4px 10px;font-size:clamp(5px,1.2vw,8px);color:#ffffff;">🪙 RARE: <span id="shopRarePts" style="color:#ffffff;">0</span></span>
     <button id="shopCloseBtn" onclick="shopClose()">✖ TUTUP</button>
   </div>
   <div id="shopBody">
@@ -13690,8 +13690,9 @@ function shopBuyTopup(itemId){
     }
     }).catch(err=>{
       console.error('Topup error:', err);
-      document.getElementById('shopMsg').textContent='⚠ Ralat: '+err.message;
-      alert('Topup gagal: '+err.message+'\n\nSemak Console (F12) untuk detail.');
+      const errMsg = (err.message||'').length > 150 ? (err.message||'').substring(0,150)+'...' : (err.message||'Unknown error');
+      document.getElementById('shopMsg').textContent='⚠ Ralat: '+errMsg;
+      alert('Topup gagal: '+errMsg);
       shopRender();
     });
 }
@@ -13772,6 +13773,9 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
       apiUrl = TOYYIBPAY_CONFIG.netlifyFunctionUrl;
     } else if(TOYYIBPAY_CONFIG.backend === 'vercel'){
       apiUrl = TOYYIBPAY_CONFIG.vercelFunctionUrl;
+      requestBody.secretKey = TOYYIBPAY_CONFIG.secretKey;
+      requestBody.categoryCode = TOYYIBPAY_CONFIG.categoryCode;
+      requestBody.baseUrl = TOYYIBPAY_CONFIG.baseUrl;
     } else {
       // PHP mode
       apiUrl = TOYYIBPAY_CONFIG.phpProxyUrl;
@@ -13787,14 +13791,24 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(requestBody)
     })
-    .then(r=>r.json())
-    .then(data=>{
+    .then(r=>{
+      return r.text().then(txt=>{
+        try{ return {status:r.status, data:JSON.parse(txt)}; }catch(e){ return {status:r.status, data:null, raw:txt}; }
+      });
+    })
+    .then(({status, data, raw})=>{
+      if(status >= 400 || !data){
+        const snippet = raw ? raw.substring(0,120) : 'Empty response';
+        reject(new Error('Server error ('+status+'): ' + snippet));
+        return;
+      }
       if(data && data.success && data.paymentUrl){
         resolve({paymentUrl: data.paymentUrl, billCode: data.billCode});
       } else if(data && data.length && data[0] && data[0].BillCode){
         resolve({paymentUrl: TOYYIBPAY_CONFIG.baseUrl + '/' + data[0].BillCode, billCode: data[0].BillCode});
       } else {
-        reject(new Error(data && data.error ? data.error : 'Invalid response from API'));
+        const errMsg = (data && data.error) ? (data.error.length > 200 ? data.error.substring(0,200)+'...' : data.error) : 'Invalid response from API';
+        reject(new Error(errMsg));
       }
     })
     .catch(err=>{
@@ -38498,6 +38512,12 @@ let _pbPendingInviteFrom=null, _pbPendingRoomId=null;
 let _pbProcessedInviteFrom=null, _pbProcessedInviteTs=0;
 let _pbOnlinePlayers=[];
 let _pbHostName=null;
+// ── Gameplay sync (Firebase real-time position + kills) ──
+let _pbSyncPosData={};          // Firebase pos data: {NAME:{x,z,team,alive,hp}}
+let _pbSyncTimer=0;             // throttle position writes
+let _pbSyncProcessedKills={};   // dedup kill events already applied locally
+let _pbSyncPosUnsub=null;       // Firebase listener unsub for pos
+let _pbSyncKillsUnsub=null;     // Firebase listener unsub for kills
 
 function _pbMyName(){
   if(typeof smapGetPlayerName==='function') try{return smapGetPlayerName();}catch(e){}
@@ -38773,6 +38793,116 @@ function _smapCleanupForPaintball(){
   }
   document.getElementById('paintballOverlay').style.display='flex';
 }
+
+// ── Position Sync: write own pos to Firebase ──
+function pbSyncWritePos(dt){
+  _pbSyncTimer+=dt;
+  if(_pbSyncTimer<0.1) return; // every 100ms
+  _pbSyncTimer=0;
+  if(!_pbRoomId||!_pbMyPlayer||!_pbMyPlayer.alive) return;
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn) return;
+  const me=_pbMyName();
+  window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'pb_rooms/'+_pbRoomId+'/pos/'+me),{
+    x:_pbMyPlayer.mesh.position.x,
+    z:_pbMyPlayer.mesh.position.z,
+    ry:_pbHeroRotY,
+    team:_pbMyPlayer.team,
+    alive:_pbMyPlayer.alive,
+    hp:_pbMyPlayer.hp
+  });
+}
+
+// ── Position Sync: apply remote player positions from Firebase ──
+function pbSyncApplyPos(){
+  if(!_pbSyncPosData||!_pbPlayers) return;
+  const me=_pbMyName();
+  _pbPlayers.forEach(p=>{
+    if(!p.isRemote) return;
+    const d=_pbSyncPosData[p.name];
+    if(!d) return;
+    // Smooth interpolation toward target
+    const lerp=0.35;
+    p.mesh.position.x+=(d.x-p.mesh.position.x)*lerp;
+    p.mesh.position.z+=(d.z-p.mesh.position.z)*lerp;
+    p.mesh.rotation.y=d.ry||0;
+    // Sync alive/hp from remote writer
+    if(!d.alive && p.alive){
+      p.alive=false;
+      p.mesh.visible=false;
+      p.hp=0;
+      p.respawnTimer=3;
+      if(p.nameTag) p.nameTag.style.display='none';
+    } else if(d.alive && !p.alive){
+      p.alive=true;
+      p.mesh.visible=true;
+      p.hp=d.hp||3;
+      if(p.nameTag) p.nameTag.style.display='block';
+    }
+    if(d.alive){
+      p.hp=d.hp||3;
+      if(p.hpDots){
+        const ac=p.team===0?0xff4444:0x4488ff;
+        p.hpDots.forEach((dot,i)=>{ dot.material.color.setHex(i<p.hp?ac:0x333333); });
+      }
+    }
+  });
+}
+
+// ── Kill Sync: write kill event to Firebase ──
+function pbSyncWriteKill(killer,victim,headshot){
+  if(!_pbRoomId||!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn) return;
+  const key='k'+Date.now()+'_'+Math.random().toString(36).substr(2,4);
+  window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'pb_rooms/'+_pbRoomId+'/kills/'+key),{
+    killer:killer, victim:victim, headshot:!!headshot, ts:Date.now()
+  });
+}
+
+// ── Kill Sync: clean up old kill events ──
+function pbSyncCleanKills(){
+  if(!_pbRoomId||!window._fbPresenceDb||!window._fbRefFn||!window._fbRemoveFn) return;
+  const now=Date.now();
+  Object.entries(_pbSyncProcessedKills).forEach(([k,ts])=>{
+    if(now-ts>12000){
+      try{ window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'pb_rooms/'+_pbRoomId+'/kills/'+k)); }catch(e){}
+      delete _pbSyncProcessedKills[k];
+    }
+  });
+}
+
+// ── Kill Sync: handle remote kill events ──
+let _pbSyncKillCleanTimer=0;
+function pbSyncProcessKills(kills){
+  if(!kills) return;
+  const me=_pbMyName();
+  Object.entries(kills).forEach(([key,k])=>{
+    if(!k||_pbSyncProcessedKills[key]) return;
+    _pbSyncProcessedKills[key]=Date.now();
+    // Skip my own kills (already handled locally)
+    if(k.killer===me) return;
+    // Find killer team from sync data
+    const kd=_pbSyncPosData[k.killer];
+    const killerTeam=kd?kd.team:0;
+    _pbTeamKills[killerTeam]++;
+    playSound('pb_kill');
+    const kf=document.getElementById('pbKillFeed');
+    if(kf){
+      const hs=k.headshot?' 💥HEADSHOT!':'';
+      kf.textContent='💀 '+k.killer+' → '+k.victim+hs;
+      setTimeout(()=>{ if(kf) kf.textContent=''; },2500);
+    }
+    // Hide victim mesh if visible
+    const victim=_pbPlayers.find(p=>p.name.toUpperCase()===(k.victim||'').toUpperCase());
+    if(victim && victim.isRemote){
+      victim.alive=false;
+      victim.mesh.visible=false;
+      victim.hp=0;
+      // Don't set respawnTimer — remote respawn is driven by Firebase pos sync
+      victim.deaths++;
+      if(victim.nameTag) victim.nameTag.style.display='none';
+    }
+  });
+}
+
 function pbRoomInit(roomId){
   if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueModule) return;
   // Don't re-init if already listening to this room
@@ -38796,6 +38926,7 @@ function pbRoomInit(roomId){
         if(p.isAI) return;
         if(connected.includes(p.name.toUpperCase())) return;
         p.isHuman=false;
+        p.isRemote=false;
         p.isAI=true;
         p.name='🤖 AI';
         p.aiState='patrol';
@@ -38806,6 +38937,19 @@ function pbRoomInit(roomId){
         if(p.nameTag){ p.nameTag.remove(); p.nameTag=null; }
       });
     }
+  });
+  // ── Position sync listener ──
+  if(_pbSyncPosUnsub){ try{_pbSyncPosUnsub();}catch(e){} _pbSyncPosUnsub=null; }
+  const posRef=window._fbRefFn(window._fbPresenceDb,'pb_rooms/'+roomId+'/pos');
+  _pbSyncPosUnsub=window._fbOnValueModule.onValue(posRef,snap=>{
+    _pbSyncPosData=snap.val()||{};
+  });
+  // ── Kill events sync listener ──
+  if(_pbSyncKillsUnsub){ try{_pbSyncKillsUnsub();}catch(e){} _pbSyncKillsUnsub=null; }
+  const killsRef=window._fbRefFn(window._fbPresenceDb,'pb_rooms/'+roomId+'/kills');
+  _pbSyncKillsUnsub=window._fbOnValueModule.onValue(killsRef,snap=>{
+    const kills=snap.val()||{};
+    pbSyncProcessKills(kills);
   });
   _pbRoomId=roomId;
   if(_pbIsHost){
@@ -39023,6 +39167,10 @@ function paintballGameClose(){
   _pbRoomCode=null;
   // Cleanup Firebase room listeners
   if(_pbRoomUnsub){ _pbRoomUnsub(); _pbRoomUnsub=null; }
+  // Cleanup sync listeners
+  if(_pbSyncPosUnsub){ try{_pbSyncPosUnsub();}catch(e){} _pbSyncPosUnsub=null; }
+  if(_pbSyncKillsUnsub){ try{_pbSyncKillsUnsub();}catch(e){} _pbSyncKillsUnsub=null; }
+  _pbSyncPosData={}; _pbSyncProcessedKills={}; _pbSyncTimer=0;
   // NOTA: Jangan padam _pbInviteListener — mesti kekal supaya pemain boleh terima
   // jemputan paintball sepanjang sesi. smapOpen() tidak daftar semula listener ini.
   // if(_pbInviteListener){ _pbInviteListener(); _pbInviteListener=null; }
@@ -40107,9 +40255,9 @@ function pbSpawnPlayers(){
       band.position.y=0.85;
       mesh.add(band);
 
-      // Name tag (floating above) — only for non-human players
+      // Name tag (floating above) — for AI + remote humans
       let tag=null;
-      if(!isHuman){
+      if(!isHuman || (slot.isOnline && !isMine)){
         tag=document.createElement('div');
         tag.className='arena-nametag';
         tag.textContent=name;
@@ -40117,8 +40265,8 @@ function pbSpawnPlayers(){
         document.getElementById('paintballOverlay').appendChild(tag);
       }
 
-      // Gun untuk AI (or online players that are not me)
-      if(!isHuman){
+      // Gun untuk AI + remote humans
+      if(!isHuman || (slot.isOnline && !isMine)){
         const gMat=new THREE.MeshLambertMaterial({color:0x666677});
         const gBarrel=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.05,0.4,6),gMat);
         gBarrel.rotation.x=Math.PI/2;
@@ -40139,7 +40287,8 @@ function pbSpawnPlayers(){
 
       const player={
         id:pIdx++,
-        mesh, team:t, isAI:!isHuman, name, isMine,
+        mesh, team:t, isAI:!isHuman && !(slot.isOnline && !isMine), name, isMine,
+        isRemote: !!(slot.isOnline && !isMine),
         hp:3, maxHp:3, alive:true,
         spawnX, spawnZ,
         rotY: t===0 ? 0 : Math.PI,
@@ -40671,6 +40820,10 @@ function pbRender(){
     }
   }
 
+  // ▸ Sync: write own position, apply remote positions
+  pbSyncWritePos(dt);
+  pbSyncApplyPos();
+
   // ▸ AI update
   pbUpdateAI(dt);
 
@@ -40792,6 +40945,8 @@ function pbRender(){
           if(b.owner){
             b.owner.kills++;
             _pbTeamKills[b.owner.team]++;
+            // Broadcast kill to other devices via Firebase
+            pbSyncWriteKill(b.owner.name,targetPlayer.name,b.isHeadshot);
             const kf=document.getElementById('pbKillFeed');
             if(kf){
               const hs=b.isHeadshot?' 💥HEADSHOT!':'';
@@ -40832,6 +40987,10 @@ function pbRender(){
     const b=_pbBullets[i];
     if(b){ _pbScene.remove(b.mesh); _pbBullets.splice(i,1); }
   });
+
+  // ▸ Periodic kill event cleanup (every 5s)
+  _pbSyncKillCleanTimer+=dt;
+  if(_pbSyncKillCleanTimer>5){ _pbSyncKillCleanTimer=0; pbSyncCleanKills(); }
 
   // ▸ Update HUD (skip if headless)
   if(!_pbHeadless){

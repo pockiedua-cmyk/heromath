@@ -35393,13 +35393,13 @@ const PET_STORAGE_KEY = 'heroPets_v2';
 // ── Firebase Pet Helpers ──
 function _petFbRef(username){
   if(!window._fbPresenceDb || !window._fbRefFn) return null;
-  const u = (username || (window.playerProfile && window.playerProfile.username) || '').toUpperCase();
+  const u = (username || (typeof playerProfile!=='undefined' && playerProfile.username) || '').toUpperCase();
   if(!u) return null;
   return window._fbRefFn(window._fbPresenceDb, 'users/' + u + '/pets');
 }
 function _petFbSummonRef(username){
   if(!window._fbPresenceDb || !window._fbRefFn) return null;
-  const u = (username || (window.playerProfile && window.playerProfile.username) || '').toUpperCase();
+  const u = (username || (typeof playerProfile!=='undefined' && playerProfile.username) || '').toUpperCase();
   if(!u) return null;
   return window._fbRefFn(window._fbPresenceDb, 'users/' + u + '/petSummon');
 }

@@ -1,8 +1,26 @@
+const https = require('https');
+const http = require('http');
 const { URL } = require('url');
 
-const TOYYIBPAY_SECRET_KEY    = process.env.TOYYIBPAY_SECRET_KEY || '';
-const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE || '';
-const TOYYIBPAY_BASE_URL      = (process.env.TOYYIBPAY_BASE_URL || 'https://toyyibpay.com').replace(/\/+$/, '');
+const TOYYIBPAY_ENV_SECRET_KEY    = process.env.TOYYIBPAY_SECRET_KEY || '';
+const TOYYIBPAY_ENV_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE || '';
+const TOYYIBPAY_ENV_BASE_URL      = (process.env.TOYYIBPAY_BASE_URL || 'https://toyyibpay.com').replace(/\/+$/, '');
+
+function httpsPost(url, body, headers) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const mod = u.protocol === 'https:' ? https : http;
+    const req = mod.request(u, { method: 'POST', headers }, res => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => resolve({ status: res.statusCode, text: data }));
+    });
+    req.on('error', reject);
+    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Request timeout')); });
+    req.write(body);
+    req.end();
+  });
+}
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,12 +38,21 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Missing orderId or billAmount' });
     }
 
+    // Use env vars first, fallback to request body credentials
+    const secretKey    = TOYYIBPAY_ENV_SECRET_KEY    || body.secretKey    || '';
+    const categoryCode = TOYYIBPAY_ENV_CATEGORY_CODE || body.categoryCode || '';
+    const baseUrl      = TOYYIBPAY_ENV_BASE_URL      || body.baseUrl      || 'https://toyyibpay.com';
+
+    if (!secretKey || !categoryCode) {
+      return res.status(500).json({ success: false, error: 'ToyyibPay credentials not configured. Set TOYYIBPAY_SECRET_KEY and TOYYIBPAY_CATEGORY_CODE in Vercel env, or pass them in the request.' });
+    }
+
     const origin = req.headers.origin || req.headers.referer || 'https://heromath.vercel.app';
     const returnUrl = origin.replace(/\/+$/, '') + '/?payment_return=1';
 
     const formData = new URLSearchParams();
-    formData.append('userSecretKey', TOYYIBPAY_SECRET_KEY);
-    formData.append('categoryCode', TOYYIBPAY_CATEGORY_CODE);
+    formData.append('userSecretKey', secretKey);
+    formData.append('categoryCode', categoryCode);
     formData.append('billName', billName || 'Rare Coin');
     formData.append('billDescription', billDescription || 'Topup Rare Coin');
     formData.append('billPriceSetting', '1');
@@ -42,26 +69,30 @@ module.exports = async (req, res) => {
     formData.append('billChargeToCustomer', '1');
     formData.append('billLanguage', 'en');
 
-    const apiUrl = new URL('/index.php/api/createBill', TOYYIBPAY_BASE_URL);
-    const result = await fetch(apiUrl.toString(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData.toString()
+    const apiUrl = baseUrl + '/index.php/api/createBill';
+    const result = await httpsPost(apiUrl, formData.toString(), {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(formData.toString())
     });
-    const text = await result.text();
+
     let data;
-    try { data = JSON.parse(text); } catch(e) { data = text; }
+    try { data = JSON.parse(result.text); } catch(e) { data = result.text; }
 
     if (Array.isArray(data) && data[0] && data[0].BillCode) {
       const billCode = data[0].BillCode;
       return res.status(200).json({
         success: true,
-        paymentUrl: TOYYIBPAY_BASE_URL + '/' + billCode,
+        paymentUrl: baseUrl + '/' + billCode,
         billCode: billCode
       });
     } else {
-      const errMsg = typeof data === 'string' ? data : JSON.stringify(data);
-      return res.status(500).json({ success: false, error: errMsg });
+      const rawErr = typeof data === 'string' ? data : JSON.stringify(data);
+      const errMsg = rawErr.length > 300 ? rawErr.substring(0, 300) + '...' : rawErr;
+      const isHtml = /<html|<doctype/i.test(errMsg);
+      return res.status(500).json({
+        success: false,
+        error: isHtml ? 'ToyyibPay API returned an error page (check credentials or API URL)' : errMsg
+      });
     }
   } catch (e) {
     return res.status(500).json({ success: false, error: e.message });

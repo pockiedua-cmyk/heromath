@@ -13793,12 +13793,14 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
     })
     .then(r=>{
       return r.text().then(txt=>{
-        try{ return {status:r.status, data:JSON.parse(txt)}; }catch(e){ return {status:r.status, data:null, raw:txt}; }
+        let data=null, raw=txt;
+        try{ data=JSON.parse(txt); raw=null; }catch(e){}
+        return {status:r.status, data, raw};
       });
     })
     .then(({status, data, raw})=>{
       if(status >= 400 || !data){
-        const snippet = raw ? raw.substring(0,120) : 'Empty response';
+        const snippet = (raw && raw.length>0) ? raw.substring(0,200) : (data && data.error ? data.error.substring(0,200) : 'Empty response');
         reject(new Error('Server error ('+status+'): ' + snippet));
         return;
       }

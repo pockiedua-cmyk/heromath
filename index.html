@@ -6559,40 +6559,44 @@ function authClearSession(){try{localStorage.removeItem(SESSION_KEY);}catch(e){}
   const ADMIN_PASS = 'MATHERO2025'; // cheat code / admin password
   const ADMIN_HASH = simpleHash(ADMIN_PASS);
 
+  const ADMIN_DATA = {
+    username: ADMIN_USER,
+    name: 'Admin',
+    school: 'Sistem',
+    grade: 'Tingkatan 5',
+    hash: ADMIN_HASH,
+    remember: false,
+    isAdmin: true
+  };
+
   function forceUpdateAdmin(){
     const users = authLoadUsers();
     const existing = users[ADMIN_USER] || {};
     // Always overwrite critical fields — hash, isAdmin — regardless of Firebase sync
-    users[ADMIN_USER] = Object.assign({}, existing, {
-      username: ADMIN_USER,
-      name: 'Admin',
-      school: 'Sistem',
-      grade: 'Tingkatan 5',
-      hash: ADMIN_HASH,
-      remember: false,
-      isAdmin: true,
+    users[ADMIN_USER] = Object.assign({}, existing, ADMIN_DATA, {
       createdAt: existing.createdAt || new Date().toLocaleDateString('ms-MY')
     });
     authSaveUsers(users);
+    // PENTING: Tulis juga ke Firebase supaya tak di-overwrite oleh sync
+    if(window._fbPresenceDb && window._fbRefFn && window._fbSetFn){
+      try{
+        const ref = window._fbRefFn(window._fbPresenceDb, 'users/' + ADMIN_USER);
+        window._fbSetFn(ref, users[ADMIN_USER]);
+      }catch(e){}
+    }
   }
 
   // Run immediately on page load
   forceUpdateAdmin();
 
-  // Re-run after Firebase sync completes (to override any overwrite from Firebase)
-
-
-  // Also patch Firebase users sync — re-apply admin after merge
-  const _checkInterval = setInterval(()=>{
-    if(window._fbReady){
-      clearInterval(_checkInterval);
-      const users = authLoadUsers();
-      // If Firebase overwrote our admin, fix it again
-      if(!users[ADMIN_USER] || !users[ADMIN_USER].isAdmin || users[ADMIN_USER].hash !== ADMIN_HASH){
-        forceUpdateAdmin();
-      }
+  // Keep checking — Firebase sync boleh overwrite admin bila-bila masa
+  // (bukan sekali sahaja, sebab _fbSyncUsersOnce boleh lambat atau berulang)
+  setInterval(()=>{
+    const users = authLoadUsers();
+    if(!users[ADMIN_USER] || !users[ADMIN_USER].isAdmin || users[ADMIN_USER].hash !== ADMIN_HASH){
+      forceUpdateAdmin();
     }
-  }, 300);
+  }, 2000);
 })();
 
 // ── Admin login check ──
@@ -13385,10 +13389,15 @@ async function shopSyncFullFromFirebase(username){
     // Simpan merged result
     shopSaveData(u,merged);
   }catch(e){}
+  _shopSyncedFromFb=true;
 }
 
-// Safety net: push shop data ke Firebase sebelum page tutup
+// Flag: shop sync dari Firebase telah selesai (elak beforeunload overwrite data kosong)
+var _shopSyncedFromFb = false;
+
+// Safety net: push shop data ke Firebase sebelum page tutup — HANYA selepas sync selesai
 window.addEventListener('beforeunload',()=>{
+  if(!_shopSyncedFromFb) return; // belum sync, JANGAN overwrite Firebase
   try{
     const u=shopGetUsername();
     if(u&&u!=='guest'){
@@ -17025,13 +17034,22 @@ function _dashFetchAndRender(silent){
     if(window._fbGetFn && window._fbPresenceDb && window._fbRefFn){
       const sb = document.getElementById('dashStatusBar');
       if(sb) sb.textContent = '☁ Menghubungi Firebase...';
-      window._fbGetFn(window._fbRefFn(window._fbPresenceDb,'tracking'))
-        .then(snap=>{
-          const data = snap.val()||{};
+      // Fetch tracking DAN users secara serentak supaya senarai pelajar lengkap
+      Promise.all([
+        window._fbGetFn(window._fbRefFn(window._fbPresenceDb,'tracking')),
+        window._fbGetFn(window._fbRefFn(window._fbPresenceDb,'users'))
+      ]).then(([trackSnap,usersSnap])=>{
+          const data = trackSnap.val()||{};
           const nUsers = Object.keys(data).length;
           console.log('[Dashboard] Firebase berjaya. Bilangan pengguna:', nUsers);
           window._fbTrackCache = data;
           try{ localStorage.setItem('mariomath_tracking_v1',JSON.stringify(data)); }catch(e){}
+          // Update users cache supaya pelajar baru (tiada tracking) turut muncul
+          const usersData = usersSnap.val()||{};
+          if(Object.keys(usersData).length>0){
+            window._fbUsersCache = Object.assign(window._fbUsersCache||{}, usersData);
+            try{ localStorage.setItem(AUTH_KEY, JSON.stringify(Object.assign(authLoadUsersLocal(), usersData))); }catch(e){}
+          }
           if(sb) sb.textContent = nUsers > 0
             ? '✅ Firebase: '+nUsers+' rekod pelajar dijumpai — '+new Date().toLocaleTimeString('ms-MY')
             : '⚠ Firebase: tiada rekod dalam /tracking — pelajar belum main atau Rules Firebase menyekat akses';
@@ -17215,9 +17233,9 @@ function dashPopulateFilters(){
   const pelajarList=[];
   Object.entries(all).forEach(([k,u])=>{
     const s = u.sessions&&u.sessions[0];
-    // Guru: tapis sekolah
-    if(_dashTeacherSchool && s && s.school!==_dashTeacherSchool) return;
-    if(_dashTeacherSchool && !s && u.school!==_dashTeacherSchool) return;
+    // Guru: tapis sekolah (case-insensitive)
+    if(_dashTeacherSchool && s && (s.school||'').toUpperCase()!==_dashTeacherSchool.toUpperCase()) return;
+    if(_dashTeacherSchool && !s && (u.school||'').toUpperCase()!==_dashTeacherSchool.toUpperCase()) return;
     if(s){ sekolahSet.add(s.school||''); pelajarList.push({username:k, name:s.name}); }
   });
   const sel = document.getElementById('dashFilterSekolah');
@@ -17341,7 +17359,7 @@ function dashRenderPelajar(){
     return {username,name,school,grade,tingkatan,betul,salah,pct,sesi:sess.length,menTertinggi,tarikh:s?s.date:''};
   }).filter(Boolean)
     .filter(r=> !filterNama||r.name.toUpperCase().includes(filterNama.toUpperCase()))
-    .filter(r=> !filterSekolah||r.school===filterSekolah)
+    .filter(r=> !filterSekolah||r.school.toUpperCase()===filterSekolah.toUpperCase())
     .filter(r=> !filterTingkatan||String(r.tingkatan)===filterTingkatan)
     .sort((a,b)=>b.pct-a.pct);
 
@@ -17404,7 +17422,7 @@ function dashDeleteStudent(username,displayName){
     const users=authLoadUsers();
     const target=users[username];
     if(!target){ alert('❌ Akaun tidak dijumpai.'); return; }
-    if(target.school!==_dashTeacherSchool){
+    if((target.school||'').toUpperCase()!==_dashTeacherSchool.toUpperCase()){
       alert('❌ Anda hanya boleh memadam pelajar dari sekolah anda sendiri!');
       return;
     }
@@ -17434,7 +17452,7 @@ function dashResetStudentPassword(username,displayName){
     const users=authLoadUsers();
     const target=users[username];
     if(!target){ alert('❌ Akaun tidak dijumpai.'); return; }
-    if(target.school!==_dashTeacherSchool){
+    if((target.school||'').toUpperCase()!==_dashTeacherSchool.toUpperCase()){
       alert('❌ Anda hanya boleh reset password pelajar dari sekolah anda sendiri!');
       return;
     }
@@ -17467,7 +17485,7 @@ function dashShowChangeUsernameForm(oldUsername,displayName){
     const users=authLoadUsers();
     const target=users[oldUsername];
     if(!target){ alert('❌ Akaun tidak dijumpai.'); return; }
-    if(target.school!==_dashTeacherSchool){
+    if((target.school||'').toUpperCase()!==_dashTeacherSchool.toUpperCase()){
       alert('❌ Anda hanya boleh menukar username pelajar dari sekolah anda sendiri!');
       return;
     }
@@ -35370,17 +35388,20 @@ function _petFbWriteBag(arr){
     try{ window._fbSetFn(r, arr.length ? arr : null); }catch(e){}
   }
 }
-// Juga tulis sebelum page tutup untuk keselamatan
+// Flag: pet sync dari Firebase telah selesai (elak beforeunload overwrite data kosong)
+var _petSyncedFromFb = false;
+// Juga tulis sebelum page tutup untuk keselamatan — HANYA selepas sync selesai
 window.addEventListener('beforeunload', ()=>{
+  if(!_petSyncedFromFb) return; // belum sync, JANGAN overwrite Firebase
   try{ _petFbWriteBag(JSON.parse(localStorage.getItem(PET_STORAGE_KEY)||'[]')); }catch(e){}
 });
 
 // Muat pet bag dari Firebase (sekali, async) — merge dengan localStorage
 function petSyncFromFirebase(callback){
   const r = _petFbRef();
-  if(!r){ if(callback) callback(); return; }
+  if(!r){ _petSyncedFromFb=true; if(callback) callback(); return; }
   const { get } = window._fbGetModule ? window._fbGetModule() : {};
-  if(!get){ if(callback) callback(); return; }
+  if(!get){ _petSyncedFromFb=true; if(callback) callback(); return; }
   get(r).then(snap=>{
     const fbData = snap.val();
     if(Array.isArray(fbData) && fbData.length > 0){
@@ -35391,8 +35412,9 @@ function petSyncFromFirebase(callback){
       const local = petLoadBagLocal();
       if(local.length > 0) _petFbWriteBag(local);
     }
+    _petSyncedFromFb=true;
     if(callback) callback();
-  }).catch(()=>{ if(callback) callback(); });
+  }).catch(()=>{ _petSyncedFromFb=true; if(callback) callback(); });
 }
 
 // Muat summon aktif dari Firebase

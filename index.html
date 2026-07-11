@@ -35405,39 +35405,54 @@ function _petFbSummonRef(username){
 }
 
 // Tulis pet bag ke Firebase SEGERA (tanpa debounce — elak hilang data)
+// JANGAN tulis array kosong — boleh overwrite data sedia ada
 function _petFbWriteBag(arr){
+  if(!Array.isArray(arr) || arr.length === 0) return; // JANGAN overwrite dengan kosong
   const r = _petFbRef();
-  if(r && window._fbSetFn){
-    try{ window._fbSetFn(r, Array.isArray(arr) ? arr : []); }catch(e){}
-  }
+  if(!r){ console.warn('[PET-FB] _petFbRef returned null — user:', (typeof playerProfile!=='undefined'&&playerProfile.username)||'?'); return; }
+  if(!window._fbSetFn){ console.warn('[PET-FB] _fbSetFn not ready'); return; }
+  try{
+    window._fbSetFn(r, arr);
+    console.log('[PET-FB] Written to Firebase:', arr.length, 'pets', arr.map(p=>p.id));
+  }catch(e){ console.warn('[PET-FB] Write error:', e); }
 }
-// Flag: pet sync dari Firebase telah selesai (elak beforeunload overwrite data kosong)
+// Flag: pet sync dari Firebase telah selesai
 var _petSyncedFromFb = false;
-// Juga tulis sebelum page tutup untuk keselamatan — HANYA selepas sync selesai
-window.addEventListener('beforeunload', ()=>{
-  if(!_petSyncedFromFb) return; // belum sync, JANGAN overwrite Firebase
-  try{ _petFbWriteBag(JSON.parse(localStorage.getItem(PET_STORAGE_KEY)||'[]')); }catch(e){}
-});
 
 // Muat pet bag dari Firebase (sekali, async) — merge dengan localStorage
 function petSyncFromFirebase(callback){
-  const r = _petFbRef();
-  if(!r){ _petSyncedFromFb=true; if(callback) callback(); return; }
-  if(!window._fbGetFn){ _petSyncedFromFb=true; if(callback) callback(); return; }
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbGetFn){
+    _petSyncedFromFb=true;
+    _petAttachBagListener();
+    if(callback) callback();
+    return;
+  }
+  const u=(typeof playerProfile!=='undefined'&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
+  if(!u){ _petSyncedFromFb=true; if(callback) callback(); return; }
+  const r=window._fbRefFn(window._fbPresenceDb,'users/'+u+'/pets');
   window._fbGetFn(r).then(snap=>{
-    const fbData = snap.val();
+    const fbData=snap.val();
+    const local=petLoadBagLocal();
     if(Array.isArray(fbData) && fbData.length > 0){
-      // Firebase jadi sumber utama — tulis ke localStorage
+      // Firebase ada data — tulis ke localStorage
       try{ localStorage.setItem(PET_STORAGE_KEY, JSON.stringify(fbData)); }catch(e){}
+      console.log('[PET-SYNC] Firebase→localStorage:', fbData.length, 'pets');
+    } else if(local.length > 0){
+      // Firebase kosong, localStorage ada data — push ke Firebase
+      _petFbWriteBag(local);
+      console.log('[PET-SYNC] localStorage→Firebase:', local.length, 'pets');
     } else {
-      // Tiada data di Firebase — push localStorage ke Firebase
-      const local = petLoadBagLocal();
-      if(local.length > 0) _petFbWriteBag(local);
+      console.log('[PET-SYNC] Tiada data di Firebase mahupun localStorage');
     }
     _petSyncedFromFb=true;
-    _petAttachBagListener(); // pasang realtime listener lepas sync pertama
+    _petAttachBagListener();
     if(callback) callback();
-  }).catch(()=>{ _petSyncedFromFb=true; _petAttachBagListener(); if(callback) callback(); });
+  }).catch(e=>{
+    console.warn('[PET-SYNC] Firebase read gagal:', e);
+    _petSyncedFromFb=true;
+    _petAttachBagListener();
+    if(callback) callback();
+  });
 }
 
 // Realtime listener — supaya pet bag terus dikemas kini jika Device A ubah data
@@ -35486,6 +35501,17 @@ function petSaveBag(arr){
   try{ localStorage.setItem(PET_STORAGE_KEY, JSON.stringify(arr)); }catch(e){}
   // Sync ke Firebase
   _petFbWriteBag(arr);
+  // Backup: guna inline ref juga (elak _petFbRef gagal)
+  if(arr.length > 0 && window._fbPresenceDb && window._fbRefFn && window._fbSetFn){
+    try{
+      const u=(typeof playerProfile!=='undefined'&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
+      if(u){
+        const r=window._fbRefFn(window._fbPresenceDb,'users/'+u+'/pets');
+        window._fbSetFn(r,arr);
+        console.log('[PET-SAVE] Backup write ke Firebase:', arr.length, 'pets');
+      }
+    }catch(e){}
+  }
 }
 
 // ── Level config ──

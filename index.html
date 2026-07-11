@@ -7082,6 +7082,12 @@ function authStartGame(profile){
       shopSyncRareCoinFromFirebase(profile.username||profile.name);
     }
   }, 2000);
+  // ── Sync SEMUA data shop (points, owned, equipped) dari Firebase ──
+  setTimeout(()=>{
+    if(typeof shopSyncFullFromFirebase==='function'){
+      shopSyncFullFromFirebase(profile.username||profile.name);
+    }
+  }, 2200);
   // Show admin panel if admin account
   if(isAdminUser(profile.username||profile.name)){
     // Tambah butang kekal admin (hanya nampak untuk admin)
@@ -13220,6 +13226,9 @@ function shopSaveData(username,data){
   if(data && data.owned && typeof data.owned['rare_coin']!=='undefined'){
     _shopPushRareCoinToFirebase(username, data.owned['rare_coin']);
   }
+  // Segerak SEMUA data shop ke Firebase (points, owned items, equipped) supaya
+  // tidak hilang apabila player tukar komputer / clear localStorage.
+  _shopPushFullToFirebase(username, data);
 }
 function shopGetUsername(){return(playerProfile.username||playerProfile.name||'guest').toUpperCase();}
 
@@ -13306,6 +13315,94 @@ function _shopAttachRareCoinListener(username){
     });
   }catch(e){}
 }
+
+// ════════════════════════════════════════════════════
+//  FULL SHOP DATA — Firebase sync (points, owned items, equipped)
+//  Path: users/{USERNAME}/shop  (object)
+//  Supaya data tidak hilang apabila tukar komputer / clear localStorage.
+// ════════════════════════════════════════════════════
+function _shopFullFbRef(username){
+  if(!window._fbPresenceDb||!window._fbRefFn) return null;
+  const u=(username||shopGetUsername()).toUpperCase();
+  if(!u) return null;
+  return window._fbRefFn(window._fbPresenceDb,'users/'+u+'/shop');
+}
+
+var _shopFullPushTimer=null;
+var _shopFullPushPending=null;
+function _shopPushFullToFirebase(username,data){
+  if(!window._fbPresenceDb||!window._fbSetFn) return;
+  if(!data) return;
+  // Strip rare_coin from the push — rare_coin has its own dedicated sync path
+  const stripped=Object.assign({},data);
+  if(stripped.owned){
+    stripped.owned=Object.assign({},stripped.owned);
+    delete stripped.owned['rare_coin'];
+  }
+  _shopFullPushPending={username:username,data:stripped};
+  if(_shopFullPushTimer) return;
+  _shopFullPushTimer=setTimeout(()=>{
+    _shopFullPushTimer=null;
+    const p=_shopFullPushPending; _shopFullPushPending=null;
+    if(!p) return;
+    const r=_shopFullFbRef(p.username);
+    if(r) try{ window._fbSetFn(r, p.data); }catch(e){}
+  }, 600);
+}
+
+// Reconcile localStorage vs Firebase pada login — merge supaya tiada data hilang
+async function shopSyncFullFromFirebase(username){
+  try{
+    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbGetFn) return;
+    const u=(username||shopGetUsername()).toUpperCase();
+    const r=_shopFullFbRef(u);
+    if(!r) return;
+    const snap=await window._fbGetFn(r);
+    const fbData=snap.val();
+    const local=shopLoadData(u);
+    // Jika tiada data di Firebase, push localStorage naik
+    if(!fbData||typeof fbData!=='object'||Object.keys(fbData).length===0){
+      if(local&&(local.points||Object.keys(local.owned||{}).length>0)){
+        _shopPushFullToFirebase(u,local);
+      }
+      return;
+    }
+    // Merge: Firebase jadi rujukan, tapi combine dengan localStorage
+    const merged=Object.assign({},fbData);
+    // Points: ambil MAX supaya tak hilang mata
+    merged.points=Math.max(fbData.points||0, local.points||0);
+    // Owned items: union kedua-dua set
+    const localOwned=local.owned||{};
+    const fbOwned=fbData.owned||{};
+    merged.owned=Object.assign({},fbOwned,localOwned);
+    // Equipped: Firebase sebagai source of truth (lebih dipercayai)
+    // tapi jika local ada more items, keep it
+    merged.equipped=fbData.equipped||local.equipped||{};
+    // Rare Coin: MAX (sudah disync berasingan via _shopPushRareCoinToFirebase)
+    const localRC=local.owned&&local.owned['rare_coin']||0;
+    const fbRC=fbOwned['rare_coin']||0;
+    merged.owned['rare_coin']=Math.max(localRC,fbRC);
+    // Simpan merged result
+    shopSaveData(u,merged);
+  }catch(e){}
+}
+
+// Safety net: push shop data ke Firebase sebelum page tutup
+window.addEventListener('beforeunload',()=>{
+  try{
+    const u=shopGetUsername();
+    if(u&&u!=='guest'){
+      const d=shopLoadData(u);
+      // Force push tanpa throttle (beforeunload mesti pantas)
+      const r=_shopFullFbRef(u);
+      if(r&&window._fbSetFn){
+        const stripped=Object.assign({},d);
+        if(stripped.owned){stripped.owned=Object.assign({},stripped.owned);delete stripped.owned['rare_coin'];}
+        try{window._fbSetFn(r,stripped);}catch(e){}
+      }
+    }
+  }catch(e){}
+});
 
 // Notis ringkas bila Rare Coin masuk dari payment (webhook)
 function _shopNotifyRareCoinCredit(amount){
@@ -17271,6 +17368,10 @@ function dashRenderPelajar(){
     const resetBtn=(isTeacher||isAdmin)
       ? `<button class="dash-btn gold" style="margin-top:4px;" onclick="dashResetStudentPassword('${r.username}','${r.name}')">🔑 Reset Password</button>`
       : '';
+    // Butang tukar username: guru/admin boleh tukar username pelajar
+    const renameBtn=(isTeacher||isAdmin)
+      ? `<button class="dash-btn gold" style="margin-top:4px;background:#1a1a4a;color:#7eb8ff;border:1px solid #7eb8ff;" onclick="dashShowChangeUsernameForm('${r.username}','${r.name}')">✏️ Tukar Username</button>`
+      : '';
     html+=`<tr>
       <td class="${col}">${r.name}</td>
       <td style="color:#7eb8ff;font-family:monospace;">${r.username||'-'}</td>
@@ -17281,7 +17382,7 @@ function dashRenderPelajar(){
       <td class="ok">${r.betul}</td>
       <td class="no">${r.salah}</td>
       <td class="${col}">${r.pct}%</td>
-      <td><button class="dash-btn" onclick="dashViewPelajar('${r.username}')">🔍 Lihat</button>${resetBtn}${delBtn}</td>
+      <td><button class="dash-btn" onclick="dashViewPelajar('${r.username}')">🔍 Lihat</button>${renameBtn}${resetBtn}${delBtn}</td>
     </tr>`;
   });
   html+=`</tbody></table>`;
@@ -17358,6 +17459,223 @@ function dashResetStudentPassword(username,displayName){
 }
 
 
+// ── Tukar username pelajar (guru/admin sahaja) ──
+function dashShowChangeUsernameForm(oldUsername,displayName){
+  if(!oldUsername) return;
+  // Guru: hanya boleh tukar pelajar dari sekolah sendiri
+  if(_dashTeacherSchool){
+    const users=authLoadUsers();
+    const target=users[oldUsername];
+    if(!target){ alert('❌ Akaun tidak dijumpai.'); return; }
+    if(target.school!==_dashTeacherSchool){
+      alert('❌ Anda hanya boleh menukar username pelajar dari sekolah anda sendiri!');
+      return;
+    }
+  }
+  const existing=document.getElementById('dashRenameModal');
+  if(existing)existing.remove();
+  const modal=document.createElement('div');
+  modal.id='dashRenameModal';
+  modal.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);font-family:monospace;';
+  modal.innerHTML=`
+    <div style="background:#0a0a1a;border:2px solid #7eb8ff;border-radius:12px;padding:20px;max-width:400px;width:90%;color:#fff;">
+      <div style="color:#7eb8ff;font-size:14px;margin-bottom:6px;text-align:center;">✏️ TUKAR USERNAME</div>
+      <div style="color:#888;font-size:11px;margin-bottom:12px;text-align:center;">Pelajar: <b style="color:#ffd700;">${displayName||oldUsername}</b></div>
+      <div style="color:#aaa;font-size:10px;margin-bottom:6px;">Username Lama:</div>
+      <input id="cuOldUn" value="${oldUsername}" disabled style="width:100%;background:#1a1a2a;color:#666;border:2px solid #333;padding:8px;font-family:monospace;font-size:12px;margin-bottom:10px;box-sizing:border-box;">
+      <div style="color:#aaa;font-size:10px;margin-bottom:6px;">Username Baru:</div>
+      <input id="cuNewUn" placeholder="TAIP USERNAME BARU" style="width:100%;background:#1a1a2a;color:#fff;border:2px solid #7eb8ff;padding:8px;font-family:monospace;font-size:12px;margin-bottom:8px;box-sizing:border-box;text-transform:uppercase;" autofocus>
+      <div id="cuErr" style="color:#ff6b6b;font-size:10px;min-height:14px;margin-bottom:6px;"></div>
+      <div style="color:#ff9800;font-size:9px;margin-bottom:10px;">⚠ Semua data (tracking, ranking, hero stats, bilik, shop) akan dipindahkan ke username baru. Username lama akan dipadam.</div>
+      <div style="display:flex;gap:8px;">
+        <button id="cuSaveBtn" onclick="dashChangeUsername('${oldUsername}')" style="flex:1;padding:8px;background:linear-gradient(135deg,#1a1a4a,#7eb8ff);border:none;border-radius:8px;color:#fff;font:bold 12px monospace;cursor:pointer;">✅ TUKAR</button>
+        <button onclick="this.closest('#dashRenameModal').remove()" style="flex:1;padding:8px;background:#3a0a0a;border:1px solid #ff5252;border-radius:8px;color:#ff5252;font:bold 12px monospace;cursor:pointer;">✖ BATAL</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  // Enter key to submit
+  modal.querySelector('#cuNewUn').addEventListener('keydown',function(e){if(e.key==='Enter')dashChangeUsername(oldUsername);});
+}
+
+function dashChangeUsername(oldUsername){
+  const newUnRaw=(document.getElementById('cuNewUn')||{}).value||'';
+  const newUsername=newUnRaw.trim().toUpperCase();
+  const errEl=document.getElementById('cuErr');
+  if(!newUsername){if(errEl)errEl.textContent='⚠ Sila taip username baru.';return;}
+  if(newUsername.length<3){if(errEl)errEl.textContent='⚠ Username minimum 3 aksara.';return;}
+  if(newUsername===oldUsername.toUpperCase()){if(errEl)errEl.textContent='⚠ Username baru sama dengan username lama!';return;}
+  if(!/^[A-Z0-9_]+$/.test(newUsername)){if(errEl)errEl.textContent='⚠ Username hanya boleh guna huruf besar, nombor, dan underscore (_).';return;}
+  const users=authLoadUsers();
+  if(users[newUsername]){if(errEl)errEl.textContent='⚠ Username "'+newUsername+'" sudah wujud!';return;}
+
+  const confirmMsg='✅ Tukar username?\n\n'+
+    ' Lama: '+oldUsername.toUpperCase()+'\n'+
+    ' Baru: '+newUsername+'\n\n'+
+    'Semua data akan dipindahkan. Tindakan ini tidak boleh dibatalkan.';
+  if(!confirm(confirmMsg)) return;
+
+  // Disable button supaya tidak double-click
+  const saveBtn=document.getElementById('cuSaveBtn');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='⏳ MEMINDAH...';}
+
+  const oldUn=oldUsername.toUpperCase();
+  const db=window._fbPresenceDb,refFn=window._fbRefFn,setFn=window._fbSetFn,removeFn=window._fbRemoveFn,getFn=window._fbGetFn;
+
+  // ── Helper: baca data dari Firebase path ──
+  function fbRead(path){
+    if(!db||!refFn||!getFn) return Promise.resolve(null);
+    return getFn(refFn(db,path)).then(snap=>snap&&snap.val?snap.val():null).catch(()=>null);
+  }
+  // ── Helper: tulis data ke Firebase path ──
+  function fbWrite(path,data){
+    if(!db||!refFn||!setFn) return Promise.resolve();
+    return Promise.resolve(setFn(refFn(db,path),data)).catch(()=>{});
+  }
+  // ── Helper: padam Firebase path ──
+  function fbRemove(path){
+    if(!db||!refFn||!removeFn) return Promise.resolve();
+    return Promise.resolve(removeFn(refFn(db,path))).catch(()=>{});
+  }
+
+  // ── Step 1: Baca semua data dari old username ──
+  Promise.all([
+    fbRead('users/'+oldUn),
+    fbRead('tracking/'+oldUn),
+    fbRead('presence/'+oldUn),
+    fbRead('herostat/'+oldUn),
+    fbRead('pm/'+oldUn),
+    fbRead('sifir_school_ranking/'+oldUn),
+    fbRead('users/'+oldUn+'/room'),
+    fbRead('users/'+oldUn+'/pets'),
+    fbRead('users/'+oldUn+'/petSummon'),
+    fbRead('mmo_data/'+oldUn),
+    fbRead('users/'+oldUn+'/shop'),
+  ]).then(([userData,trackData,presData,heroData,pmData,sifirData,roomData,petData,petSummonData,mmoData,shopData])=>{
+    // ── Step 2: Update username field dalam userData ──
+    if(userData) userData.username=newUsername;
+
+    // ── Step 3: Tulis semua data ke path baru ──
+    const writeOps=[];
+    if(userData)     writeOps.push(fbWrite('users/'+newUsername, userData));
+    if(trackData)    writeOps.push(fbWrite('tracking/'+newUsername, trackData));
+    if(presData)     writeOps.push(fbWrite('presence/'+newUsername, presData));
+    if(heroData)     writeOps.push(fbWrite('herostat/'+newUsername, heroData));
+    if(pmData)       writeOps.push(fbWrite('pm/'+newUsername, pmData));
+    if(sifirData)    writeOps.push(fbWrite('sifir_school_ranking/'+newUsername, sifirData));
+    if(mmoData)      writeOps.push(fbWrite('mmo_data/'+newUsername, mmoData));
+    if(shopData)     writeOps.push(fbWrite('users/'+newUsername+'/shop', shopData));
+
+    return Promise.all(writeOps);
+  }).then(()=>{
+    // ── Step 4: Padam semua data lama dari Firebase ──
+    const removeOps=[];
+    removeOps.push(fbRemove('users/'+oldUn));
+    removeOps.push(fbRemove('tracking/'+oldUn));
+    removeOps.push(fbRemove('presence/'+oldUn));
+    removeOps.push(fbRemove('herostat/'+oldUn));
+    removeOps.push(fbRemove('pm/'+oldUn));
+    removeOps.push(fbRemove('sifir_school_ranking/'+oldUn));
+    removeOps.push(fbRemove('mmo_data/'+oldUn));
+    removeOps.push(fbRemove('users/'+oldUn+'/shop'));
+    return Promise.all(removeOps);
+  }).then(()=>{
+    // ── Step 5: Kemas kini localStorage ──
+    // 5a: users
+    const localUsers=authLoadUsersLocal();
+    const oldUserData=localUsers[oldUn];
+    if(oldUserData){
+      oldUserData.username=newUsername;
+      localUsers[newUsername]=oldUserData;
+      delete localUsers[oldUn];
+      authSaveUsersLocal(localUsers);
+    }
+    if(window._fbUsersCache){
+      const cached=window._fbUsersCache[oldUn];
+      if(cached){
+        cached.username=newUsername;
+        window._fbUsersCache[newUsername]=cached;
+      }
+      delete window._fbUsersCache[oldUn];
+    }
+
+    // 5b: tracking localStorage
+    try{
+      const trackLocal=JSON.parse(localStorage.getItem(TRACK_KEY)||'{}');
+      if(trackLocal[oldUn]){
+        trackLocal[newUsername]=trackLocal[oldUn];
+        delete trackLocal[oldUn];
+        localStorage.setItem(TRACK_KEY,JSON.stringify(trackLocal));
+      }
+    }catch(e){}
+    if(window._fbTrackCache){
+      if(window._fbTrackCache[oldUn]){
+        window._fbTrackCache[newUsername]=window._fbTrackCache[oldUn];
+      }
+      delete window._fbTrackCache[oldUn];
+    }
+
+    // 5c: shop data
+    try{
+      const shopOld=localStorage.getItem('mariomath_shop_v1_'+oldUn);
+      if(shopOld){localStorage.setItem('mariomath_shop_v1_'+newUsername,shopOld);localStorage.removeItem('mariomath_shop_v1_'+oldUn);}
+    }catch(e){}
+
+    // 5d: hero stats localStorage
+    try{
+      const heroOld=localStorage.getItem('heromath_herostat_v1_'+oldUn);
+      if(heroOld){localStorage.setItem('heromath_herostat_v1_'+newUsername,heroOld);localStorage.removeItem('heromath_herostat_v1_'+oldUn);}
+    }catch(e){}
+
+    // 5e: MMORPG save data localStorage
+    try{
+      const mmoOld=localStorage.getItem('mmorpg_save_'+oldUn);
+      if(mmoOld){localStorage.setItem('mmorpg_save_'+newUsername,mmoOld);localStorage.removeItem('mmorpg_save_'+oldUn);}
+    }catch(e){}
+
+    // ── Step 6: Kemas kini ranking board ──
+    try{
+      const arr=loadRanking();
+      let changed=false;
+      arr.forEach(e=>{
+        const match=e.username===oldUn || (!e.username && (e.name||'').toUpperCase()===oldUn);
+        if(match){e.username=newUsername;changed=true;}
+      });
+      if(changed) saveRanking(arr);
+    }catch(e){}
+
+    // ── Step 7: Kemas kini sifir school ranking ──
+    try{
+      const sArr=sifirLoadSchoolRank();
+      let changed=false;
+      sArr.forEach(e=>{
+        if(e.username===oldUn || e.player===oldUn || e.lastPlayer===oldUn){
+          if(e.username===oldUn) e.username=newUsername;
+          if(e.player===oldUn) e.player=newUsername;
+          if(e.lastPlayer===oldUn) e.lastPlayer=newUsername;
+          changed=true;
+        }
+      });
+      if(changed) sifirSaveSchoolRank(sArr);
+    }catch(e){}
+
+    // ── Step 8: Kemas kini playerProfile jika user ini sedang login ──
+    if(playerProfile && (playerProfile.username||'').toUpperCase()===oldUn){
+      playerProfile.username=newUsername;
+      try{authSaveSession(playerProfile);}catch(e){}
+    }
+
+    // ── Step 9: Refresh dashboard ──
+    const m=document.getElementById('dashRenameModal');
+    if(m)m.remove();
+    alert('✅ Username telah ditukar!\n\n'+oldUn+' → '+newUsername);
+    _dashFetchAndRender(true);
+  }).catch(e=>{
+    console.error('[ChangeUsername] Ralat:',e);
+    if(errEl) errEl.textContent='⚠ Ralat semasa pemindahan data. Sila cuba lagi.';
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='✅ TUKAR';}
+  });
+}
+
 // ── Padam akaun dari Firebase + localStorage ──
 function deleteUserAccount(username){
   if(!username) return;
@@ -17376,10 +17694,12 @@ function deleteUserAccount(username){
     try{ window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'herostat/'+uname)); }catch(e){}
     try{ window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'pm/'+uname)); }catch(e){}
     try{ window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'sifir_school_ranking/'+uname)); }catch(e){}
+    try{ window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'mmo_data/'+uname)); }catch(e){}
   }
-  // 4. Padam dari localStorage shop data
+  // 4. Padam dari localStorage
   try{ localStorage.removeItem('mariomath_shop_v1_'+uname); }catch(e){}
   try{ localStorage.removeItem('heromath_herostat_v1_'+uname); }catch(e){}
+  try{ localStorage.removeItem('mmorpg_save_'+uname); }catch(e){}
   // 5. Kosongkan tracking cache supaya dashboard segar semula
   if(window._fbTrackCache) delete window._fbTrackCache[uname];
   console.log('[DeleteUser] Akaun dipadam:', uname);

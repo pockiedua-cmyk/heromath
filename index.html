@@ -13516,7 +13516,12 @@ function shopRender(){
             ?`<button class="shop-btn equipped-btn" disabled>✅ DIPAKAI</button>`
             :`<button class="shop-btn equip-btn" onclick="shopEquip('${item.id}','${cat}')">👕 PAKAI</button>`;
         } else if(item.type==='starter'){
-          btnHtml=`<button class="shop-btn equipped-btn" disabled>✅ ADA DI BEG</button>`;
+          // Cek juga pet bag — jika Pikachu hilang dari beg, boleh pulihkan
+          const _bag=petLoadBag();
+          const _petExists=_bag.some(p=>p.id==='pikachu');
+          btnHtml=_petExists
+            ?`<button class="shop-btn equipped-btn" disabled>✅ ADA DI BEG</button>`
+            :`<button class="shop-btn equip-btn" onclick="shopRecoverStarter('${item.id}')">🔄 PULIHKAN KE BEG</button>`;
         } else {
           btnHtml=`<button class="shop-btn equip-btn" onclick="shopUseInGame('${item.id}')">⚡ GUNA (${ownedCount}x)</button>`;
         }
@@ -13662,6 +13667,24 @@ function shopBuy(itemId){
   if(hudEl) hudEl.textContent=d.points;
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'!';
   shopRender();
+}
+
+// ── Pulihkan starter pet ke beg jika hilang (sudah beli tapi tak ada dalam pet bag) ──
+function shopRecoverStarter(itemId){
+  if(itemId==='pikachu_starter'){
+    const bag=petLoadBag();
+    if(!bag.find(p=>p.id==='pikachu')){
+      bag.push({
+        id:'pikachu', emoji:'⚡', name:'PIKACHU STARTER',
+        rarity:'Starter', rarColor:'#ffd700',
+        level:1, caughtAt:Date.now()
+      });
+      petSaveBag(bag);
+      petUpdateBagCount();
+    }
+    document.getElementById('shopMsg').textContent='⚡ PIKACHU STARTER dipulihkan ke beg pet!';
+    shopRender();
+  }
 }
 
 function shopEquip(itemId,cat){
@@ -35385,7 +35408,7 @@ function _petFbSummonRef(username){
 function _petFbWriteBag(arr){
   const r = _petFbRef();
   if(r && window._fbSetFn){
-    try{ window._fbSetFn(r, arr.length ? arr : null); }catch(e){}
+    try{ window._fbSetFn(r, Array.isArray(arr) ? arr : []); }catch(e){}
   }
 }
 // Flag: pet sync dari Firebase telah selesai (elak beforeunload overwrite data kosong)
@@ -35400,9 +35423,8 @@ window.addEventListener('beforeunload', ()=>{
 function petSyncFromFirebase(callback){
   const r = _petFbRef();
   if(!r){ _petSyncedFromFb=true; if(callback) callback(); return; }
-  const { get } = window._fbGetModule ? window._fbGetModule() : {};
-  if(!get){ _petSyncedFromFb=true; if(callback) callback(); return; }
-  get(r).then(snap=>{
+  if(!window._fbGetFn){ _petSyncedFromFb=true; if(callback) callback(); return; }
+  window._fbGetFn(r).then(snap=>{
     const fbData = snap.val();
     if(Array.isArray(fbData) && fbData.length > 0){
       // Firebase jadi sumber utama — tulis ke localStorage
@@ -35413,8 +35435,28 @@ function petSyncFromFirebase(callback){
       if(local.length > 0) _petFbWriteBag(local);
     }
     _petSyncedFromFb=true;
+    _petAttachBagListener(); // pasang realtime listener lepas sync pertama
     if(callback) callback();
-  }).catch(()=>{ _petSyncedFromFb=true; if(callback) callback(); });
+  }).catch(()=>{ _petSyncedFromFb=true; _petAttachBagListener(); if(callback) callback(); });
+}
+
+// Realtime listener — supaya pet bag terus dikemas kini jika Device A ubah data
+var _petBagUnsub=null;
+function _petAttachBagListener(){
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueFn) return;
+  const r=_petFbRef();
+  if(!r) return;
+  if(_petBagUnsub){ try{_petBagUnsub();}catch(e){} _petBagUnsub=null; }
+  try{
+    _petBagUnsub=window._fbOnValueFn(r,(snap)=>{
+      const fbData=snap.val();
+      if(Array.isArray(fbData)){
+        // Firebase jadi source of truth — tulis ke localStorage
+        try{ localStorage.setItem(PET_STORAGE_KEY, JSON.stringify(fbData)); }catch(e){}
+      }
+      if(typeof petUpdateBagCount==='function') petUpdateBagCount();
+    });
+  }catch(e){}
 }
 
 // Muat summon aktif dari Firebase

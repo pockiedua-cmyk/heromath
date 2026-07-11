@@ -6257,6 +6257,7 @@ function initLevel(){
     setTimeout(()=>{timerLeft=Math.min(timerLeft+tb,timerMax+tb);updateTimerBar();},100);
   }
   if(window._pendingFreeze){timerFrozen=window._pendingFreeze;window._pendingFreeze=0;}
+  if(window._pendingExtraLife){lives++;updateHUD();window._pendingExtraLife=false;spawnFloatText('❤️ +1 NYAWA!',mario.x,mario.y+2,'#ff5252');}
 
   // Apply equipped costume colours to marioMesh
   applyCostume();
@@ -16076,9 +16077,8 @@ function shopUseInGame(itemId){
     else{window._pendingTimeboost=(window._pendingTimeboost||0)+15;document.getElementById('shopMsg').textContent='⏱ +15 Saat akan ditambah di permainan seterusnya!';}
   }
   else if(itemId==='extralife'){
-    lives=Math.max(lives,0)+1;updateHUD();
-    if(inGame)spawnFloatText('❤ +1 NYAWA!',mario.x,mario.y+2,'#ff5252');
-    else document.getElementById('shopMsg').textContent='❤ +1 Nyawa ditambah!';
+    if(inGame){lives=Math.max(lives,0)+1;updateHUD();spawnFloatText('❤ +1 NYAWA!',mario.x,mario.y+2,'#ff5252');}
+    else{window._pendingExtraLife=true;document.getElementById('shopMsg').textContent='❤ +1 Nyawa akan ditambah di permainan seterusnya!';}
   }
   else if(itemId==='doublescore'){
     window._scoreMultiplier=2;setTimeout(()=>{window._scoreMultiplier=1;},60000);

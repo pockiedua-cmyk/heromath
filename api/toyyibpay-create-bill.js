@@ -38,10 +38,11 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Missing orderId or billAmount' });
     }
 
-    // Use env vars first, fallback to request body credentials
-    const secretKey    = TOYYIBPAY_ENV_SECRET_KEY    || body.secretKey    || '';
-    const categoryCode = TOYYIBPAY_ENV_CATEGORY_CODE || body.categoryCode || '';
-    const baseUrl      = TOYYIBPAY_ENV_BASE_URL      || body.baseUrl      || 'https://toyyibpay.com';
+    // When client sends credentials in body, use those (they match the correct env).
+    // Env vars only used as fallback when body has no credentials.
+    const secretKey    = body.secretKey    || TOYYIBPAY_ENV_SECRET_KEY    || '';
+    const categoryCode = body.categoryCode || TOYYIBPAY_ENV_CATEGORY_CODE || '';
+    const baseUrl      = body.baseUrl      || TOYYIBPAY_ENV_BASE_URL      || 'https://toyyibpay.com';
 
     if (!secretKey || !categoryCode) {
       return res.status(500).json({ success: false, error: 'ToyyibPay credentials not configured. Set TOYYIBPAY_SECRET_KEY and TOYYIBPAY_CATEGORY_CODE in Vercel env, or pass them in the request.' });

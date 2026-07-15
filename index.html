@@ -10482,7 +10482,7 @@ function smapBuild3D(){
       document.body.style.cursor='crosshair';
       _ziHideSchoolHud(inZ);
     }
-    if(smHero&&smHero._pencilGrp) smHero._pencilGrp.visible=!inZ;
+    if(smHero&&smHero._pencilGrp) smHero._pencilGrp.visible=!inZ && !smHero._glbModel;
     if(!inZ)return;
     var hp=Math.max(0,Math.round(smZbHero.hp));
     var hunger=Math.max(0,Math.round(smZbHero.hunger));
@@ -18557,7 +18557,7 @@ function smapBuild3D(){
     } else if(smHero._shootArmGrp){
       smHero._shootArmGrp.rotation.x=0;
       if(smHero._pistolGrp) smHero._pistolGrp.visible=false;
-      if(smHero._pencilGrp) smHero._pencilGrp.visible=true;
+      if(smHero._pencilGrp) smHero._pencilGrp.visible=!smHero._glbModel;
     }
     sm3.heroSprite.position.set(smHeroState.x, heroBaseY+2.7, smHeroState.z);
 
@@ -27846,7 +27846,7 @@ var GLB_HIDE_PARTS=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR'
 // Faktor saiz skin GLB berbanding tinggi box-hero (1.8 unit). >1 = besar
 // sikit, <1 = kecil sikit. Laras nombor ni je untuk ubah saiz SEMUA skin
 // GLB serentak, tak perlu gali dalam glbApplySkin().
-var GLB_SIZE_MULT=0.5;
+var GLB_SIZE_MULT=0.1;
 function glbApplySkin(heroGrp, skinId){
   if(!heroGrp) return;
   // Skip if same GLB already applied

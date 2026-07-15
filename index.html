@@ -18245,25 +18245,31 @@ function smapBuild3D(){
     {xmin: 3.5,xmax: 4.5,zmin:-240,zmax:-238}, // tiang kanan gerbang
 
     // ── Tiang bendera ──
-    {xmin:-0.4,xmax: 0.4,zmin: 1.5,zmax: 2.5}, // flagpole tengah
+    {xmin:-0.4,xmax: 0.4,zmin: 1.5,zmax: 2.5, camSkip:true}, // flagpole tengah — tiang nipis, tak halang kamera
 
     // ── Bangku (bench) — setiap bench ~2.4x0.6, tambah margin 0.5 ──
-    {xmin:-29.7,xmax:-26.3,zmin:-10.6,zmax:-9.4},  // bench kiri-1
-    {xmin:-29.7,xmax:-26.3,zmin: -6.6,zmax: -5.4}, // bench kiri-2
-    {xmin: 26.3,xmax: 29.7,zmin:-10.6,zmax: -9.4}, // bench kanan-1
-    {xmin: 26.3,xmax: 29.7,zmin: -6.6,zmax: -5.4}, // bench kanan-2
-    {xmin:-29.7,xmax:-26.3,zmin:  9.4,zmax: 10.6}, // bench kiri-3
-    {xmin: 26.3,xmax: 29.7,zmin:  9.4,zmax: 10.6}, // bench kanan-3
+    {xmin:-29.7,xmax:-26.3,zmin:-10.6,zmax:-9.4, camSkip:true},  // bench kiri-1
+    {xmin:-29.7,xmax:-26.3,zmin: -6.6,zmax: -5.4, camSkip:true}, // bench kiri-2
+    {xmin: 26.3,xmax: 29.7,zmin:-10.6,zmax: -9.4, camSkip:true}, // bench kanan-1
+    {xmin: 26.3,xmax: 29.7,zmin: -6.6,zmax: -5.4, camSkip:true}, // bench kanan-2
+    {xmin:-29.7,xmax:-26.3,zmin:  9.4,zmax: 10.6, camSkip:true}, // bench kiri-3
+    {xmin: 26.3,xmax: 29.7,zmin:  9.4,zmax: 10.6, camSkip:true}, // bench kanan-3
     // ── Dam Board (papan dam 3D) ──
-    {xmin:-45,xmax:-19,zmin:15,zmax:41}, // papan dam — tapak PENUH (auto dari DAM_CX=-32,DAM_CZ=28,DAM_BW/BD=24 +2 margin frame). Dulu cuma 4 dinding tepi je, tengah papan (buah dam) terbuka → hero tenggelam/tembus masuk buah dam.
-    {xmin:-33,xmax:-31,zmin:12,zmax:14.5}, // tiang papan tanda
-    {xmin:-8.4,xmax:-7.6,zmin:-8.4,zmax:-7.6},
-    {xmin: 7.6,xmax: 8.4,zmin:-8.4,zmax:-7.6},
-    {xmin:-8.4,xmax:-7.6,zmin: 7.6,zmax: 8.4},
-    {xmin: 7.6,xmax: 8.4,zmin: 7.6,zmax: 8.4},
+    // camSkip: papan ni RATA (bukan dinding tinggi) tapi footprint besar
+    // (26×26 unit) — kalau ikut sertakan dalam semakan kamera, hero berdiri
+    // sebelah papan ni je dah buat smCamSafeDist anggap kamera "dalam
+    // bangunan" pada hampir semua sudut, tarik jarak ke minimum 2.5 unit
+    // (literal dalam badan model) → punca "model nampak besar/terapung".
+    // Kekal PENUH untuk smIsWalkable (elak hero tembus buah dam).
+    {xmin:-45,xmax:-19,zmin:15,zmax:41, camSkip:true}, // papan dam — tapak PENUH (auto dari DAM_CX=-32,DAM_CZ=28,DAM_BW/BD=24 +2 margin frame). Dulu cuma 4 dinding tepi je, tengah papan (buah dam) terbuka → hero tenggelam/tembus masuk buah dam.
+    {xmin:-33,xmax:-31,zmin:12,zmax:14.5, camSkip:true}, // tiang papan tanda
+    {xmin:-8.4,xmax:-7.6,zmin:-8.4,zmax:-7.6, camSkip:true},
+    {xmin: 7.6,xmax: 8.4,zmin:-8.4,zmax:-7.6, camSkip:true},
+    {xmin:-8.4,xmax:-7.6,zmin: 7.6,zmax: 8.4, camSkip:true},
+    {xmin: 7.6,xmax: 8.4,zmin: 7.6,zmax: 8.4, camSkip:true},
 
     // ── Papan Catur (sebelah kanan perpustakaan) ──
-    {xmin: 55,xmax: 81,zmin:-38,zmax:-14},
+    {xmin: 55,xmax: 81,zmin:-38,zmax:-14, camSkip:true}, // rata macam papan dam — sama sebab, kecuali daripada kamera
 
     // ── Pokok (trees) — radius ~1.2 ──
     {xmin:-51.2,xmax:-48.8,zmin:-51.2,zmax:-48.8},
@@ -18294,6 +18300,10 @@ function smapBuild3D(){
     {xmin:81,xmax:99,zmin:13.5,zmax:14.5},    // inner top wall
     {xmin:95,xmax:101,zmin:6.5,zmax:11.5},    // pit building
   ];
+  // Senarai KHAS untuk kamera sahaja — kecuali objek rata/rendah (camSkip)
+  // seperti papan dam, papan catur, bangku, tiang bendera. smIsWalkable()
+  // di bawah terus guna BUILDING_BOUNDS penuh (collision jalan tak berubah).
+  const CAMERA_BLOCK_BOUNDS = BUILDING_BOUNDS.filter(function(b){ return !b.camSkip; });
   function smIsWalkable(x,z,r){
     r=(typeof r==='number')?r:0.5;
     if(window._fss&&window._fss.running) return true;
@@ -19096,7 +19106,7 @@ function smapBuild3D(){
         const tx=hx+Math.sin(yaw)*d*Math.cos(pitch);
         const tz=hz+Math.cos(yaw)*d*Math.cos(pitch);
         let inside=false;
-        for(const b of BUILDING_BOUNDS){
+        for(const b of CAMERA_BLOCK_BOUNDS){
           if(tx>b.xmin-0.3&&tx<b.xmax+0.3&&tz>b.zmin-0.3&&tz<b.zmax+0.3){inside=true;break;}
         }
         if(!inside)return d;

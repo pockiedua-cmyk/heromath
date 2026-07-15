@@ -27689,7 +27689,16 @@ function applyCostume(){
   const sasukeOn = eq['skin']==='skin_sasuke';
   const kafkaOn = eq['skin']==='skin_kafka';
   const kiritoOn = eq['skin']==='skin_kirito';
-  const skinOn = narutoOn||sasukeOn||kafkaOn||kiritoOn;
+  // BUGFIX: skinOn dulu cuma semak 4 skin kotak bernama (Naruto/Sasuke/
+  // Kafka/Kirito) — tak termasuk skin GLB (glb_skin). applyToRefs() guna
+  // skinOn ni untuk sorok kolar/tali leher/beg/rambut kotak lama. Sebab
+  // glbApplySkin() ada early-return (tak sorok semula bila skin sama dah
+  // loaded), setiap kali applyCostume() dipanggil semula lepas GLB skin
+  // aktif, skinOn=false → kolar/tali/beg/rambut kotak lama TERPAKSA tunjuk
+  // semula, tiada apa-apa sorok balik → "model hero lama pun ada sekali
+  // muncul" bertindih dengan model GLB.
+  const glbSkinEquipped = !!(eq['glb_skin'] && typeof GLB_SKINS!=='undefined' && GLB_SKINS[eq['glb_skin']]);
+  const skinOn = narutoOn||sasukeOn||kafkaOn||kiritoOn||glbSkinEquipped;
 
   const shirtCols = { shirt_red: 0xe52521, shirt_grn: 0x2e7d32 };
   // Naruto/Sasuke/Kafka/Kirito skin overrides baju
@@ -27705,13 +27714,13 @@ function applyCostume(){
     // ── Hats: show the right one, hide the rest ──
     const hatGrps = { hat_red: r.hatRedGrp, hat_blue: r.hatBlueGrp, hat_gold: r.hatGoldGrp };
     let anyHat = false;
-    Object.entries(hatGrps).forEach(([id, grp])=>{ if(!grp) return; const show=(hatId===id&&!narutoOn&&!sasukeOn&&!kafkaOn&&!kiritoOn); grp.visible=show; if(show) anyHat=true; });
+    Object.entries(hatGrps).forEach(([id, grp])=>{ if(!grp) return; const show=(hatId===id&&!skinOn); grp.visible=show; if(show) anyHat=true; });
     // Show/hide hair depending on whether a hat is on
     [r.hairTop, r.hairFront, r.hairBack, r.hairSideL, r.hairSideR].forEach(h=>{
       if(h){
         h.visible = !anyHat;
-        // Naruto, Sasuke, Kafka, Kirito: sorok rambut asal
-        if(narutoOn||sasukeOn||kafkaOn||kiritoOn){ h.visible=false; }
+        // Naruto, Sasuke, Kafka, Kirito, atau skin GLB: sorok rambut asal
+        if(skinOn){ h.visible=false; }
         else if(!anyHat) h.material.color.setHex(0x1a0a00);
       }
     });

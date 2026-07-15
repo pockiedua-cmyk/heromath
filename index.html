@@ -27797,20 +27797,29 @@ function glbApplySkin(heroGrp, skinId){
 
     // Clone scene so multiple heroes can share the cached data
     var model=data.scene.clone();
+    model.name='_glbSkin';
+    heroGrp.add(model);
+
+    // Force world matrix update so bounds compute correctly
+    model.updateMatrixWorld(true);
+
     // Scale model to fit hero height (~1.8 units)
     var box=new THREE.Box3().setFromObject(model);
     var h=box.max.y-box.min.y;
-    if(h>0.01){
+    if(h>0.1){
       var s=1.8/h;
       model.scale.set(s,s,s);
+      model.updateMatrixWorld(true);
+      // Recompute bounds after scaling
+      box=new THREE.Box3().setFromObject(model);
     }
-    // Center on hero position
-    var c=new THREE.Vector3();
-    box.getCenter(c);
-    model.position.set(-c.x*s, -box.min.y*s, -c.z*s);
-
-    model.name='_glbSkin';
-    heroGrp.add(model);
+    // Center horizontally, place feet at y=0
+    var ctr=new THREE.Vector3();
+    box.getCenter(ctr);
+    model.position.x-=ctr.x;
+    model.position.y-=box.min.y;
+    model.position.z-=ctr.z;
+    model.updateMatrixWorld(true);
 
     // Store ref for removal
     heroGrp._glbSkinId = skinId;

@@ -27825,6 +27825,12 @@ function glbLoadSkin(skinId, cb){
   });
 }
 
+// Bahagian box-hero yang perlu disorok bila skin GLB aktif, dan dipulihkan
+// bila skin GLB ditanggal. Senarai KONGSI supaya glbApplySkin (sorok) dan
+// glbRemoveSkin (tunjuk semula) sentiasa sepadan — dulu glbRemoveSkin cuma
+// hardcode torso/head, jadi pencil/pistol/hat/hair boleh tercicir bila
+// GLB ditanggal (kekal tersorok/tak konsisten).
+var GLB_HIDE_PARTS=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR','_hairTop','_hairFront','_hairBack','_hairSideL','_hairSideR','_hatRedGrp','_hatBlueGrp','_hatGoldGrp','_pencilGrp','_pistolGrp'];
 function glbApplySkin(heroGrp, skinId){
   if(!heroGrp) return;
   // Skip if same GLB already applied
@@ -27840,7 +27846,7 @@ function glbApplySkin(heroGrp, skinId){
     // these up without the prefix silently found `undefined` and skipped
     // hiding them, which is why the original head/torso/hair kept showing
     // (full-size, unhidden) right on top of/behind the GLB model.
-    var parts=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR','_hairTop','_hairFront','_hairBack','_hairSideL','_hairSideR','_hatRedGrp','_hatBlueGrp','_hatGoldGrp'];
+    var parts=GLB_HIDE_PARTS;
     parts.forEach(function(p){ if(heroGrp[p]) heroGrp[p].visible=false; });
     // Also hide skin-specific groups (bagGrp is stored as _bagGrp on the
     // hero group itself; the Naruto/Sasuke/Kafka/Kirito groups only exist
@@ -28007,13 +28013,16 @@ function glbRemoveSkin(heroGrp){
     heroGrp.remove(heroGrp._glbModel);
     heroGrp._glbModel = null;
   }
-  // Restore torso/head visibility explicitly — applyCostume()'s normal
-  // refresh (applyToRefs) only ever touches their COLOR, never their
-  // .visible flag (hair/hats/bag are self-correcting there, but these
-  // two aren't), so without this they'd stay hidden forever after
-  // unequipping a GLB skin.
-  if(heroGrp._torso) heroGrp._torso.visible=true;
-  if(heroGrp._head) heroGrp._head.visible=true;
+  // Pulihkan bahagian ASAS yang applyCostume()/applyToRefs() TAK pernah
+  // uruskan .visible (cuma warna) — guna senarai kongsi GLB_HIDE_PARTS,
+  // tapi KECUALIKAN topi & rambut sebab applyToRefs() (dipanggil SEBELUM
+  // glbRemoveSkin dalam applyCostume) dah tetapkan visibiliti tepat ikut
+  // topi yang di-equip; force-show semua di sini akan timpa keputusan
+  // betul tu (cth. rambut akan tertunjuk sekali walau topi sedang dipakai).
+  var restoreParts=GLB_HIDE_PARTS.filter(function(p){
+    return p.indexOf('_hat')!==0 && p.indexOf('_hair')!==0;
+  });
+  restoreParts.forEach(function(p){ if(heroGrp[p]) heroGrp[p].visible=true; });
   // Stop mixer
   if(heroGrp._glbMixer){
     heroGrp._glbMixer.stopAllAction();

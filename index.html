@@ -27805,12 +27805,28 @@ function glbApplySkin(heroGrp, skinId){
     model.scale.set(1,1,1);
 
     heroGrp.add(model);
-
-    // Measure: scan vertex positions of all visible meshes (must be in scene for matrixWorld)
     model.updateMatrixWorld(true);
+
+    // Debug: log the node hierarchy and their scales
+    console.log('[GLB] Hierarchy for',skinId,':');
+    model.traverse(function(c){
+      if(c.type==='Bone' || c.type==='Group' || c.type==='SkinnedMesh' || c.type==='Mesh'){
+        console.log('  ',c.type,c.name||'(unnamed)','scale:',c.scale.x.toFixed(2),c.scale.y.toFixed(2),c.scale.z.toFixed(2),'pos:',c.position.x.toFixed(3),c.position.y.toFixed(3),c.position.z.toFixed(3));
+      }
+    });
+
+    // Measure using SkinnedMesh.computeBoundingSphere (accounts for bones in some versions)
     var minY=Infinity, maxY=-Infinity;
     model.traverse(function(c){
-      if(c.isMesh && c.visible){
+      if(c.isSkinnedMesh){
+        c.computeBoundingSphere();
+        var bs=c.boundingSphere;
+        // boundingSphere center + radius gives rough vertical extent
+        var cy=bs.center.y;
+        if(cy-bs.radius<minY) minY=cy-bs.radius;
+        if(cy+bs.radius>maxY) maxY=cy+bs.radius;
+        console.log('[GLB] SkinnedMesh:',c.name,'center:',cy.toFixed(3),'radius:',bs.radius.toFixed(3));
+      } else if(c.isMesh && c.visible){
         var pos=c.geometry.getAttribute('position');
         if(!pos) return;
         c.updateWorldMatrix(false,true);
@@ -27829,24 +27845,30 @@ function glbApplySkin(heroGrp, skinId){
       var s=1.8/meshH;
       model.scale.set(s,s,s);
       model.updateMatrixWorld(true);
-      // Recalculate bottom after scale
-      minY=Infinity; maxY=-Infinity;
-      model.traverse(function(c){
-        if(c.isMesh && c.visible){
-          var pos=c.geometry.getAttribute('position');
-          if(!pos) return;
-          c.updateWorldMatrix(false,true);
-          for(var i=0;i<pos.count;i++){
-            var v=new THREE.Vector3(pos.getX(i),pos.getY(i),pos.getZ(i));
-            v.applyMatrix4(c.matrixWorld);
-            if(v.y<minY) minY=v.y;
-            if(v.y>maxY) maxY=v.y;
-          }
-        }
-      });
     }
 
-    // Place feet at y=0
+    // Re-measure after scale to place feet at y=0
+    minY=Infinity; maxY=-Infinity;
+    model.traverse(function(c){
+      if(c.isSkinnedMesh){
+        c.computeBoundingSphere();
+        var bs=c.boundingSphere;
+        var cy=bs.center.y*model.scale.y;
+        var r=bs.radius*model.scale.y;
+        if(cy-r<minY) minY=cy-r;
+        if(cy+r>maxY) maxY=cy+r;
+      } else if(c.isMesh && c.visible){
+        var pos=c.geometry.getAttribute('position');
+        if(!pos) return;
+        c.updateWorldMatrix(false,true);
+        for(var i=0;i<pos.count;i++){
+          var v=new THREE.Vector3(pos.getX(i),pos.getY(i),pos.getZ(i));
+          v.applyMatrix4(c.matrixWorld);
+          if(v.y<minY) minY=v.y;
+          if(v.y>maxY) maxY=v.y;
+        }
+      }
+    });
     model.position.y=-minY;
     model.updateMatrixWorld(true);
 

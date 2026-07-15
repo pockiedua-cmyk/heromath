@@ -19196,6 +19196,25 @@ function smapBuild3D(){
     // Update GLB skin animation mixers
     if(typeof glbUpdateMixers==='function') glbUpdateMixers(dt);
 
+    // Sync GLB scene model to hero position
+    if(window._glbSceneModel && window.smHero){
+      var m=window._glbSceneModel;
+      var h=window.smHero;
+      m.position.set(h.position.x, h.position.y, h.position.z);
+      m.rotation.y=h.rotation.y;
+      m.visible=!_onZI;
+      if(!m.parent || m.parent!==smScene) smScene.add(m);
+      // Hide box parts — only traverse when state changes
+      if(!h._glbHidden){
+        h.traverse(function(c){ if(c.isMesh) c.visible=false; });
+        h._glbHidden=true;
+      }
+    } else if(window.smHero && window.smHero._glbHidden) {
+      // No GLB skin — restore box parts once
+      window.smHero.traverse(function(c){ if(c.isMesh) c.visible=true; });
+      window.smHero._glbHidden=false;
+    }
+
     // Render correct scene (school vs zombie island)
     smRenderer.render(_onZI&&sm3.ziScene?sm3.ziScene:smScene, smCam);
     smapRAF=requestAnimationFrame(smUpdate);
@@ -25203,8 +25222,13 @@ function shopEquipGlbSkin(itemId){
   // Toggle off if already equipped
   if(d.equipped['glb_skin']===item.glbSkin){
     d.equipped['glb_skin']='';
-    // Restore box skin visibility
-    [window.marioMesh, window.smHero, window._mmoHero].forEach(function(g){
+    // Clean up scene model + restore box parts
+    if(window._glbSceneModel){
+      if(window._glbSceneModel.parent) window._glbSceneModel.parent.remove(window._glbSceneModel);
+      window._glbSceneModel=null;
+    }
+    [window.smHero, window._mmoHero].forEach(function(g){
+      if(g && g._glbHidden){ g.traverse(function(c){ if(c.isMesh) c.visible=true; }); g._glbHidden=false; }
       if(g) glbRemoveSkin(g);
     });
     document.getElementById('shopMsg').textContent='✅ GLB Skin ditanggal.';
@@ -27727,16 +27751,55 @@ function applyCostume(){
   // Sync button state
   faceUpdateBtnState();
 
-  // ── GLB Skin Override: if equipped skin is a GLB model, load & replace boxes ──
+  // ── GLB Skin Override ──
   var _glbSkinId = eq['glb_skin'] || '';
-  // Always clean up ALL hero groups first
+  // Clean up ALL previous GLB models — remove from whatever scene it's in
+  if(window._glbSceneModel){
+    if(window._glbSceneModel.parent) window._glbSceneModel.parent.remove(window._glbSceneModel);
+    window._glbSceneModel=null;
+    // Restore box parts immediately
+    [window.smHero, window._mmoHero].forEach(function(g){
+      if(g && g._glbHidden){ g.traverse(function(c){ if(c.isMesh) c.visible=true; }); g._glbHidden=false; }
+    });
+  }
   [window.marioMesh, window.smHero, window._mmoHero].forEach(function(g){
     if(g && g._glbModel) glbRemoveSkin(g);
   });
   if(_glbSkinId && typeof GLB_SKINS!=='undefined' && GLB_SKINS[_glbSkinId]){
-    // Apply only to visible heroes — skip marioMesh (platformer at 0,0,0)
-    if(window.smHero) glbApplySkin(window.smHero, _glbSkinId);
-    if(window._mmoHero) glbApplySkin(window._mmoHero, _glbSkinId);
+    // Load GLB and add directly to smScene (not as child of hero)
+    glbLoadSkin(_glbSkinId, function(data){
+      if(!data) return;
+      var model=data.scene.clone();
+      model.name='_glbSkinScene';
+      model.position.set(0,0,0);
+      model.rotation.set(0,0,0);
+      model.scale.set(1,1,1);
+
+      // Measure bone LOCAL extents
+      var boneMinY=Infinity, boneMaxY=-Infinity;
+      model.traverse(function(c){
+        if(c.isBone){
+          var y=0, n=c;
+          while(n && n!==model){ y+=n.position.y; n=n.parent; }
+          if(y<boneMinY) boneMinY=y;
+          if(y>boneMaxY) boneMaxY=y;
+        }
+      });
+      var boneH=boneMaxY-boneMinY;
+      if(boneH>1){
+        var s=1.8/boneH;
+        model.scale.set(s,s,s);
+      }
+      model.position.y=-boneMinY*model.scale.y;
+
+      smScene.add(model);
+      window._glbSceneModel=model;
+      window._glbSceneSkinId=_glbSkinId;
+      window._glbHideBoxes=true;
+      console.log('[GLB] Scene model added. boneH:',boneH.toFixed(1),'scale:',model.scale.x.toFixed(4));
+    });
+  } else {
+    window._glbHideBoxes=false;
   }
 }
 
@@ -36950,6 +37013,22 @@ function _fsUpdate(dt){
   // ── RENDER: skip if headless (school map renders instead) ──
   if(!_fss.headless && sm3&&sm3.renderer&&sm3.scene&&sm3.cam){
     if(typeof glbUpdateMixers==='function') glbUpdateMixers(1/60);
+    // Sync GLB to MMORPG hero
+    if(window._glbSceneModel && window._mmoHero){
+      var m=window._glbSceneModel;
+      var h=window._mmoHero;
+      m.position.set(h.position.x, h.position.y, h.position.z);
+      m.rotation.y=h.rotation.y;
+      m.visible=true;
+      if(!m.parent || m.parent!==sm3.scene) sm3.scene.add(m);
+      if(!h._glbHidden){
+        h.traverse(function(c){ if(c.isMesh) c.visible=false; });
+        h._glbHidden=true;
+      }
+    } else if(window._mmoHero && window._mmoHero._glbHidden) {
+      window._mmoHero.traverse(function(c){ if(c.isMesh) c.visible=true; });
+      window._mmoHero._glbHidden=false;
+    }
     sm3.renderer.render(sm3.scene,sm3.cam);
   }
 }
@@ -67406,6 +67485,11 @@ function mmorpgClose(){
   const bT=document.getElementById('mmoBattleToast');if(bT)bT.style.display='none';
   mmoBattle.scene=null;mmoBattle.cam=null;mmoBattle.ren=null;mmoBattle.heroMesh=null;mmoBattle.monsterMesh=null;
   mmoBattle._pendingDrop=null;mmoBattle.equipStats=null;
+  // Cleanup GLB scene model — move back to smScene for school map
+  if(window._glbSceneModel){
+    if(window._glbSceneModel.parent) window._glbSceneModel.parent.remove(window._glbSceneModel);
+    window._glbSceneModel.visible=false;
+  }
   // Return to school map
   if(typeof smapOpen==='function')smapOpen();
 }

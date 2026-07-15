@@ -19197,15 +19197,10 @@ function smapBuild3D(){
     // Update GLB skin animation mixers
     if(typeof glbUpdateMixers==='function') glbUpdateMixers(dt);
 
-    // Sync GLB scene model to hero position
-    if(window._glbSceneModel && window.smHero){
-      var m=window._glbSceneModel;
-      var h=window.smHero;
-      m.position.x=h.position.x;
-      m.position.z=h.position.z;
-      m.rotation.y=h.rotation.y;
-      m.visible=!_onZI;
-      if(!m.parent || m.parent!==smScene) smScene.add(m);
+    // GLB skin sync DISABLED — no scene model
+    if(window.smHero && window.smHero._glbHidden){
+      window.smHero.traverse(function(c){ if(c.isMesh) c.visible=true; });
+      window.smHero._glbHidden=false;
     }
 
     // Render correct scene (school vs zombie island)
@@ -27744,75 +27739,21 @@ function applyCostume(){
   // Sync button state
   faceUpdateBtnState();
 
-  // ── GLB Skin Override ──
-  var _glbSkinId = eq['glb_skin'] || '';
-  // Clean up ALL previous GLB models — remove from whatever scene it's in
-  if(window._glbSceneModel){
-    if(window._glbSceneModel.parent) window._glbSceneModel.parent.remove(window._glbSceneModel);
-    window._glbSceneModel=null;
-    // Restore box parts immediately
-    [window.smHero, window._mmoHero].forEach(function(g){
-      if(g && g._glbHidden){ g.traverse(function(c){ if(c.isMesh) c.visible=true; }); g._glbHidden=false; }
-    });
-  }
-  [window.marioMesh, window.smHero, window._mmoHero].forEach(function(g){
-    if(g && g._glbModel) glbRemoveSkin(g);
-  });
-  if(_glbSkinId && typeof GLB_SKINS!=='undefined' && GLB_SKINS[_glbSkinId]){
-    glbLoadSkin(_glbSkinId, function(data){
-      if(!data) return;
-      var model=data.scene.clone();
-      model.name='_glbSkinScene';
-      model.position.set(0,0,0);
-      model.rotation.set(0,0,0);
-      model.scale.set(1,1,1);
-
-      smScene.add(model);
-      smScene.updateMatrixWorld(true);
-
-      var minY=Infinity, maxY=-Infinity, minX=0, maxX=0, minZ=0, maxZ=0;
-      model.traverse(function(c){
-        if(c.isBone){
-          var wp=new THREE.Vector3();
-          c.getWorldPosition(wp);
-          if(wp.y<minY) minY=wp.y;
-          if(wp.y>maxY) maxY=wp.y;
-          if(wp.x<minX) minX=wp.x;
-          if(wp.x>maxX) maxX=wp.x;
-          if(wp.z<minZ) minZ=wp.z;
-          if(wp.z>maxZ) maxZ=wp.z;
-        }
-      });
-      var bH=maxY-minY;
-      var bW=maxX-minX;
-      var bD=maxZ-minZ;
-      console.log('[GLB] Bone world Y:',minY.toFixed(1),'to',maxY.toFixed(1),'H:',bH.toFixed(1),'W:',bW.toFixed(1),'D:',bD.toFixed(1));
-
-      var targetH=1.8;
-      if(bH>0.01){
-        var s=targetH/bH;
-        model.scale.set(s,s,s);
-      }
-      smScene.updateMatrixWorld(true);
-
-      minY=Infinity; maxY=-Infinity;
-      model.traverse(function(c){
-        if(c.isBone){
-          var wp=new THREE.Vector3();
-          c.getWorldPosition(wp);
-          if(wp.y<minY) minY=wp.y;
-          if(wp.y>maxY) maxY=wp.y;
-        }
-      });
-      model.position.y=-minY;
-
-      console.log('[GLB] Final scale:',model.scale.x.toFixed(4),'pos.y:',(-minY).toFixed(3));
-      window._glbSceneModel=model;
-      window._glbSceneSkinId=_glbSkinId;
-      window._glbHideBoxes=true;
+  // ── GLB Skin Override: apply 3D model skin if equipped (bug fixed — see glbApplySkin) ──
+  const glbSkinId = eq['glb_skin'] || '';
+  if(glbSkinId && typeof GLB_SKINS!=='undefined' && GLB_SKINS[glbSkinId]){
+    [window.marioMesh, window.smHero, window._mmoHero].forEach(function(g){
+      if(g) glbApplySkin(g, glbSkinId);
     });
   } else {
-    window._glbHideBoxes=false;
+    // Clean up any leftover GLB scene model
+    if(window._glbSceneModel){
+      if(window._glbSceneModel.parent) window._glbSceneModel.parent.remove(window._glbSceneModel);
+      window._glbSceneModel=null;
+    }
+    [window.marioMesh, window.smHero, window._mmoHero].forEach(function(g){
+      if(g && g._glbModel) glbRemoveSkin(g);
+    });
   }
 }
 
@@ -27890,36 +27831,33 @@ function glbApplySkin(heroGrp, skinId){
     heroGrp.add(model);
     model.updateMatrixWorld(true);
 
-    // For SkinnedMesh: measure bone LOCAL positions (relative to model root)
-    // getWorldPosition includes parent hero position — wrong for our offset calc
-    var boneMinY=Infinity, boneMaxY=-Infinity;
-    model.traverse(function(c){
-      if(c.isBone){
-        // Walk up to model root, summing local Y positions
-        var y=0;
-        var n=c;
-        while(n && n!==model){
-          y+=n.position.y;
-          n=n.parent;
-        }
-        if(y<boneMinY) boneMinY=y;
-        if(y>boneMaxY) boneMaxY=y;
-      }
-    });
-    var boneH=boneMaxY-boneMinY;
-    console.log('[GLB] Bone LOCAL extents:',boneMinY.toFixed(1),'to',boneMaxY.toFixed(1),'height:',boneH.toFixed(1));
+    // Measure the ACTUAL rendered geometry (all meshes), not just bone pivots.
+    // Bone-only extents were the source of the "big head" bug: bones can sit
+    // at sparse/uneven local offsets (e.g. a head bone near the pivot while
+    // the actual head mesh/hat geometry extends well beyond it), so scaling
+    // off bone span alone produced the wrong overall scale and the head
+    // geometry ended up disproportionately large relative to the body.
+    // A full Box3 over the real mesh geometry gives the true visual height.
+    var box=new THREE.Box3().setFromObject(model);
+    var size=new THREE.Vector3();
+    box.getSize(size);
+    var modelH=size.y;
+    console.log('[GLB] Mesh bounding box height:',modelH.toFixed(2),'min.y:',box.min.y.toFixed(2),'max.y:',box.max.y.toFixed(2));
 
     // Scale to hero height (1.8 units)
-    if(boneH>1){
-      var s=1.8/boneH;
+    var s=1;
+    if(modelH>0.01){
+      s=1.8/modelH;
       model.scale.set(s,s,s);
     }
-
-    // Place feet at y=0: shift model so lowest bone is at y=0
-    model.position.y=-boneMinY*model.scale.y;
     model.updateMatrixWorld(true);
 
-    console.log('[GLB] Applied',skinId,'→ boneH:',boneH.toFixed(1),'scale:',model.scale.x.toFixed(4),'pos.y:',model.position.y.toFixed(2));
+    // Recompute box AFTER scaling to place feet exactly at y=0
+    var box2=new THREE.Box3().setFromObject(model);
+    model.position.y -= box2.min.y;
+    model.updateMatrixWorld(true);
+
+    console.log('[GLB] Applied',skinId,'→ height:',modelH.toFixed(2),'scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(2));
 
     // Store ref for removal
     heroGrp._glbSkinId = skinId;
@@ -37026,16 +36964,8 @@ function _fsUpdate(dt){
   // ── RENDER: skip if headless (school map renders instead) ──
   if(!_fss.headless && sm3&&sm3.renderer&&sm3.scene&&sm3.cam){
     if(typeof glbUpdateMixers==='function') glbUpdateMixers(1/60);
-    // Sync GLB to MMORPG hero
-    if(window._glbSceneModel && window._mmoHero){
-      var m=window._glbSceneModel;
-      var h=window._mmoHero;
-      m.position.x=h.position.x;
-      m.position.z=h.position.z;
-      m.rotation.y=h.rotation.y;
-      m.visible=true;
-      if(!m.parent || m.parent!==sm3.scene) sm3.scene.add(m);
-    } else if(window._mmoHero && window._mmoHero._glbHidden) {
+    // GLB skin sync DISABLED
+    if(window._mmoHero && window._mmoHero._glbHidden) {
       window._mmoHero.traverse(function(c){ if(c.isMesh) c.visible=true; });
       window._mmoHero._glbHidden=false;
     }
@@ -67495,10 +67425,11 @@ function mmorpgClose(){
   const bT=document.getElementById('mmoBattleToast');if(bT)bT.style.display='none';
   mmoBattle.scene=null;mmoBattle.cam=null;mmoBattle.ren=null;mmoBattle.heroMesh=null;mmoBattle.monsterMesh=null;
   mmoBattle._pendingDrop=null;mmoBattle.equipStats=null;
-  // Cleanup GLB scene model — move back to smScene for school map
+  // Cleanup GLB scene model (disabled)
   if(window._glbSceneModel){
     if(window._glbSceneModel.parent) window._glbSceneModel.parent.remove(window._glbSceneModel);
     window._glbSceneModel.visible=false;
+    window._glbSceneModel=null;
   }
   // Return to school map
   if(typeof smapOpen==='function')smapOpen();

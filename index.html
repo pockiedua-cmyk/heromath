@@ -27920,6 +27920,26 @@ function glbApplySkin(heroGrp, skinId){
     heroGrp.add(model);
     model.updateMatrixWorld(true);
 
+    // DIAGNOSTIC: compare the GLB's final WORLD-space size against the
+    // original box-hero's world-space size (heroGrp._head/_torso are still
+    // in the scene graph, just hidden — Box3.setFromObject ignores the
+    // .visible flag, so we can measure them directly for an apples-to-
+    // apples check). If these two heights don't match, the mismatch is
+    // NOT in glbApplySkin's local-space math (which prints above) — it's
+    // coming from somewhere heroGrp itself is scaled/transformed.
+    var worldBox=new THREE.Box3().setFromObject(model);
+    var worldSize=new THREE.Vector3(); worldBox.getSize(worldSize);
+    var refBox=null, refH=null;
+    if(heroGrp._head){
+      refBox=new THREE.Box3().setFromObject(heroGrp._torso||heroGrp._head);
+      var refSize=new THREE.Vector3(); refBox.getSize(refSize);
+      refH=refSize.y;
+    }
+    console.log('[GLB-DIAG] heroGrp.scale:',heroGrp.scale.x.toFixed(4),
+      '| GLB world height:',worldSize.y.toFixed(4),
+      '| GLB world min.y:',worldBox.min.y.toFixed(4),
+      (refH!==null?('| box-hero torso/head world ref height: '+refH.toFixed(4)):'| (no _head ref found)'));
+
     // Store ref for removal
     heroGrp._glbSkinId = skinId;
     heroGrp._glbModel = model;

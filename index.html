@@ -27807,72 +27807,42 @@ function glbApplySkin(heroGrp, skinId){
     heroGrp.add(model);
     model.updateMatrixWorld(true);
 
-    // Debug: log the node hierarchy and their scales
-    console.log('[GLB] Hierarchy for',skinId,':');
+    // For SkinnedMesh: bone hierarchy gives real visual size, not geometry vertices.
+    // Compute world Y of every bone to find visual extents.
+    var boneMinY=Infinity, boneMaxY=-Infinity;
     model.traverse(function(c){
-      if(c.type==='Bone' || c.type==='Group' || c.type==='SkinnedMesh' || c.type==='Mesh'){
-        console.log('  ',c.type,c.name||'(unnamed)','scale:',c.scale.x.toFixed(2),c.scale.y.toFixed(2),c.scale.z.toFixed(2),'pos:',c.position.x.toFixed(3),c.position.y.toFixed(3),c.position.z.toFixed(3));
+      if(c.isBone){
+        var wy=new THREE.Vector3();
+        c.getWorldPosition(wy);
+        if(wy.y<boneMinY) boneMinY=wy.y;
+        if(wy.y>boneMaxY) boneMaxY=wy.y;
       }
     });
+    var boneH=boneMaxY-boneMinY;
+    console.log('[GLB] Bone extents:',boneMinY.toFixed(1),'to',boneMaxY.toFixed(1),'height:',boneH.toFixed(1));
 
-    // Measure using SkinnedMesh.computeBoundingSphere (accounts for bones in some versions)
-    var minY=Infinity, maxY=-Infinity;
-    model.traverse(function(c){
-      if(c.isSkinnedMesh){
-        c.computeBoundingSphere();
-        var bs=c.boundingSphere;
-        // boundingSphere center + radius gives rough vertical extent
-        var cy=bs.center.y;
-        if(cy-bs.radius<minY) minY=cy-bs.radius;
-        if(cy+bs.radius>maxY) maxY=cy+bs.radius;
-        console.log('[GLB] SkinnedMesh:',c.name,'center:',cy.toFixed(3),'radius:',bs.radius.toFixed(3));
-      } else if(c.isMesh && c.visible){
-        var pos=c.geometry.getAttribute('position');
-        if(!pos) return;
-        c.updateWorldMatrix(false,true);
-        for(var i=0;i<pos.count;i++){
-          var v=new THREE.Vector3(pos.getX(i),pos.getY(i),pos.getZ(i));
-          v.applyMatrix4(c.matrixWorld);
-          if(v.y<minY) minY=v.y;
-          if(v.y>maxY) maxY=v.y;
-        }
-      }
-    });
-
-    // Scale to hero height (1.8 units)
-    var meshH=maxY-minY;
-    if(meshH>0.1){
-      var s=1.8/meshH;
+    // Scale to hero height (1.8 units) based on bone extents
+    if(boneH>1){
+      var s=1.8/boneH;
       model.scale.set(s,s,s);
       model.updateMatrixWorld(true);
+      // Recompute bone extents after scale
+      boneMinY=Infinity; boneMaxY=-Infinity;
+      model.traverse(function(c){
+        if(c.isBone){
+          var wy=new THREE.Vector3();
+          c.getWorldPosition(wy);
+          if(wy.y<boneMinY) boneMinY=wy.y;
+          if(wy.y>boneMaxY) boneMaxY=wy.y;
+        }
+      });
     }
 
-    // Re-measure after scale to place feet at y=0
-    minY=Infinity; maxY=-Infinity;
-    model.traverse(function(c){
-      if(c.isSkinnedMesh){
-        c.computeBoundingSphere();
-        var bs=c.boundingSphere;
-        var cy=bs.center.y*model.scale.y;
-        var r=bs.radius*model.scale.y;
-        if(cy-r<minY) minY=cy-r;
-        if(cy+r>maxY) maxY=cy+r;
-      } else if(c.isMesh && c.visible){
-        var pos=c.geometry.getAttribute('position');
-        if(!pos) return;
-        c.updateWorldMatrix(false,true);
-        for(var i=0;i<pos.count;i++){
-          var v=new THREE.Vector3(pos.getX(i),pos.getY(i),pos.getZ(i));
-          v.applyMatrix4(c.matrixWorld);
-          if(v.y<minY) minY=v.y;
-          if(v.y>maxY) maxY=v.y;
-        }
-      }
-    });
-    model.position.y=-minY;
+    // Place feet at y=0
+    model.position.y=-boneMinY;
     model.updateMatrixWorld(true);
 
-    console.log('[GLB] Applied',skinId,'→ minY:',minY.toFixed(3),'maxY:',maxY.toFixed(3),'h:',(maxY-minY).toFixed(3),'scale:',model.scale.x.toFixed(2),'pos.y:',model.position.y.toFixed(2));
+    console.log('[GLB] Applied',skinId,'→ boneH:',boneH.toFixed(1),'scale:',model.scale.x.toFixed(4),'pos.y:',model.position.y.toFixed(2));
 
     // Store ref for removal
     heroGrp._glbSkinId = skinId;

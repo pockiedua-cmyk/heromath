@@ -27876,11 +27876,40 @@ function glbApplySkin(heroGrp, skinId){
     // box-built body parts (torso/head/etc, ~1.8 local units tall) are sized.
     model.updateMatrixWorld(true);
 
-    var box=new THREE.Box3().setFromObject(model);
-    var size=new THREE.Vector3();
-    box.getSize(size);
-    var modelH=size.y;
-    console.log('[GLB] Local bounding box height:',modelH.toFixed(4),'min.y:',box.min.y.toFixed(4),'max.y:',box.max.y.toFixed(4));
+    // Measure using BONE world positions, not raw mesh geometry. For a
+    // SkinnedMesh, Box3.setFromObject only reads the mesh node's OWN
+    // transform (position/rotation/scale) applied to its bind-pose vertex
+    // data — it completely ignores the Armature/bone hierarchy, which is
+    // where the actual rendered shape comes from during skinning. If the
+    // Armature carries its own baked scale (very common in Mixamo cm↔m
+    // exports), the raw-geometry Box3 silently misses it, giving a bogus
+    // tiny number (e.g. 0.0170) that has no relation to the real on-
+    // screen size — that's what was producing "TERLALU BESAR" no matter
+    // how carefully the resulting (wrong) scale factor was computed.
+    // bone.matrixWorld, by contrast, is the true world transform each
+    // bone actually ends up at — exactly what skin deformation follows —
+    // so measuring bone-to-bone span gives the real character height.
+    var bones=[];
+    model.traverse(function(c){ if(c.isBone) bones.push(c); });
+    var modelH, box, useBoneMeasure=false;
+    if(bones.length>0){
+      var minY=Infinity, maxY=-Infinity;
+      var _p=new THREE.Vector3();
+      bones.forEach(function(b){ b.getWorldPosition(_p); if(_p.y<minY)minY=_p.y; if(_p.y>maxY)maxY=_p.y; });
+      // Bone joints sit slightly INSIDE the mesh surface (head bone is at
+      // the neck/skull center, not hair tip; foot bone is at the ankle,
+      // not the sole) — pad ~15% to approximate true visual height.
+      modelH=(maxY-minY)*1.15;
+      useBoneMeasure=true;
+      console.log('[GLB] Bone-based height:',modelH.toFixed(4),'(bone span',(maxY-minY).toFixed(4),'× 1.15 pad, from',bones.length,'bones)');
+    }
+    if(!useBoneMeasure || !(modelH>0.0001)){
+      box=new THREE.Box3().setFromObject(model);
+      var size=new THREE.Vector3();
+      box.getSize(size);
+      modelH=size.y;
+      console.log('[GLB] Fallback geometry bounding box height:',modelH.toFixed(4),'(no bones found or bone span invalid)');
+    }
 
     // Scale to hero height (1.8 local units, matching the box-built rig)
     var s=1;
@@ -27923,7 +27952,7 @@ function glbApplySkin(heroGrp, skinId){
     model.position.y -= box2.min.y;
     model.updateMatrixWorld(true);
 
-    console.log('[GLB] Applied',skinId,'→ local height:',modelH.toFixed(4),'scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(4),'ground min.y (posed):',box2.min.y.toFixed(4));
+    console.log('[GLB] Applied',skinId,'→ measured height:',modelH.toFixed(4),'(method:',(useBoneMeasure?'bones':'geometry'),') scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(4),'ground min.y (posed):',box2.min.y.toFixed(4));
 
     // NOW attach to heroGrp — its scale applies uniformly to the whole
     // model afterward, exactly as it does to every other body part.

@@ -8748,6 +8748,7 @@ function smapBuild3D(){
 
   // Scene
   const smScene=new THREE.Scene();
+  window.smScene=smScene;
   window._futsalGetScene=()=>smScene;
   smScene.background=new THREE.Color(0x87ceeb);
   smScene.fog=new THREE.FogExp2(0x87ceeb,0.003);

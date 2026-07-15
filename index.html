@@ -27798,28 +27798,37 @@ function glbApplySkin(heroGrp, skinId){
     // Clone scene so multiple heroes can share the cached data
     var model=data.scene.clone();
     model.name='_glbSkin';
-    heroGrp.add(model);
 
-    // Force world matrix update so bounds compute correctly
+    // Reset local transform — model's own origin should be at feet center
+    model.position.set(0,0,0);
+    model.rotation.set(0,0,0);
+    model.scale.set(1,1,1);
+
+    heroGrp.add(model);
     model.updateMatrixWorld(true);
 
-    // Scale model to fit hero height (~1.8 units)
+    // Measure actual model height and scale to hero size (1.8 units)
     var box=new THREE.Box3().setFromObject(model);
     var h=box.max.y-box.min.y;
+    var ctr=new THREE.Vector3();
+    box.getCenter(ctr);
     if(h>0.1){
       var s=1.8/h;
       model.scale.set(s,s,s);
       model.updateMatrixWorld(true);
-      // Recompute bounds after scaling
+      // Recompute and recenter after scale
       box=new THREE.Box3().setFromObject(model);
+      box.getCenter(ctr);
+      model.position.x=-ctr.x;
+      model.position.y=-box.min.y;
+      model.position.z=-ctr.z;
+    } else {
+      // Fallback: just ensure feet at y=0
+      model.position.y=-box.min.y;
     }
-    // Center horizontally, place feet at y=0
-    var ctr=new THREE.Vector3();
-    box.getCenter(ctr);
-    model.position.x-=ctr.x;
-    model.position.y-=box.min.y;
-    model.position.z-=ctr.z;
     model.updateMatrixWorld(true);
+
+    console.log('[GLB] Applied',skinId,'→ height:',h.toFixed(2),'scale:',(h>0.1?(1.8/h):1).toFixed(2),'pos:',model.position.x.toFixed(2),model.position.y.toFixed(2),model.position.z.toFixed(2));
 
     // Store ref for removal
     heroGrp._glbSkinId = skinId;

@@ -27880,12 +27880,33 @@ function glbApplySkin(heroGrp, skinId){
     }
     model.updateMatrixWorld(true);
 
-    // Recompute box AFTER scaling to place feet exactly at local y=0
+    // Setup animation mixer and advance it ONE tick BEFORE measuring the
+    // ground-alignment box. Box3.setFromObject reads the mesh's current
+    // skinned pose — right after loading that's still the bind/T-pose,
+    // which usually sits a little differently (e.g. slightly bent knees,
+    // lower hips) than the actual walk/idle pose that plays on screen.
+    // Measuring against the bind pose but then watching the ANIMATED pose
+    // is exactly what produces "sedikit terapung" (slight float/gap under
+    // the feet) once playback starts. Advancing mixer.update(0) forces the
+    // skeleton into its real first-frame pose before we measure, so the
+    // ground alignment matches what's actually rendered.
+    var mixer=null;
+    if(data.animations.length>0){
+      mixer=new THREE.AnimationMixer(model);
+      data.animations.forEach(function(clip){
+        mixer.clipAction(clip).play();
+      });
+      mixer.update(0);
+      model.updateMatrixWorld(true);
+    }
+
+    // Recompute box AFTER scaling (and after posing) to place feet exactly
+    // at local y=0
     var box2=new THREE.Box3().setFromObject(model);
     model.position.y -= box2.min.y;
     model.updateMatrixWorld(true);
 
-    console.log('[GLB] Applied',skinId,'→ local height:',modelH.toFixed(4),'scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(4));
+    console.log('[GLB] Applied',skinId,'→ local height:',modelH.toFixed(4),'scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(4),'ground min.y (posed):',box2.min.y.toFixed(4));
 
     // NOW attach to heroGrp — its scale applies uniformly to the whole
     // model afterward, exactly as it does to every other body part.
@@ -27896,12 +27917,7 @@ function glbApplySkin(heroGrp, skinId){
     heroGrp._glbSkinId = skinId;
     heroGrp._glbModel = model;
 
-    // Setup animation mixer
-    if(data.animations.length>0){
-      var mixer=new THREE.AnimationMixer(model);
-      data.animations.forEach(function(clip){
-        mixer.clipAction(clip).play();
-      });
+    if(mixer){
       var clock=new THREE.Clock();
       _glbMixers.push({mixer:mixer, clock:clock});
       heroGrp._glbMixer = mixer;

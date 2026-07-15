@@ -27729,15 +27729,14 @@ function applyCostume(){
 
   // ── GLB Skin Override: if equipped skin is a GLB model, load & replace boxes ──
   var _glbSkinId = eq['glb_skin'] || '';
+  // Always clean up ALL hero groups first
+  [window.marioMesh, window.smHero, window._mmoHero].forEach(function(g){
+    if(g && g._glbModel) glbRemoveSkin(g);
+  });
   if(_glbSkinId && typeof GLB_SKINS!=='undefined' && GLB_SKINS[_glbSkinId]){
-    // Only apply to visible heroes — skip marioMesh (platformer at 0,0,0)
+    // Apply only to visible heroes — skip marioMesh (platformer at 0,0,0)
     if(window.smHero) glbApplySkin(window.smHero, _glbSkinId);
     if(window._mmoHero) glbApplySkin(window._mmoHero, _glbSkinId);
-  } else {
-    // No GLB skin — remove any lingering GLB model
-    [window.marioMesh, window.smHero, window._mmoHero].forEach(function(g){
-      if(g && g._glbModel) glbRemoveSkin(g);
-    });
   }
 }
 

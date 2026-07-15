@@ -27894,6 +27894,13 @@ function glbApplySkin(heroGrp, skinId){
     if(data.animations.length>0){
       mixer=new THREE.AnimationMixer(model);
       data.animations.forEach(function(clip){
+        // Strip any ".scale" tracks baked into the clip. Mixamo FBX→GLB
+        // exports sometimes bake a scale keyframe track onto the root/hip
+        // node (a leftover from cm↔m unit conversion). If left in, that
+        // track OVERWRITES the scale we set manually the moment the mixer
+        // plays, blowing the model up to ~100× — exactly "TERLALU BESAR".
+        // Position/quaternion tracks (actual motion) are left untouched.
+        clip.tracks = clip.tracks.filter(function(t){ return t.name.indexOf('.scale')===-1; });
         mixer.clipAction(clip).play();
       });
       mixer.update(0);

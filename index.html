@@ -27759,7 +27759,6 @@ function applyCostume(){
     if(g && g._glbModel) glbRemoveSkin(g);
   });
   if(_glbSkinId && typeof GLB_SKINS!=='undefined' && GLB_SKINS[_glbSkinId]){
-    // Load GLB and add directly to smScene (not as child of hero)
     glbLoadSkin(_glbSkinId, function(data){
       if(!data) return;
       var model=data.scene.clone();
@@ -27771,21 +27770,43 @@ function applyCostume(){
       smScene.add(model);
       smScene.updateMatrixWorld(true);
 
-      var box=new THREE.Box3().setFromObject(model);
-      var sz=new THREE.Vector3(); box.getSize(sz);
-      console.log('[GLB] BBox size:',sz.x.toFixed(2),sz.y.toFixed(2),sz.z.toFixed(2),'min:',box.min.x.toFixed(2),box.min.y.toFixed(2),box.min.z.toFixed(2));
+      var minY=Infinity, maxY=-Infinity, minX=0, maxX=0, minZ=0, maxZ=0;
+      model.traverse(function(c){
+        if(c.isBone){
+          var wp=new THREE.Vector3();
+          c.getWorldPosition(wp);
+          if(wp.y<minY) minY=wp.y;
+          if(wp.y>maxY) maxY=wp.y;
+          if(wp.x<minX) minX=wp.x;
+          if(wp.x>maxX) maxX=wp.x;
+          if(wp.z<minZ) minZ=wp.z;
+          if(wp.z>maxZ) maxZ=wp.z;
+        }
+      });
+      var bH=maxY-minY;
+      var bW=maxX-minX;
+      var bD=maxZ-minZ;
+      console.log('[GLB] Bone world Y:',minY.toFixed(1),'to',maxY.toFixed(1),'H:',bH.toFixed(1),'W:',bW.toFixed(1),'D:',bD.toFixed(1));
 
       var targetH=1.8;
-      if(sz.y>0.01){
-        var s=targetH/sz.y;
+      if(bH>0.01){
+        var s=targetH/bH;
         model.scale.set(s,s,s);
       }
       smScene.updateMatrixWorld(true);
-      var box2=new THREE.Box3().setFromObject(model);
-      var offY=-box2.min.y;
-      model.position.y=offY;
 
-      console.log('[GLB] Final scale:',model.scale.x.toFixed(4),'pos.y:',offY.toFixed(3));
+      minY=Infinity; maxY=-Infinity;
+      model.traverse(function(c){
+        if(c.isBone){
+          var wp=new THREE.Vector3();
+          c.getWorldPosition(wp);
+          if(wp.y<minY) minY=wp.y;
+          if(wp.y>maxY) maxY=wp.y;
+        }
+      });
+      model.position.y=-minY;
+
+      console.log('[GLB] Final scale:',model.scale.x.toFixed(4),'pos.y:',(-minY).toFixed(3));
       window._glbSceneModel=model;
       window._glbSceneSkinId=_glbSkinId;
       window._glbHideBoxes=true;

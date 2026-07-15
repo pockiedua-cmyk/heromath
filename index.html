@@ -3641,6 +3641,7 @@ setTimeout(()=>{
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js" onerror="var s2=document.createElement('script');s2.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';document.head.appendChild(s2);"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/utils/SkeletonUtils.js" onerror="var s3=document.createElement('script');s3.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js';document.head.appendChild(s3);"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 //  SUPER MARIO MATH 3D  –  Three.js r128
@@ -27829,9 +27830,22 @@ function glbApplySkin(heroGrp, skinId){
     // skin-off logic since equipping a GLB skin clears the box 'skin' slot)
     if(heroGrp._bagGrp) heroGrp._bagGrp.visible=false;
 
-    // Clone scene so multiple heroes can share the cached data
-    var model=data.scene.clone();
+    // Clone scene so multiple heroes can share the cached data.
+    // IMPORTANT: plain Object3D.clone() does NOT correctly clone a rigged
+    // (skinned) model — the cloned SkinnedMesh keeps pointing at the
+    // ORIGINAL skeleton's bones instead of the cloned ones, which breaks
+    // its bounding volume and left it invisible/culled even though scale
+    // and position were correct. THREE.SkeletonUtils.clone() (loaded
+    // alongside GLTFLoader) properly re-binds the skeleton on the clone.
+    var model = (typeof THREE!=='undefined' && THREE.SkeletonUtils && THREE.SkeletonUtils.clone)
+      ? THREE.SkeletonUtils.clone(data.scene)
+      : data.scene.clone();
     model.name='_glbSkin';
+    // Safety net: a SkinnedMesh's bounding sphere can be stale/zero right
+    // after creation, which makes three.js wrongly frustum-cull it as
+    // invisible even when everything else is correct. Disabling culling
+    // per-mesh costs nothing noticeable for a single hero-sized model.
+    model.traverse(function(c){ if(c.isMesh || c.isSkinnedMesh){ c.frustumCulled=false; } });
 
     // Reset local transform
     model.position.set(0,0,0);

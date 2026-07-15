@@ -4792,6 +4792,9 @@ const mario = {
     } else {
       marioMesh.legL.rotation.x=0;marioMesh.legR.rotation.x=0;
     }
+    // Swap GLB skin rig (static ↔ walking) to match movement — no-op if
+    // no GLB skin equipped, or if this skin has no dedicated walk rig.
+    if(typeof glbSetMoving==='function') glbSetMoving(marioMesh, this.onGround&&Math.abs(this.vx)>0.3);
     // sync mesh
     marioMesh.position.set(this.x,this.y,0);
     marioMesh.scale.x=this.facing;
@@ -18547,6 +18550,9 @@ function smapBuild3D(){
     } else {
       if(smHero.legL){smHero.legL.rotation.x=0;smHero.legR.rotation.x=0;}
     }
+    // Swap GLB skin rig (static ↔ walking) to match movement — no-op if
+    // no GLB skin equipped, or if this skin has no dedicated walk rig.
+    if(typeof glbSetMoving==='function') glbSetMoving(smHero, !!moved && !_mounted);
     // ── Zombie Island: shooting pose ──
     if(_onZI&&smHero._shootArmGrp){
       smHero._shootArmGrp.rotation.x=-1.45; // arm forward, slightly down
@@ -27791,49 +27797,67 @@ function applyCostume(){
 
 // ══════════════════════════════════════════════════════════════
 //  GLB Skin System — Load custom 3D models from skins/ folder
+//  Setiap skin boleh ada 2 fail GLB berasingan:
+//    file      = rig STATIK/idle (wajib)
+//    fileWalk  = rig BERJALAN (opsyenal — kalau takde, guna rig static je)
 // ══════════════════════════════════════════════════════════════
 var GLB_SKINS = {
-  //  id              : { name, file, price, desc, icon }
-  skin_wizard      : { name:'Wizard',       file:'skins/wizard.glb',      price:30, desc:'Ahli sihir bertopi tinggi',        icon:'🧙' },
-  skin_knight      : { name:'Knight',       file:'skins/knight.glb',      price:30, desc:'Ksatria berperisai penuh',          icon:'⚔️' },
-  skin_ninja       : { name:'Ninja',        file:'skins/ninja.glb',       price:30, desc:'Ninja bayangan gelap',              icon:'🥷' },
-  skin_robot       : { name:'Robot',        file:'skins/robot.glb',       price:35, desc:'Robot futuristik bersenjata',       icon:'🤖' },
-  skin_dragon      : { name:'Dragon Lord',  file:'skins/dragon_lord.glb', price:40, desc:'Raja naga berkuasa',                icon:'🐉' },
-  skin_pirate      : { name:'Pirate',       file:'skins/pirate.glb',      price:25, desc:'Lanun laut lepas',                  icon:'🏴‍☠️' },
-  skin_angel       : { name:'Angel',        file:'skins/angel.glb',       price:40, desc:'Malaikat bersayap cahaya',          icon:'👼' },
-  skin_demon       : { name:'Demon',        file:'skins/demon.glb',       price:40, desc:'Syaitan bertanduk merah',           icon:'😈' },
-  skin_samurai     : { name:'Samurai',      file:'skins/samurai.glb',     price:35, desc:'Samurai pedang katana',              icon:'⛩️' },
-  skin_mech        : { name:'Mecha Pilot',  file:'skins/mech_pilot.glb',  price:35, desc:'Pilot mech gergasi',                icon:'🦾' },
+  //  id              : { name, file, fileWalk, price, desc, icon }
+  skin_wizard      : { name:'Wizard',       file:'skins/wizard.glb',      fileWalk:'skins/wizard_walk.glb',      price:30, desc:'Ahli sihir bertopi tinggi',        icon:'🧙' },
+  skin_knight      : { name:'Knight',       file:'skins/knight.glb',      fileWalk:'skins/knight_walk.glb',      price:30, desc:'Ksatria berperisai penuh',          icon:'⚔️' },
+  skin_ninja       : { name:'Ninja',        file:'skins/ninja.glb',       fileWalk:'skins/ninja_walk.glb',       price:30, desc:'Ninja bayangan gelap',              icon:'🥷' },
+  skin_robot       : { name:'Robot',        file:'skins/robot.glb',       fileWalk:'skins/robot_walk.glb',       price:35, desc:'Robot futuristik bersenjata',       icon:'🤖' },
+  skin_dragon      : { name:'Dragon Lord',  file:'skins/dragon_lord.glb', fileWalk:'skins/dragon_lord_walk.glb', price:40, desc:'Raja naga berkuasa',                icon:'🐉' },
+  skin_pirate      : { name:'Pirate',       file:'skins/pirate.glb',      fileWalk:'skins/pirate_walk.glb',      price:25, desc:'Lanun laut lepas',                  icon:'🏴‍☠️' },
+  skin_angel       : { name:'Angel',        file:'skins/angel.glb',       fileWalk:'skins/angel_walk.glb',       price:40, desc:'Malaikat bersayap cahaya',          icon:'👼' },
+  skin_demon       : { name:'Demon',        file:'skins/demon.glb',       fileWalk:'skins/demon_walk.glb',       price:40, desc:'Syaitan bertanduk merah',           icon:'😈' },
+  skin_samurai     : { name:'Samurai',      file:'skins/samurai.glb',     fileWalk:'skins/samurai_walk.glb',     price:35, desc:'Samurai pedang katana',              icon:'⛩️' },
+  skin_mech        : { name:'Mecha Pilot',  file:'skins/mech_pilot.glb',  fileWalk:'skins/mech_pilot_walk.glb',  price:35, desc:'Pilot mech gergasi',                icon:'🦾' },
 };
-var _glbCache = {};          // id → { scene, animations, mixer }
-var _glbLoading = {};        // id → true (loading in progress)
-var _glbCallbacks = {};      // id → [cb, cb, ...]  — queued callbacks during loading
-var _glbMixers  = [];        // [{mixer, clock}]  — all active mixers
+var _glbCache = {};          // "skinId|idle" / "skinId|walk" → { scene, animations }
+var _glbLoading = {};        // same key → true (loading in progress)
+var _glbCallbacks = {};      // same key → [cb, cb, ...]  — queued callbacks during loading
+var _glbMixers  = [];        // [{mixer, model}]  — all active mixers (model ref lets us skip updating hidden ones)
 
-function glbLoadSkin(skinId, cb){
+// Load ONE variant ('idle' or 'walk') of a skin. cb(data|null).
+function glbLoadVariant(skinId, variant, cb){
   var GLTFLoaderCls = (typeof GLTFLoader!=='undefined') ? GLTFLoader : (typeof THREE!=='undefined' && THREE.GLTFLoader) ? THREE.GLTFLoader : null;
   if(!GLTFLoaderCls){ console.warn('GLTFLoader not available'); return cb && cb(null); }
-  if(_glbCache[skinId]) return cb && cb(_glbCache[skinId]);
-  // Queue callback if already loading (don't drop it!)
-  if(_glbLoading[skinId]){
-    if(cb) _glbCallbacks[skinId].push(cb);
+  var info=GLB_SKINS[skinId];
+  if(!info) return cb && cb(null);
+  var file = (variant==='walk') ? info.fileWalk : info.file;
+  if(!file) return cb && cb(null); // no walk rig defined for this skin — caller falls back to idle
+  var key = skinId+'|'+variant;
+  if(_glbCache[key]) return cb && cb(_glbCache[key]);
+  if(_glbLoading[key]){
+    if(cb) _glbCallbacks[key].push(cb);
     return;
   }
-  _glbLoading[skinId]=true;
-  _glbCallbacks[skinId]=cb ? [cb] : [];
-  var info=GLB_SKINS[skinId];
-  if(!info){ _glbLoading[skinId]=false; var cbs=_glbCallbacks[skinId]||[]; _glbCallbacks[skinId]=[]; cbs.forEach(function(fn){fn(null);}); return; }
+  _glbLoading[key]=true;
+  _glbCallbacks[key]=cb ? [cb] : [];
   var loader=new GLTFLoaderCls();
-  loader.load(info.file, function(gltf){
-    _glbCache[skinId]={ scene:gltf.scene, animations:gltf.animations||[] };
-    _glbLoading[skinId]=false;
-    var cbs=_glbCallbacks[skinId]||[]; _glbCallbacks[skinId]=[];
-    cbs.forEach(function(fn){fn(_glbCache[skinId]);});
+  loader.load(file, function(gltf){
+    _glbCache[key]={ scene:gltf.scene, animations:gltf.animations||[] };
+    _glbLoading[key]=false;
+    var cbs=_glbCallbacks[key]||[]; _glbCallbacks[key]=[];
+    cbs.forEach(function(fn){fn(_glbCache[key]);});
   }, undefined, function(err){
-    console.warn('GLB load failed:',skinId,err);
-    _glbLoading[skinId]=false;
-    var cbs=_glbCallbacks[skinId]||[]; _glbCallbacks[skinId]=[];
+    console.warn('GLB load failed:',key,file,err);
+    _glbLoading[key]=false;
+    var cbs=_glbCallbacks[key]||[]; _glbCallbacks[key]=[];
     cbs.forEach(function(fn){fn(null);});
+  });
+}
+
+// Load BOTH variants of a skin. cb({idle:data, walk:data|null}) — idle is
+// mandatory (cb(null) if it fails to load); walk is optional (null if the
+// skin has no fileWalk or it fails), caller should then just reuse idle.
+function glbLoadSkin(skinId, cb){
+  glbLoadVariant(skinId,'idle', function(idleData){
+    if(!idleData) return cb && cb(null);
+    glbLoadVariant(skinId,'walk', function(walkData){
+      cb && cb({ idle: idleData, walk: walkData });
+    });
   });
 }
 
@@ -27847,6 +27871,102 @@ var GLB_HIDE_PARTS=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR'
 // sikit, <1 = kecil sikit. Laras nombor ni je untuk ubah saiz SEMUA skin
 // GLB serentak, tak perlu gali dalam glbApplySkin().
 var GLB_SIZE_MULT=0.02;
+
+// Prepare ONE loaded GLB variant into a scaled, ground-aligned, playing
+// model ready to be parented onto heroGrp. Shared by both idle & walk
+// rigs so their scale/ground-alignment math (and its footgun history —
+// see comments below) never drifts apart between the two variants.
+function glbPrepareModel(data){
+  // Clone scene so multiple heroes can share the cached data.
+  // IMPORTANT: plain Object3D.clone() does NOT correctly clone a rigged
+  // (skinned) model — the cloned SkinnedMesh keeps pointing at the
+  // ORIGINAL skeleton's bones instead of the cloned ones, which breaks
+  // its bounding volume and left it invisible/culled even though scale
+  // and position were correct. THREE.SkeletonUtils.clone() (loaded
+  // alongside GLTFLoader) properly re-binds the skeleton on the clone.
+  var model = (typeof THREE!=='undefined' && THREE.SkeletonUtils && THREE.SkeletonUtils.clone)
+    ? THREE.SkeletonUtils.clone(data.scene)
+    : data.scene.clone();
+  model.name='_glbSkin';
+  // Safety net: a SkinnedMesh's bounding sphere can be stale/zero right
+  // after creation, which makes three.js wrongly frustum-cull it as
+  // invisible even when everything else is correct. Disabling culling
+  // per-mesh costs nothing noticeable for a single hero-sized model.
+  model.traverse(function(c){ if(c.isMesh || c.isSkinnedMesh){ c.frustumCulled=false; } });
+
+  // Reset local transform
+  model.position.set(0,0,0);
+  model.rotation.set(0,0,0);
+  model.scale.set(1,1,1);
+
+  // IMPORTANT: measure/scale/position the model BEFORE parenting it to
+  // heroGrp. heroGrp itself carries its own scale (e.g. 0.8 on the school
+  // map, 0.85 in the MMO world, etc.) — if we measure with the model
+  // already attached, Box3 reads world-space size (mesh height × heroGrp
+  // scale), so solving for "1.8 units tall" against that shrunken number
+  // produces a wildly inflated local scale. That's what caused the giant
+  // floating model: the fix-up math was computing everything in world
+  // space, then writing the result back into model.position/scale, which
+  // are LOCAL properties — the two spaces don't match. Measuring while
+  // the model has no parent means matrixWorld === its own local matrix,
+  // so the numbers below are genuinely local and consistent with how the
+  // box-built body parts (torso/head/etc, ~1.8 local units tall) are sized.
+  model.updateMatrixWorld(true);
+
+  // Measure using raw geometry Box3 — this is the CORRECT reference
+  // despite looking wrong at first glance (~0.017 for a full character).
+  // See long history in earlier revisions of this file for why bone
+  // matrixWorld height was tried and rejected in favour of this.
+  var box=new THREE.Box3().setFromObject(model);
+  var size=new THREE.Vector3();
+  box.getSize(size);
+  var modelH=size.y;
+
+  // Scale to hero height (1.8 local units, matching the box-built rig),
+  // × GLB_SIZE_MULT untuk besarkan sikit ikut permintaan.
+  var s=1;
+  if(modelH>0.0001){
+    s=(1.8*GLB_SIZE_MULT)/modelH;
+    model.scale.set(s,s,s);
+  }
+  model.updateMatrixWorld(true);
+
+  // Setup animation mixer and advance it ONE tick BEFORE measuring the
+  // ground-alignment box. Box3.setFromObject reads the mesh's current
+  // skinned pose — right after loading that's still the bind/T-pose,
+  // which usually sits a little differently (e.g. slightly bent knees,
+  // lower hips) than the actual walk/idle pose that plays on screen.
+  // Measuring against the bind pose but then watching the ANIMATED pose
+  // is exactly what produces "sedikit terapung" (slight float/gap under
+  // the feet) once playback starts. Advancing mixer.update(0) forces the
+  // skeleton into its real first-frame pose before we measure, so the
+  // ground alignment matches what's actually rendered.
+  var mixer=null;
+  if(data.animations.length>0){
+    mixer=new THREE.AnimationMixer(model);
+    data.animations.forEach(function(clip){
+      // Strip any ".scale" tracks baked into the clip. Mixamo FBX→GLB
+      // exports sometimes bake a scale keyframe track onto the root/hip
+      // node (a leftover from cm↔m unit conversion). If left in, that
+      // track OVERWRITES the scale we set manually the moment the mixer
+      // plays, blowing the model up to ~100× — exactly "TERLALU BESAR".
+      // Position/quaternion tracks (actual motion) are left untouched.
+      clip.tracks = clip.tracks.filter(function(t){ return t.name.indexOf('.scale')===-1; });
+      mixer.clipAction(clip).play();
+    });
+    mixer.update(0);
+    model.updateMatrixWorld(true);
+  }
+
+  // Recompute box AFTER scaling (and after posing) to place feet exactly
+  // at local y=0
+  var box2=new THREE.Box3().setFromObject(model);
+  model.position.y -= box2.min.y;
+  model.updateMatrixWorld(true);
+
+  return { model:model, mixer:mixer };
+}
+
 function glbApplySkin(heroGrp, skinId){
   if(!heroGrp) return;
   // Skip if same GLB already applied
@@ -27864,160 +27984,81 @@ function glbApplySkin(heroGrp, skinId){
     // (full-size, unhidden) right on top of/behind the GLB model.
     var parts=GLB_HIDE_PARTS;
     parts.forEach(function(p){ if(heroGrp[p]) heroGrp[p].visible=false; });
-    // Also hide skin-specific groups (bagGrp is stored as _bagGrp on the
-    // hero group itself; the Naruto/Sasuke/Kafka/Kirito groups only exist
-    // on the separate _marioRefs/_smapRefs/_mmoRefs tracking objects, not
-    // on heroGrp, but they're already hidden by applyCostume()'s normal
-    // skin-off logic since equipping a GLB skin clears the box 'skin' slot)
     if(heroGrp._bagGrp) heroGrp._bagGrp.visible=false;
 
-    // Clone scene so multiple heroes can share the cached data.
-    // IMPORTANT: plain Object3D.clone() does NOT correctly clone a rigged
-    // (skinned) model — the cloned SkinnedMesh keeps pointing at the
-    // ORIGINAL skeleton's bones instead of the cloned ones, which breaks
-    // its bounding volume and left it invisible/culled even though scale
-    // and position were correct. THREE.SkeletonUtils.clone() (loaded
-    // alongside GLTFLoader) properly re-binds the skeleton on the clone.
-    var model = (typeof THREE!=='undefined' && THREE.SkeletonUtils && THREE.SkeletonUtils.clone)
-      ? THREE.SkeletonUtils.clone(data.scene)
-      : data.scene.clone();
-    model.name='_glbSkin';
-    // Safety net: a SkinnedMesh's bounding sphere can be stale/zero right
-    // after creation, which makes three.js wrongly frustum-cull it as
-    // invisible even when everything else is correct. Disabling culling
-    // per-mesh costs nothing noticeable for a single hero-sized model.
-    model.traverse(function(c){ if(c.isMesh || c.isSkinnedMesh){ c.frustumCulled=false; } });
+    // Build the STATIC/idle rig (always present)
+    var idlePrep = glbPrepareModel(data.idle);
+    var idleModel = idlePrep.model;
+    heroGrp.add(idleModel);
+    idleModel.updateMatrixWorld(true);
 
-    // Reset local transform
-    model.position.set(0,0,0);
-    model.rotation.set(0,0,0);
-    model.scale.set(1,1,1);
-
-    // IMPORTANT: measure/scale/position the model BEFORE parenting it to
-    // heroGrp. heroGrp itself carries its own scale (e.g. 0.8 on the school
-    // map, 0.85 in the MMO world, etc.) — if we measure with the model
-    // already attached, Box3 reads world-space size (mesh height × heroGrp
-    // scale), so solving for "1.8 units tall" against that shrunken number
-    // produces a wildly inflated local scale. That's what caused the giant
-    // floating model: the fix-up math was computing everything in world
-    // space, then writing the result back into model.position/scale, which
-    // are LOCAL properties — the two spaces don't match. Measuring while
-    // the model has no parent means matrixWorld === its own local matrix,
-    // so the numbers below are genuinely local and consistent with how the
-    // box-built body parts (torso/head/etc, ~1.8 local units tall) are sized.
-    model.updateMatrixWorld(true);
-
-    // Measure using raw geometry Box3 — this is the CORRECT reference
-    // despite looking wrong at first glance (~0.017 for a full character).
-    // An earlier attempt switched to measuring bone.matrixWorld positions
-    // instead, on the theory that skin deformation follows the skeleton
-    // and Box3 (which only reads the mesh node's own bind-pose vertex
-    // data) must be blind to an Armature-level scale. That theory was
-    // WRONG: testing proved the actual on-screen render follows the RAW
-    // VERTEX scale, not the bones' reported matrixWorld — this particular
-    // rig's bones report a matrixWorld height (~1.8) wildly inconsistent
-    // with its own skin/bind matrices, which apparently still resolve
-    // against the small raw-vertex space. Using bone height for scale
-    // made the model nearly invisible (world height 0.0127 — nothing
-    // close to what's rendered). Box3-on-geometry, with its large
-    // compensating scale factor (~105x), is what the renderer actually
-    // needs and is what previously produced a world height (1.35-1.44)
-    // correctly proportioned to the box-hero. Do not switch this back
-    // without re-verifying against an in-game screenshot, not just math.
-    var box=new THREE.Box3().setFromObject(model);
-    var size=new THREE.Vector3();
-    box.getSize(size);
-    var modelH=size.y;
-    console.log('[GLB] Local bounding box height:',modelH.toFixed(4),'min.y:',box.min.y.toFixed(4),'max.y:',box.max.y.toFixed(4));
-
-    // Scale to hero height (1.8 local units, matching the box-built rig),
-    // × GLB_SIZE_MULT untuk besarkan sikit ikut permintaan.
-    var s=1;
-    if(modelH>0.0001){
-      s=(1.8*GLB_SIZE_MULT)/modelH;
-      model.scale.set(s,s,s);
-    }
-    model.updateMatrixWorld(true);
-
-    // Setup animation mixer and advance it ONE tick BEFORE measuring the
-    // ground-alignment box. Box3.setFromObject reads the mesh's current
-    // skinned pose — right after loading that's still the bind/T-pose,
-    // which usually sits a little differently (e.g. slightly bent knees,
-    // lower hips) than the actual walk/idle pose that plays on screen.
-    // Measuring against the bind pose but then watching the ANIMATED pose
-    // is exactly what produces "sedikit terapung" (slight float/gap under
-    // the feet) once playback starts. Advancing mixer.update(0) forces the
-    // skeleton into its real first-frame pose before we measure, so the
-    // ground alignment matches what's actually rendered.
-    var mixer=null;
-    if(data.animations.length>0){
-      mixer=new THREE.AnimationMixer(model);
-      data.animations.forEach(function(clip){
-        // Strip any ".scale" tracks baked into the clip. Mixamo FBX→GLB
-        // exports sometimes bake a scale keyframe track onto the root/hip
-        // node (a leftover from cm↔m unit conversion). If left in, that
-        // track OVERWRITES the scale we set manually the moment the mixer
-        // plays, blowing the model up to ~100× — exactly "TERLALU BESAR".
-        // Position/quaternion tracks (actual motion) are left untouched.
-        clip.tracks = clip.tracks.filter(function(t){ return t.name.indexOf('.scale')===-1; });
-        mixer.clipAction(clip).play();
-      });
-      mixer.update(0);
-      model.updateMatrixWorld(true);
+    // Build the WALK rig if a separate walking GLB was loaded; otherwise
+    // just reuse the idle model as the "walk" pose too (no walk rig
+    // supplied for this skin — better a static hero than no hero).
+    var walkModel=null, walkMixer=null;
+    if(data.walk){
+      var walkPrep = glbPrepareModel(data.walk);
+      walkModel = walkPrep.model;
+      walkMixer = walkPrep.mixer;
+      heroGrp.add(walkModel);
+      walkModel.updateMatrixWorld(true);
     }
 
-    // Recompute box AFTER scaling (and after posing) to place feet exactly
-    // at local y=0
-    var box2=new THREE.Box3().setFromObject(model);
-    model.position.y -= box2.min.y;
-    model.updateMatrixWorld(true);
+    // Only one rig visible at a time — default to idle/static.
+    idleModel.visible = true;
+    if(walkModel) walkModel.visible = false;
 
-    console.log('[GLB] Applied',skinId,'→ local height:',modelH.toFixed(4),'scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(4),'ground min.y (posed):',box2.min.y.toFixed(4));
-
-    // NOW attach to heroGrp — its scale applies uniformly to the whole
-    // model afterward, exactly as it does to every other body part.
-    heroGrp.add(model);
-    model.updateMatrixWorld(true);
-
-    // DIAGNOSTIC: compare the GLB's final WORLD-space size against the
-    // original box-hero's world-space size (heroGrp._head/_torso are still
-    // in the scene graph, just hidden — Box3.setFromObject ignores the
-    // .visible flag, so we can measure them directly for an apples-to-
-    // apples check). If these two heights don't match, the mismatch is
-    // NOT in glbApplySkin's local-space math (which prints above) — it's
-    // coming from somewhere heroGrp itself is scaled/transformed.
-    var worldBox=new THREE.Box3().setFromObject(model);
-    var worldSize=new THREE.Vector3(); worldBox.getSize(worldSize);
-    var refBox=null, refH=null;
-    if(heroGrp._head){
-      refBox=new THREE.Box3().setFromObject(heroGrp._torso||heroGrp._head);
-      var refSize=new THREE.Vector3(); refBox.getSize(refSize);
-      refH=refSize.y;
-    }
-    console.log('[GLB-DIAG] heroGrp.scale:',heroGrp.scale.x.toFixed(4),
-      '| GLB world height:',worldSize.y.toFixed(4),
-      '| GLB world min.y:',worldBox.min.y.toFixed(4),
-      (refH!==null?('| box-hero torso/head world ref height: '+refH.toFixed(4)):'| (no _head ref found)'));
-
-    // Store ref for removal
+    // Store refs for removal / switching
     heroGrp._glbSkinId = skinId;
-    heroGrp._glbModel = model;
+    heroGrp._glbModel = idleModel;      // kept for existing code that checks heroGrp._glbModel
+    heroGrp._glbIdleModel = idleModel;
+    heroGrp._glbWalkModel = walkModel;  // null if this skin has no walk rig
+    heroGrp._glbMoving = false;
 
-    if(mixer){
-      var clock=new THREE.Clock();
-      _glbMixers.push({mixer:mixer, clock:clock});
-      heroGrp._glbMixer = mixer;
+    if(idlePrep.mixer){
+      _glbMixers.push({mixer:idlePrep.mixer, model:idleModel});
+      heroGrp._glbMixer = idlePrep.mixer;
+    }
+    if(walkMixer){
+      _glbMixers.push({mixer:walkMixer, model:walkModel});
+      heroGrp._glbWalkMixer = walkMixer;
     }
   });
 }
 
+// Toggle between the static/idle rig and the walking rig on a hero that
+// has a GLB skin equipped. Safe to call every frame — it's a cheap
+// visibility flip, not a reload. No-op if no GLB skin is equipped, or if
+// the skin has no separate walk rig (stays on the static one).
+function glbSetMoving(heroGrp, moving){
+  if(!heroGrp || !heroGrp._glbSkinId) return;
+  moving = !!moving;
+  if(heroGrp._glbMoving === moving) return;
+  heroGrp._glbMoving = moving;
+  if(!heroGrp._glbWalkModel){
+    // No dedicated walk rig for this skin — nothing to switch to.
+    return;
+  }
+  heroGrp._glbIdleModel.visible = !moving;
+  heroGrp._glbWalkModel.visible = moving;
+  // Keep the just-shown rig's animation in sync (restart from frame 0
+  // for a clean loop start rather than jumping in mid-cycle).
+  var mixer = moving ? heroGrp._glbWalkMixer : heroGrp._glbMixer;
+  if(mixer){ mixer.setTime(0); }
+}
+
 function glbRemoveSkin(heroGrp){
   if(!heroGrp) return;
-  // Remove GLB model from scene
-  if(heroGrp._glbModel){
-    heroGrp.remove(heroGrp._glbModel);
-    heroGrp._glbModel = null;
+  // Remove GLB models from scene (both idle & walk rigs)
+  if(heroGrp._glbIdleModel){
+    heroGrp.remove(heroGrp._glbIdleModel);
+    heroGrp._glbIdleModel = null;
   }
+  if(heroGrp._glbWalkModel){
+    heroGrp.remove(heroGrp._glbWalkModel);
+    heroGrp._glbWalkModel = null;
+  }
+  heroGrp._glbModel = null;
   // Pulihkan bahagian ASAS yang applyCostume()/applyToRefs() TAK pernah
   // uruskan .visible (cuma warna) — guna senarai kongsi GLB_HIDE_PARTS,
   // tapi KECUALIKAN topi & rambut sebab applyToRefs() (dipanggil SEBELUM
@@ -28028,24 +28069,30 @@ function glbRemoveSkin(heroGrp){
     return p.indexOf('_hat')!==0 && p.indexOf('_hair')!==0;
   });
   restoreParts.forEach(function(p){ if(heroGrp[p]) heroGrp[p].visible=true; });
-  // Stop mixer
-  if(heroGrp._glbMixer){
-    heroGrp._glbMixer.stopAllAction();
-    heroGrp._glbMixer = null;
-  }
+  // Stop mixers (idle + walk) and drop them from the active-mixers list
+  _glbMixers = _glbMixers.filter(function(entry){
+    return entry.mixer!==heroGrp._glbMixer && entry.mixer!==heroGrp._glbWalkMixer;
+  });
+  if(heroGrp._glbMixer){ heroGrp._glbMixer.stopAllAction(); heroGrp._glbMixer=null; }
+  if(heroGrp._glbWalkMixer){ heroGrp._glbWalkMixer.stopAllAction(); heroGrp._glbWalkMixer=null; }
   heroGrp._glbSkinId = null;
-  // Restore box parts (applyCostume will handle visibility)
+  heroGrp._glbMoving = false;
 }
 
 function glbUpdateMixers(dt){
   for(var i=0; i<_glbMixers.length; i++){
-    _glbMixers[i].mixer.update(dt);
+    var entry=_glbMixers[i];
+    // Only advance the rig that's actually visible right now — the
+    // hidden one doesn't need to keep animating.
+    if(entry.model && entry.model.visible===false) continue;
+    entry.mixer.update(dt);
   }
 }
 
 function glbHasSkin(heroGrp){
   return heroGrp && heroGrp._glbSkinId && heroGrp._glbSkinId.length>0;
 }
+
 
 
 function shopUseInGame(itemId){
@@ -60257,6 +60304,9 @@ function mmorpgOpenWorld(){
         gt.style.opacity='0';setTimeout(()=>{if(gt)gt.style.display='none';},300);
       }
     }
+    // Swap GLB skin rig (static ↔ walking) to match movement — no-op if
+    // no GLB skin equipped, or if this skin has no dedicated walk rig.
+    if(typeof glbSetMoving==='function') glbSetMoving(hero, !!moved);
     // Update zone name in HUD
     const curZone=getZoneInfo(heroPos.x,heroPos.z);
     const zd=document.getElementById('mmoZoneDisplay');

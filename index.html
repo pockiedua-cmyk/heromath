@@ -19201,19 +19201,11 @@ function smapBuild3D(){
     if(window._glbSceneModel && window.smHero){
       var m=window._glbSceneModel;
       var h=window.smHero;
-      m.position.set(h.position.x, h.position.y, h.position.z);
+      m.position.x=h.position.x;
+      m.position.z=h.position.z;
       m.rotation.y=h.rotation.y;
       m.visible=!_onZI;
       if(!m.parent || m.parent!==smScene) smScene.add(m);
-      // Hide box parts — only traverse when state changes
-      if(!h._glbHidden){
-        h.traverse(function(c){ if(c.isMesh) c.visible=false; });
-        h._glbHidden=true;
-      }
-    } else if(window.smHero && window.smHero._glbHidden) {
-      // No GLB skin — restore box parts once
-      window.smHero.traverse(function(c){ if(c.isMesh) c.visible=true; });
-      window.smHero._glbHidden=false;
     }
 
     // Render correct scene (school vs zombie island)
@@ -27776,28 +27768,27 @@ function applyCostume(){
       model.rotation.set(0,0,0);
       model.scale.set(1,1,1);
 
-      // Measure bone LOCAL extents
-      var boneMinY=Infinity, boneMaxY=-Infinity;
-      model.traverse(function(c){
-        if(c.isBone){
-          var y=0, n=c;
-          while(n && n!==model){ y+=n.position.y; n=n.parent; }
-          if(y<boneMinY) boneMinY=y;
-          if(y>boneMaxY) boneMaxY=y;
-        }
-      });
-      var boneH=boneMaxY-boneMinY;
-      if(boneH>1){
-        var s=1.8/boneH;
+      smScene.add(model);
+      smScene.updateMatrixWorld(true);
+
+      var box=new THREE.Box3().setFromObject(model);
+      var sz=new THREE.Vector3(); box.getSize(sz);
+      console.log('[GLB] BBox size:',sz.x.toFixed(2),sz.y.toFixed(2),sz.z.toFixed(2),'min:',box.min.x.toFixed(2),box.min.y.toFixed(2),box.min.z.toFixed(2));
+
+      var targetH=1.8;
+      if(sz.y>0.01){
+        var s=targetH/sz.y;
         model.scale.set(s,s,s);
       }
-      model.position.y=-boneMinY*model.scale.y;
+      smScene.updateMatrixWorld(true);
+      var box2=new THREE.Box3().setFromObject(model);
+      var offY=-box2.min.y;
+      model.position.y=offY;
 
-      smScene.add(model);
+      console.log('[GLB] Final scale:',model.scale.x.toFixed(4),'pos.y:',offY.toFixed(3));
       window._glbSceneModel=model;
       window._glbSceneSkinId=_glbSkinId;
       window._glbHideBoxes=true;
-      console.log('[GLB] Scene model added. boneH:',boneH.toFixed(1),'scale:',model.scale.x.toFixed(4));
     });
   } else {
     window._glbHideBoxes=false;
@@ -37018,14 +37009,11 @@ function _fsUpdate(dt){
     if(window._glbSceneModel && window._mmoHero){
       var m=window._glbSceneModel;
       var h=window._mmoHero;
-      m.position.set(h.position.x, h.position.y, h.position.z);
+      m.position.x=h.position.x;
+      m.position.z=h.position.z;
       m.rotation.y=h.rotation.y;
       m.visible=true;
       if(!m.parent || m.parent!==sm3.scene) sm3.scene.add(m);
-      if(!h._glbHidden){
-        h.traverse(function(c){ if(c.isMesh) c.visible=false; });
-        h._glbHidden=true;
-      }
     } else if(window._mmoHero && window._mmoHero._glbHidden) {
       window._mmoHero.traverse(function(c){ if(c.isMesh) c.visible=true; });
       window._mmoHero._glbHidden=false;

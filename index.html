@@ -27759,25 +27759,33 @@ var GLB_SKINS = {
 };
 var _glbCache = {};          // id → { scene, animations, mixer }
 var _glbLoading = {};        // id → true (loading in progress)
+var _glbCallbacks = {};      // id → [cb, cb, ...]  — queued callbacks during loading
 var _glbMixers  = [];        // [{mixer, clock}]  — all active mixers
 
 function glbLoadSkin(skinId, cb){
   var GLTFLoaderCls = (typeof GLTFLoader!=='undefined') ? GLTFLoader : (typeof THREE!=='undefined' && THREE.GLTFLoader) ? THREE.GLTFLoader : null;
   if(!GLTFLoaderCls){ console.warn('GLTFLoader not available'); return cb && cb(null); }
   if(_glbCache[skinId]) return cb && cb(_glbCache[skinId]);
-  if(_glbLoading[skinId]){ /* already loading */ return; }
+  // Queue callback if already loading (don't drop it!)
+  if(_glbLoading[skinId]){
+    if(cb) _glbCallbacks[skinId].push(cb);
+    return;
+  }
   _glbLoading[skinId]=true;
+  _glbCallbacks[skinId]=cb ? [cb] : [];
   var info=GLB_SKINS[skinId];
-  if(!info){ _glbLoading[skinId]=false; return cb && cb(null); }
+  if(!info){ _glbLoading[skinId]=false; var cbs=_glbCallbacks[skinId]||[]; _glbCallbacks[skinId]=[]; cbs.forEach(function(fn){fn(null);}); return; }
   var loader=new GLTFLoaderCls();
   loader.load(info.file, function(gltf){
     _glbCache[skinId]={ scene:gltf.scene, animations:gltf.animations||[] };
     _glbLoading[skinId]=false;
-    cb && cb(_glbCache[skinId]);
+    var cbs=_glbCallbacks[skinId]||[]; _glbCallbacks[skinId]=[];
+    cbs.forEach(function(fn){fn(_glbCache[skinId]);});
   }, undefined, function(err){
     console.warn('GLB load failed:',skinId,err);
     _glbLoading[skinId]=false;
-    cb && cb(null);
+    var cbs=_glbCallbacks[skinId]||[]; _glbCallbacks[skinId]=[];
+    cbs.forEach(function(fn){fn(null);});
   });
 }
 

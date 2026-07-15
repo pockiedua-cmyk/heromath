@@ -27813,11 +27813,21 @@ function glbApplySkin(heroGrp, skinId){
   glbRemoveSkin(heroGrp);
   glbLoadSkin(skinId, function(data){
     if(!data) return;
-    // Hide all box parts
-    var parts=['torso','head','armL','armR','legL','legR','shoeL','shoeR','hairTop','hairFront','hairBack','hairSideL','hairSideR','hatRedGrp','hatBlueGrp','hatGoldGrp'];
+    // Hide all box parts. NOTE: makeMario() stores torso/head/hair/hat groups
+    // under underscore-prefixed properties (heroGrp._torso, heroGrp._head,
+    // heroGrp._hairTop, heroGrp._hatRedGrp, ...) — only legL/legR/shoeL/
+    // shoeR/armL/armR are also duplicated WITHOUT the underscore. Looking
+    // these up without the prefix silently found `undefined` and skipped
+    // hiding them, which is why the original head/torso/hair kept showing
+    // (full-size, unhidden) right on top of/behind the GLB model.
+    var parts=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR','_hairTop','_hairFront','_hairBack','_hairSideL','_hairSideR','_hatRedGrp','_hatBlueGrp','_hatGoldGrp'];
     parts.forEach(function(p){ if(heroGrp[p]) heroGrp[p].visible=false; });
-    // Also hide skin-specific groups
-    ['narutoHeadbandGrp','sasukeCollarGrp','kafkaCollarGrp','kafkaBodyGrp','kafkaTailGrp','kiritoHairGrp','kiritoSwordGrp','bagGrp'].forEach(function(p){ if(heroGrp[p]) heroGrp[p].visible=false; });
+    // Also hide skin-specific groups (bagGrp is stored as _bagGrp on the
+    // hero group itself; the Naruto/Sasuke/Kafka/Kirito groups only exist
+    // on the separate _marioRefs/_smapRefs/_mmoRefs tracking objects, not
+    // on heroGrp, but they're already hidden by applyCostume()'s normal
+    // skin-off logic since equipping a GLB skin clears the box 'skin' slot)
+    if(heroGrp._bagGrp) heroGrp._bagGrp.visible=false;
 
     // Clone scene so multiple heroes can share the cached data
     var model=data.scene.clone();
@@ -27892,6 +27902,13 @@ function glbRemoveSkin(heroGrp){
     heroGrp.remove(heroGrp._glbModel);
     heroGrp._glbModel = null;
   }
+  // Restore torso/head visibility explicitly — applyCostume()'s normal
+  // refresh (applyToRefs) only ever touches their COLOR, never their
+  // .visible flag (hair/hats/bag are self-correcting there, but these
+  // two aren't), so without this they'd stay hidden forever after
+  // unequipping a GLB skin.
+  if(heroGrp._torso) heroGrp._torso.visible=true;
+  if(heroGrp._head) heroGrp._head.visible=true;
   // Stop mixer
   if(heroGrp._glbMixer){
     heroGrp._glbMixer.stopAllAction();

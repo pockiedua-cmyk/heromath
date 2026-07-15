@@ -27799,7 +27799,7 @@ function glbApplySkin(heroGrp, skinId){
     var model=data.scene.clone();
     model.name='_glbSkin';
 
-    // Reset local transform — model's own origin should be at feet center
+    // Reset local transform
     model.position.set(0,0,0);
     model.rotation.set(0,0,0);
     model.scale.set(1,1,1);
@@ -27807,28 +27807,32 @@ function glbApplySkin(heroGrp, skinId){
     heroGrp.add(model);
     model.updateMatrixWorld(true);
 
-    // Measure actual model height and scale to hero size (1.8 units)
-    var box=new THREE.Box3().setFromObject(model);
-    var h=box.max.y-box.min.y;
-    var ctr=new THREE.Vector3();
-    box.getCenter(ctr);
-    if(h>0.1){
-      var s=1.8/h;
+    // SkinnedMesh Box3 gives wrong height (bind pose, not posed).
+    // Instead, find the tallest visible mesh and use its boundingSphere radius.
+    var maxR=0;
+    model.traverse(function(c){
+      if(c.isMesh && c.visible){
+        c.geometry.computeBoundingSphere();
+        var r=c.geometry.boundingSphere.radius;
+        if(r>maxR) maxR=r;
+      }
+    });
+    // A typical Mixamo character has boundingSphere radius ~0.9 for a ~1.8 unit tall model
+    // We want the model to be ~1.8 units total height, so scale = 1.8 / (radius*2)
+    if(maxR>0.01){
+      var targetH=1.8;
+      var curH=maxR*2;
+      var s=targetH/curH;
       model.scale.set(s,s,s);
       model.updateMatrixWorld(true);
-      // Recompute and recenter after scale
-      box=new THREE.Box3().setFromObject(model);
-      box.getCenter(ctr);
-      model.position.x=-ctr.x;
-      model.position.y=-box.min.y;
-      model.position.z=-ctr.z;
-    } else {
-      // Fallback: just ensure feet at y=0
-      model.position.y=-box.min.y;
     }
+
+    // Place feet at y=0 — measure bottom of scaled model
+    var box2=new THREE.Box3().setFromObject(model);
+    model.position.y=-box2.min.y;
     model.updateMatrixWorld(true);
 
-    console.log('[GLB] Applied',skinId,'→ height:',h.toFixed(2),'scale:',(h>0.1?(1.8/h):1).toFixed(2),'pos:',model.position.x.toFixed(2),model.position.y.toFixed(2),model.position.z.toFixed(2));
+    console.log('[GLB] Applied',skinId,'→ maxR:',maxR.toFixed(3),'scale:',model.scale.x.toFixed(2),'boxH:',(box2.max.y-box2.min.y).toFixed(2));
 
     // Store ref for removal
     heroGrp._glbSkinId = skinId;

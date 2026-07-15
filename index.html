@@ -27828,36 +27828,45 @@ function glbApplySkin(heroGrp, skinId){
     model.rotation.set(0,0,0);
     model.scale.set(1,1,1);
 
-    heroGrp.add(model);
+    // IMPORTANT: measure/scale/position the model BEFORE parenting it to
+    // heroGrp. heroGrp itself carries its own scale (e.g. 0.8 on the school
+    // map, 0.85 in the MMO world, etc.) — if we measure with the model
+    // already attached, Box3 reads world-space size (mesh height × heroGrp
+    // scale), so solving for "1.8 units tall" against that shrunken number
+    // produces a wildly inflated local scale. That's what caused the giant
+    // floating model: the fix-up math was computing everything in world
+    // space, then writing the result back into model.position/scale, which
+    // are LOCAL properties — the two spaces don't match. Measuring while
+    // the model has no parent means matrixWorld === its own local matrix,
+    // so the numbers below are genuinely local and consistent with how the
+    // box-built body parts (torso/head/etc, ~1.8 local units tall) are sized.
     model.updateMatrixWorld(true);
 
-    // Measure the ACTUAL rendered geometry (all meshes), not just bone pivots.
-    // Bone-only extents were the source of the "big head" bug: bones can sit
-    // at sparse/uneven local offsets (e.g. a head bone near the pivot while
-    // the actual head mesh/hat geometry extends well beyond it), so scaling
-    // off bone span alone produced the wrong overall scale and the head
-    // geometry ended up disproportionately large relative to the body.
-    // A full Box3 over the real mesh geometry gives the true visual height.
     var box=new THREE.Box3().setFromObject(model);
     var size=new THREE.Vector3();
     box.getSize(size);
     var modelH=size.y;
-    console.log('[GLB] Mesh bounding box height:',modelH.toFixed(2),'min.y:',box.min.y.toFixed(2),'max.y:',box.max.y.toFixed(2));
+    console.log('[GLB] Local bounding box height:',modelH.toFixed(4),'min.y:',box.min.y.toFixed(4),'max.y:',box.max.y.toFixed(4));
 
-    // Scale to hero height (1.8 units)
+    // Scale to hero height (1.8 local units, matching the box-built rig)
     var s=1;
-    if(modelH>0.01){
+    if(modelH>0.0001){
       s=1.8/modelH;
       model.scale.set(s,s,s);
     }
     model.updateMatrixWorld(true);
 
-    // Recompute box AFTER scaling to place feet exactly at y=0
+    // Recompute box AFTER scaling to place feet exactly at local y=0
     var box2=new THREE.Box3().setFromObject(model);
     model.position.y -= box2.min.y;
     model.updateMatrixWorld(true);
 
-    console.log('[GLB] Applied',skinId,'→ height:',modelH.toFixed(2),'scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(2));
+    console.log('[GLB] Applied',skinId,'→ local height:',modelH.toFixed(4),'scale:',s.toFixed(4),'pos.y:',model.position.y.toFixed(4));
+
+    // NOW attach to heroGrp — its scale applies uniformly to the whole
+    // model afterward, exactly as it does to every other body part.
+    heroGrp.add(model);
+    model.updateMatrixWorld(true);
 
     // Store ref for removal
     heroGrp._glbSkinId = skinId;

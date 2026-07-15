@@ -27842,11 +27842,11 @@ function glbLoadSkin(skinId, cb){
 // glbRemoveSkin (tunjuk semula) sentiasa sepadan — dulu glbRemoveSkin cuma
 // hardcode torso/head, jadi pencil/pistol/hat/hair boleh tercicir bila
 // GLB ditanggal (kekal tersorok/tak konsisten).
-var GLB_HIDE_PARTS=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR','_hairTop','_hairFront','_hairBack','_hairSideL','_hairSideR','_hatRedGrp','_hatBlueGrp','_hatGoldGrp','_pencilGrp','_pistolGrp','_eyeL','_eyeR','_handL','_handR','_earL','_earR','_browL','_browR','_smile','_chkL','_chkR','_pocket','_pocketLine','_pen'];
+var GLB_HIDE_PARTS=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR','_hairTop','_hairFront','_hairBack','_hairSideL','_hairSideR','_hatRedGrp','_hatBlueGrp','_hatGoldGrp','_pencilGrp','_pistolGrp','_eyeL','_eyeR','_handL','_handR','_earL','_earR','_browL','_browR','_smile','_chkL','_chkR','_pocket','_pocketLine','_pen','_collar','_collarL','_collarR','_tieTop','_tieMid','_tieTip'];
 // Faktor saiz skin GLB berbanding tinggi box-hero (1.8 unit). >1 = besar
 // sikit, <1 = kecil sikit. Laras nombor ni je untuk ubah saiz SEMUA skin
 // GLB serentak, tak perlu gali dalam glbApplySkin().
-var GLB_SIZE_MULT=1.2;
+var GLB_SIZE_MULT=1.32;
 function glbApplySkin(heroGrp, skinId){
   if(!heroGrp) return;
   // Skip if same GLB already applied

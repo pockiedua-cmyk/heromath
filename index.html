@@ -3635,12 +3635,28 @@ setTimeout(()=>{
     </div>
   </div>
 
+  <!-- Incoming Guild Ship invite toast -->
+  <div id="gsInviteToast" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0a1a2a;border:3px solid #ffd700;box-shadow:0 0 30px rgba(255,215,0,.5),8px 8px 0 #8a6000;padding:22px 26px;text-align:center;z-index:999;min-width:min(300px,88vw);font-family:'Press Start 2P',monospace;">
+    <div style="color:#ffd700;font-size:clamp(8px,1.8vw,12px);margin-bottom:6px;">⚓ JEMPUTAN KAPAL GUILD</div>
+    <div id="gsInviteMsgToast" style="color:#fff;font-size:clamp(7px,1.5vw,10px);margin-bottom:14px;line-height:1.8;">
+      <strong id="gsInviteFrom" style="color:#ffd700;display:block;font-size:clamp(9px,2vw,14px);margin-bottom:6px;">???</strong>
+      menjemput kamu naik Kapal Guild!
+    </div>
+    <div style="color:#555;font-size:clamp(4px,0.9vw,6px);margin-bottom:12px;">Kod Kapal: <span id="gsInviteRoomCode" style="color:#ffd700;letter-spacing:3px;">------</span></div>
+    <div class="dam-toast-btns">
+      <button onclick="gsInviteAccept()" style="background:#3a2a00;color:#ffd700;border:2px solid #ffd700;padding:8px 16px;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.3vw,8px);cursor:pointer;">✔ NAIK KAPAL</button>
+      <button onclick="gsInviteDecline()" style="background:#1a0000;color:#e52521;border:2px solid #e52521;padding:8px 16px;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.3vw,8px);cursor:pointer;">✖ TOLAK</button>
+    </div>
+  </div>
+
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js" onerror="var s2=document.createElement('script');s2.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';document.head.appendChild(s2);"></script>
+<script src="https://unpkg.com/fflate@0.6.9/umd/index.js" onerror="var sfl=document.createElement('script');sfl.src='https://cdn.jsdelivr.net/npm/fflate@0.6.9/umd/index.js';document.head.appendChild(sfl);"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FBXLoader.js" onerror="var sf=document.createElement('script');sf.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js';document.head.appendChild(sf);"></script>
 <script src="https://unpkg.com/three@0.128.0/examples/js/utils/SkeletonUtils.js" onerror="var s3=document.createElement('script');s3.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js';document.head.appendChild(s3);"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -8540,6 +8556,7 @@ function menuGoMap(){
   setTimeout(()=>{ if(typeof mobaInviteStartListen==='function') mobaInviteStartListen(); }, 950);
   setTimeout(()=>{ if(typeof pbInviteStartListen==='function') pbInviteStartListen(); }, 950);
   setTimeout(()=>{ if(typeof chessInviteStartListen==='function') chessInviteStartListen(); }, 950);
+  setTimeout(()=>{ if(typeof gsInviteStartListen==='function') gsInviteStartListen(); }, 950);
   setTimeout(()=>{ if(typeof petPvPInitListener==='function') petPvPInitListener(); }, 1000);
 }
 
@@ -21642,6 +21659,7 @@ const SHOP_ITEMS = [
   {id:'glb_demon',   cat:'glb_skin', icon:'😈', name:'GLB DEMON',     desc:'Syaitan bertanduk merah — model 3D penuh! (40 Rare Coin)',  price:40, currency:'rare', type:'wearable', glbSkin:'skin_demon'},
   {id:'glb_samurai', cat:'glb_skin', icon:'⛩️', name:'GLB SAMURAI',   desc:'Samurai pedang katana — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_samurai'},
   {id:'glb_mech',    cat:'glb_skin', icon:'🦾', name:'GLB MECHA PILOT', desc:'Pilot mech gergasi — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_mech'},
+  {id:'glb_custom_fbx', cat:'glb_skin', icon:'🎮', name:'CUSTOM HERO (FBX)', desc:'Skin FBX custom — model 3D penuh! (30 Rare Coin)', price:30, currency:'rare', type:'wearable', glbSkin:'skin_custom_fbx'},
   // ── Kenderaan Sekolah (Rare Coin) — boleh ditunggang keliling peta sekolah ──
   {id:'veh_neonmoto',   cat:'vehicle', icon:'🏍️', name:'MOTOSIKAL NEON RACER', desc:'Motor sport neon biru-ungu, laju & bergaya! (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
   {id:'veh_hoverboard', cat:'vehicle', icon:'🛹', name:'PAPAN HOVER ANTI-GRAVITI', desc:'Papan hoverboard terapung dgn cincin tenaga neon (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
@@ -23072,6 +23090,192 @@ function gsGetGuildInfo(){
   return{Id:g.id,Name:g.name,Role:g.role};
 }
 
+// ════════════════════════════════════════════════════════════════
+//  SISTEM JEMPUT AHLI GUILD ONLINE — KAPAL GUILD (gsInvite)
+//  Firebase path: gs_invites/{targetName}
+// ════════════════════════════════════════════════════════════════
+var _gsInviteUnsub=null;      // unsub listener respons (outgoing)
+var _gsInviteListener=null;   // listener jemputan masuk (incoming)
+var _gsPendingFrom=null;      // nama penghantar jemputan
+var _gsPendingRoom=null;      // kod kapal dari penghantar
+
+function gsMyKey(){return gsUser();}
+
+// ── Ambil senarai nama ahli guild dari Firebase (sekali setiap lobby dibuka) ──
+function gsFetchGuildMembers(){
+  var gi=gsGetGuildInfo();
+  if(!gi||!window._fbPresenceDb||!window._fbRefFn||!window._fbGetFn){GS._guildMemberNames=[];return Promise.resolve(GS._guildMemberNames);}
+  var gRef=window._fbRefFn(window._fbPresenceDb,'guilds/'+gi.Id+'/members');
+  return window._fbGetFn(gRef).then(function(snap){
+    var d=snap.val()||{};
+    GS._guildMemberNames=Object.keys(d).map(function(n){return n.toUpperCase();});
+    return GS._guildMemberNames;
+  }).catch(function(){GS._guildMemberNames=[];return GS._guildMemberNames;});
+}
+
+function gsRenderInvitePanelHTML(){
+  return '<div style="background:#001020;border:2px solid #00b4ff;padding:8px 10px;margin-bottom:10px;text-align:left;">'
+    +'<div style="font-size:6px;color:#00b4ff;margin-bottom:6px;">📡 JEMPUT AHLI GUILD ONLINE</div>'
+    +'<div id="gsInviteList" style="max-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin-bottom:6px;"></div>'
+    +'<div id="gsInviteMsg" style="color:#00e676;font-size:5px;min-height:12px;"></div>'
+    +'<button onclick="gsRefreshInviteList()" style="background:#001a2a;color:#00b4ff;border:1px solid #00b4ff;padding:4px 10px;font-family:inherit;font-size:5px;cursor:pointer;border-radius:4px;">🔄 REFRESH</button>'
+    +'</div>';
+}
+
+// ── Papar senarai ahli guild yang online & belum dalam kapal ──
+function gsRefreshInviteList(){
+  var list=document.getElementById('gsInviteList');
+  if(!list)return;
+  var me=gsMyKey();
+  var now=Date.now();
+  var cache=window._fbPresenceCache||{};
+  var inRoom=(GS.roomData&&GS.roomData.players)?Object.keys(GS.roomData.players):[];
+  var guildSet=GS._guildMemberNames||[];
+  var players=Object.values(cache).filter(function(p){
+    var nm=(p.who||'').toUpperCase();
+    return p.who && nm!==me && inRoom.indexOf(nm)===-1 && guildSet.indexOf(nm)!==-1 && (now-(p.ts||0))<20000;
+  });
+  if(players.length===0){
+    list.innerHTML='<div style="color:#2a4a5a;font-size:5px;text-align:center;padding:8px 0;">Tiada ahli guild online.<br>Minta mereka buka peta sekolah!</div>';
+    return;
+  }
+  list.innerHTML='';
+  players.forEach(function(p){
+    var nameKey=(p.who||'').toUpperCase();
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:rgba(0,180,255,0.05);border:1px solid #0a2a3a;border-radius:5px;padding:5px 8px;gap:6px;';
+    row.innerHTML='<div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">'
+      +'<div style="width:6px;height:6px;border-radius:50%;background:#00e676;flex-shrink:0;box-shadow:0 0 5px #00e676;"></div>'
+      +'<span style="color:#ccc;font-size:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+p.who+'</span></div>'
+      +'<button onclick="gsInviteSendTo(\''+nameKey+'\')" style="background:linear-gradient(135deg,#003a6a,#001a3a);color:#00b4ff;border:1px solid #00b4ff;padding:4px 8px;font-family:inherit;font-size:5px;cursor:pointer;border-radius:4px;white-space:nowrap;">📨 JEMPUT</button>';
+    list.appendChild(row);
+  });
+}
+
+// ── Hantar jemputan ke ahli guild tertentu ──
+function gsInviteSendTo(target){
+  var me=gsMyKey();
+  var msgEl=document.getElementById('gsInviteMsg');
+  if(!GS.roomCode||!GS.active){if(msgEl)msgEl.textContent='⚠ Cipta/join kapal dahulu!';return;}
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn){if(msgEl)msgEl.textContent='⚠ Tiada sambungan Firebase.';return;}
+  document.querySelectorAll('#gsInviteList button').forEach(function(b){b.disabled=true;});
+  if(msgEl){msgEl.style.color='#ffd700';msgEl.textContent='📡 Menjemput '+target+'...';}
+  var inviteRef=window._fbRefFn(window._fbPresenceDb,'gs_invites/'+target);
+  window._fbSetFn(inviteRef,{
+    from:me,
+    fromDisplay:(playerProfile&&playerProfile.name?playerProfile.name:me),
+    roomId:GS.roomCode,
+    guildName:GS.guildName,
+    ts:Date.now(),
+    status:'pending'
+  }).then(function(){
+    if(msgEl)msgEl.textContent='⏳ Tunggu '+target+' balas...';
+    var autoCancel=setTimeout(function(){
+      if(_gsInviteUnsub){_gsInviteUnsub();_gsInviteUnsub=null;}
+      gsCleanInvite(target);
+      if(msgEl){msgEl.style.color='#e52521';msgEl.textContent='⏱ Masa tamat. Cuba lagi.';}
+      document.querySelectorAll('#gsInviteList button').forEach(function(b){b.disabled=false;});
+    },25000);
+    if(_gsInviteUnsub)_gsInviteUnsub();
+    _gsInviteUnsub=window._fbOnValueFn(inviteRef,function(snap){
+      var d=snap.val();
+      if(!d)return;
+      if(d.status==='accepted'){
+        clearTimeout(autoCancel);
+        if(_gsInviteUnsub){_gsInviteUnsub();_gsInviteUnsub=null;}
+        gsCleanInvite(target);
+        if(msgEl){msgEl.style.color='#00e676';msgEl.textContent='✅ '+target+' telah masuk kapal!';}
+        document.querySelectorAll('#gsInviteList button').forEach(function(b){b.disabled=false;});
+        setTimeout(gsRefreshInviteList,1500);
+      }else if(d.status==='declined'){
+        clearTimeout(autoCancel);
+        if(_gsInviteUnsub){_gsInviteUnsub();_gsInviteUnsub=null;}
+        gsCleanInvite(target);
+        if(msgEl){msgEl.style.color='#e52521';msgEl.textContent='✖ '+target+' menolak jemputan.';}
+        document.querySelectorAll('#gsInviteList button').forEach(function(b){b.disabled=false;});
+      }
+    });
+  }).catch(function(){
+    if(msgEl){msgEl.style.color='#e52521';msgEl.textContent='⚠ Gagal hantar. Cuba lagi.';}
+    document.querySelectorAll('#gsInviteList button').forEach(function(b){b.disabled=false;});
+  });
+}
+
+function gsCleanInvite(target){
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbRemoveFn)return;
+  try{window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'gs_invites/'+target));}catch(e){}
+}
+
+// ── Terima jemputan kapal guild ──
+function gsInviteAccept(){
+  if(!_gsPendingFrom||!_gsPendingRoom)return;
+  var me=gsMyKey();
+  var from=_gsPendingFrom.toUpperCase();
+  var roomId=_gsPendingRoom;
+  if(window._fbPresenceDb&&window._fbRefFn&&window._fbSetFn){
+    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'gs_invites/'+me),{from:from,ts:Date.now(),status:'accepted'});
+  }
+  var toast=document.getElementById('gsInviteToast');if(toast)toast.style.display='none';
+  _gsPendingFrom=null;_gsPendingRoom=null;
+  // Buka lobby kapal guild dan terus join bilik yang dijemput
+  gsLobbyOpen();
+  setTimeout(function(){gsLobbyJoin(roomId);},300);
+}
+
+// ── Tolak jemputan kapal guild ──
+function gsInviteDecline(){
+  if(!_gsPendingFrom)return;
+  var me=gsMyKey();
+  if(window._fbPresenceDb&&window._fbRefFn&&window._fbSetFn){
+    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'gs_invites/'+me),{from:_gsPendingFrom,ts:Date.now(),status:'declined'});
+  }
+  var toast=document.getElementById('gsInviteToast');if(toast)toast.style.display='none';
+  _gsPendingFrom=null;_gsPendingRoom=null;
+}
+
+// ── Dengar jemputan kapal guild masuk (jalan pada setiap peranti/tab) ──
+function gsInviteStartListen(){
+  if(!window._fbPresenceDb||!window._fbRefFn)return;
+  if(!playerProfile||(!playerProfile.username&&!playerProfile.name))return;
+  var me=gsMyKey();
+  var invRef=window._fbRefFn(window._fbPresenceDb,'gs_invites/'+me);
+  var tryListen=function(){
+    if(!window._fbOnValueFn)return;
+    if(_gsInviteListener)return;
+    _gsInviteListener=window._fbOnValueFn(invRef,function(snap){
+      var d=snap.val();
+      if(!d||d.status!=='pending')return;
+      // Jemputan basi (lebih 40s) — abaikan & bersihkan
+      if(!d.ts||Date.now()-d.ts>40000){gsCleanInvite(me);return;}
+      // Jangan ganggu jika sedang dalam permainan lain aktif
+      if(typeof _pbRunning!=='undefined'&&_pbRunning)return;
+      if(typeof chessMode!=='undefined'&&chessMode==='pvp')return;
+      if(typeof _pvpActive!=='undefined'&&_pvpActive)return;
+      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running)return;
+      if(typeof _m!=='undefined'&&_m&&_m.phase==='game')return;
+      if(typeof sm3!=='undefined'&&sm3._ziActive)return;
+      if(GS.active)return; // sudah dalam kapal
+      _gsPendingFrom=d.from;
+      _gsPendingRoom=d.roomId||null;
+      var toast=document.getElementById('gsInviteToast');
+      var fromEl=document.getElementById('gsInviteFrom');if(fromEl)fromEl.textContent=(d.fromDisplay||d.from);
+      var roomEl=document.getElementById('gsInviteRoomCode');if(roomEl)roomEl.textContent=d.roomId||'------';
+      if(toast)toast.style.display='block';
+      setTimeout(function(){
+        if(_gsPendingFrom===d.from){
+          if(toast)toast.style.display='none';
+          _gsPendingFrom=null;_gsPendingRoom=null;
+          gsCleanInvite(me);
+        }
+      },25000);
+    });
+  };
+  if(window._fbOnValueFn){tryListen();}
+  else{
+    var poll=setInterval(function(){if(window._fbOnValueFn){tryListen();clearInterval(poll);}},500);
+  }
+}
+
 // ═══════════════════════════════════════════════════════
 //  EPIC 3D SHIP BUILDER — One Piece Galleon Style
 // ═══════════════════════════════════════════════════════
@@ -23512,6 +23716,7 @@ function gsLobbyRenderBody(){
       +'<div style="font-size:24px;color:#ffd700;letter-spacing:5px;font-weight:bold;cursor:pointer;" onclick="navigator.clipboard.writeText(\''+GS.roomCode+'\');this.style.color=\'#00ff44\';setTimeout(()=>this.style.color=\'#ffd700\',600);" title="Klik untuk copy">'
       +GS.roomCode+'</div>'
       +'<div style="font-size:6px;color:#666;margin-top:2px;">📋 Klik untuk copy — hantar ke chat guild</div></div>';
+    if(names.length<GS_MAX_PLAYERS){ h+=gsRenderInvitePanelHTML(); }
     h+='<div style="text-align:left;margin-bottom:10px;">';
     for(var i=0;i<GS_MAX_PLAYERS;i++){
       var nm=names[i]||null;
@@ -23539,7 +23744,16 @@ function gsLobbyRenderBody(){
       +'<button onclick="gsLobbyLeave()" style="flex:1;background:#e52521;color:#fff;border:2px solid #fff;padding:8px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:7px;">🚪 KELUAR</button>'
       +'<button onclick="document.getElementById(\'gsLobbyOverlay\').remove()" style="flex:1;background:#444;color:#fff;border:2px solid #888;padding:8px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:7px;">✖ TUTUP</button></div>';
     b.innerHTML=h;
+    if(names.length<GS_MAX_PLAYERS){
+      gsFetchGuildMembers().then(gsRefreshInviteList);
+      if(GS._inviteRefreshInt)clearInterval(GS._inviteRefreshInt);
+      GS._inviteRefreshInt=setInterval(function(){
+        var lb=document.getElementById('gsInviteList');
+        if(lb)gsRefreshInviteList();else clearInterval(GS._inviteRefreshInt);
+      },4000);
+    }else if(GS._inviteRefreshInt){clearInterval(GS._inviteRefreshInt);GS._inviteRefreshInt=null;}
   }else{
+    if(GS._inviteRefreshInt){clearInterval(GS._inviteRefreshInt);GS._inviteRefreshInt=null;}
     var h2='<button onclick="gsLobbyCreate()" style="display:block;width:100%;background:linear-gradient(135deg,#aa8800,#ffd700);color:#111;border:3px solid #fff;padding:12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:10px;margin-bottom:10px;">⚓ CIPTA KAPAL BARU</button>';
     h2+='<div style="font-size:7px;color:#888;margin:6px 0;">— ATAU JOIN KAPAL GUILD LAIN —</div>';
     h2+='<input id="gsLobbyJoinInput" maxlength="6" placeholder="KOD KAPAL" autocomplete="off" autocapitalize="characters" style="width:100%;text-align:center;text-transform:uppercase;background:#111;border:2px solid #ffd700;color:#ffd700;font-family:inherit;font-size:12px;padding:10px;margin-bottom:10px;box-sizing:border-box;border-radius:6px;letter-spacing:4px;">';
@@ -23621,6 +23835,8 @@ function gsLobbyLeave(){
     }
   }catch(e){}
   if(GS.unsub)try{GS.unsub();}catch(e){}
+  if(_gsInviteUnsub){try{_gsInviteUnsub();}catch(e){}_gsInviteUnsub=null;}
+  if(GS._inviteRefreshInt){clearInterval(GS._inviteRefreshInt);GS._inviteRefreshInt=null;}
   GS.roomCode=null;GS.isHost=false;GS.active=false;GS.roomData=null;
   gsLobbyRenderBody();
 }
@@ -27797,22 +28013,27 @@ function applyCostume(){
 
 // ══════════════════════════════════════════════════════════════
 //  GLB Skin System — Load custom 3D models from skins/ folder
-//  Setiap skin boleh ada 2 fail GLB berasingan:
+//  Setiap skin boleh ada 2 fail berasingan:
 //    file      = rig STATIK/idle (wajib)
 //    fileWalk  = rig BERJALAN (opsyenal — kalau takde, guna rig static je)
+//  Format fail: boleh guna .glb/.gltf ATAU .fbx — dikesan automatik ikut
+//  sambungan nama fail (lihat glbLoadVariant). Kalau host kat GitHub,
+//  guna raw.githubusercontent.com URL penuh (bukan github.com/.../blob/...),
+//  cth: 'https://raw.githubusercontent.com/user/repo/main/skins/hero.fbx'
 // ══════════════════════════════════════════════════════════════
 var GLB_SKINS = {
   //  id              : { name, file, fileWalk, price, desc, icon }
-  skin_wizard      : { name:'Wizard',       file:'skins/wizard.glb',      fileWalk:'skins/wizard_walk.glb',      price:30, desc:'Ahli sihir bertopi tinggi',        icon:'🧙' },
-  skin_knight      : { name:'Knight',       file:'skins/knight.glb',      fileWalk:'skins/knight_walk.glb',      price:30, desc:'Ksatria berperisai penuh',          icon:'⚔️' },
-  skin_ninja       : { name:'Ninja',        file:'skins/ninja.glb',       fileWalk:'skins/ninja_walk.glb',       price:30, desc:'Ninja bayangan gelap',              icon:'🥷' },
-  skin_robot       : { name:'Robot',        file:'skins/robot.glb',       fileWalk:'skins/robot_walk.glb',       price:35, desc:'Robot futuristik bersenjata',       icon:'🤖' },
-  skin_dragon      : { name:'Dragon Lord',  file:'skins/dragon_lord.glb', fileWalk:'skins/dragon_lord_walk.glb', price:40, desc:'Raja naga berkuasa',                icon:'🐉' },
-  skin_pirate      : { name:'Pirate',       file:'skins/pirate.glb',      fileWalk:'skins/pirate_walk.glb',      price:25, desc:'Lanun laut lepas',                  icon:'🏴‍☠️' },
-  skin_angel       : { name:'Angel',        file:'skins/angel.glb',       fileWalk:'skins/angel_walk.glb',       price:40, desc:'Malaikat bersayap cahaya',          icon:'👼' },
-  skin_demon       : { name:'Demon',        file:'skins/demon.glb',       fileWalk:'skins/demon_walk.glb',       price:40, desc:'Syaitan bertanduk merah',           icon:'😈' },
-  skin_samurai     : { name:'Samurai',      file:'skins/samurai.glb',     fileWalk:'skins/samurai_walk.glb',     price:35, desc:'Samurai pedang katana',              icon:'⛩️' },
-  skin_mech        : { name:'Mecha Pilot',  file:'skins/mech_pilot.glb',  fileWalk:'skins/mech_pilot_walk.glb',  price:35, desc:'Pilot mech gergasi',                icon:'🦾' },
+  skin_wizard      : { name:'Wizard',       file:'skins/wizard.fbx',      fileWalk:'skins/wizard_walk.fbx',      price:30, desc:'Ahli sihir bertopi tinggi',        icon:'🧙' },
+  skin_knight      : { name:'Knight',       file:'skins/knight.fbx',      fileWalk:'skins/knight_walk.fbx',      price:30, desc:'Ksatria berperisai penuh',          icon:'⚔️' },
+  skin_ninja       : { name:'Ninja',        file:'skins/ninja.fbx',       fileWalk:'skins/ninja_walk.fbx',       price:30, desc:'Ninja bayangan gelap',              icon:'🥷' },
+  skin_robot       : { name:'Robot',        file:'skins/robot.fbx',       fileWalk:'skins/robot_walk.fbx',       price:35, desc:'Robot futuristik bersenjata',       icon:'🤖' },
+  skin_dragon      : { name:'Dragon Lord',  file:'skins/dragon_lord.fbx', fileWalk:'skins/dragon_lord_walk.fbx', price:40, desc:'Raja naga berkuasa',                icon:'🐉' },
+  skin_pirate      : { name:'Pirate',       file:'skins/pirate.fbx',      fileWalk:'skins/pirate_walk.fbx',      price:25, desc:'Lanun laut lepas',                  icon:'🏴‍☠️' },
+  skin_angel       : { name:'Angel',        file:'skins/angel.fbx',       fileWalk:'skins/angel_walk.fbx',       price:40, desc:'Malaikat bersayap cahaya',          icon:'👼' },
+  skin_demon       : { name:'Demon',        file:'skins/demon.fbx',       fileWalk:'skins/demon_walk.fbx',       price:40, desc:'Syaitan bertanduk merah',           icon:'😈' },
+  skin_samurai     : { name:'Samurai',      file:'skins/samurai.fbx',     fileWalk:'skins/samurai_walk.fbx',     price:35, desc:'Samurai pedang katana',              icon:'⛩️' },
+  skin_mech        : { name:'Mecha Pilot',  file:'skins/mech_pilot.fbx',  fileWalk:'skins/mech_pilot_walk.fbx',  price:35, desc:'Pilot mech gergasi',                icon:'🦾' },
+  skin_custom_fbx  : { name:'Custom Hero',  file:'skins/custom_hero.fbx', fileWalk:'skins/custom_hero_walk.fbx', price:30, desc:'Skin FBX custom',                   icon:'🎮' },
 };
 var _glbCache = {};          // "skinId|idle" / "skinId|walk" → { scene, animations }
 var _glbLoading = {};        // same key → true (loading in progress)
@@ -27821,8 +28042,6 @@ var _glbMixers  = [];        // [{mixer, model}]  — all active mixers (model r
 
 // Load ONE variant ('idle' or 'walk') of a skin. cb(data|null).
 function glbLoadVariant(skinId, variant, cb){
-  var GLTFLoaderCls = (typeof GLTFLoader!=='undefined') ? GLTFLoader : (typeof THREE!=='undefined' && THREE.GLTFLoader) ? THREE.GLTFLoader : null;
-  if(!GLTFLoaderCls){ console.warn('GLTFLoader not available'); return cb && cb(null); }
   var info=GLB_SKINS[skinId];
   if(!info) return cb && cb(null);
   var file = (variant==='walk') ? info.fileWalk : info.file;
@@ -27833,16 +28052,28 @@ function glbLoadVariant(skinId, variant, cb){
     if(cb) _glbCallbacks[key].push(cb);
     return;
   }
+  // Fail .fbx guna FBXLoader (hasil dia terus jadi Object3D + .animations[]),
+  // selain daripada tu (.glb/.gltf) guna GLTFLoader macam biasa (hasil dia
+  // {scene, animations[]}). Kedua-dua laluan ditukar ke bentuk seragam
+  // {scene, animations} supaya glbPrepareModel/glbApplySkin tak perlu tahu
+  // apa-apa pasal format asal fail.
+  var isFbx = /\.fbx$/i.test(file);
+  var LoaderCls = isFbx
+    ? ((typeof FBXLoader!=='undefined') ? FBXLoader : (typeof THREE!=='undefined' && THREE.FBXLoader) ? THREE.FBXLoader : null)
+    : ((typeof GLTFLoader!=='undefined') ? GLTFLoader : (typeof THREE!=='undefined' && THREE.GLTFLoader) ? THREE.GLTFLoader : null);
+  if(!LoaderCls){ console.warn((isFbx?'FBXLoader':'GLTFLoader')+' not available'); return cb && cb(null); }
   _glbLoading[key]=true;
   _glbCallbacks[key]=cb ? [cb] : [];
-  var loader=new GLTFLoaderCls();
-  loader.load(file, function(gltf){
-    _glbCache[key]={ scene:gltf.scene, animations:gltf.animations||[] };
+  var loader=new LoaderCls();
+  loader.load(file, function(result){
+    _glbCache[key]= isFbx
+      ? { scene:result, animations:result.animations||[] }   // FBXLoader → Object3D dgn .animations
+      : { scene:result.scene, animations:result.animations||[] }; // GLTFLoader → {scene, animations}
     _glbLoading[key]=false;
     var cbs=_glbCallbacks[key]||[]; _glbCallbacks[key]=[];
     cbs.forEach(function(fn){fn(_glbCache[key]);});
   }, undefined, function(err){
-    console.warn('GLB load failed:',key,file,err);
+    console.warn((isFbx?'FBX':'GLB')+' load failed:',key,file,err);
     _glbLoading[key]=false;
     var cbs=_glbCallbacks[key]||[]; _glbCallbacks[key]=[];
     cbs.forEach(function(fn){fn(null);});
@@ -27870,12 +28101,70 @@ var GLB_HIDE_PARTS=['_torso','_head','armL','armR','legL','legR','shoeL','shoeR'
 // Faktor saiz skin GLB berbanding tinggi box-hero (1.8 unit). >1 = besar
 // sikit, <1 = kecil sikit. Laras nombor ni je untuk ubah saiz SEMUA skin
 // GLB serentak, tak perlu gali dalam glbApplySkin().
-var GLB_SIZE_MULT=0.02;
+var GLB_SIZE_MULT=1.8;
+// Selaras kaki model dengan lantai. Box3.setFromObject() yang kita guna untuk
+// letak kaki di y=0 (glbPrepareModel) TAK kira skinning/pose animasi — ia baca
+// geometri bind-pose (T-pose) mentah, walaupun mixer.update(0) dah dipanggil.
+// Jadi kalau pose idle/walk sebenar beza dari T-pose (lutut tertekuk dsb),
+// model boleh nampak terapung/tenggelam secara KONSISTEN (bukan bouncing).
+// Laraskan nombor ni: NEGATIF turunkan model (kalau terapung), POSITIF naikkan
+// (kalau tenggelam dalam lantai).
+var GLB_GROUND_OFFSET=0;
 
 // Prepare ONE loaded GLB variant into a scaled, ground-aligned, playing
 // model ready to be parented onto heroGrp. Shared by both idle & walk
 // rigs so their scale/ground-alignment math (and its footgun history —
 // see comments below) never drifts apart between the two variants.
+// Box3.setFromObject() pada SkinnedMesh hanya baca geometri CPU MENTAH
+// (bind/T-pose) — skinning berlaku di GPU sahaja, jadi ia TAK PERNAH
+// reflect pose animasi sebenar (idle/walk) tak kira mixer.update() berapa
+// kali pun dipanggil. Fungsi ni kira kedudukan vertex SEBENAR selepas
+// skinning (ikut pose semasa skeleton), supaya ground-alignment tepat.
+// Cost: sekali sahaja semasa load model, bukan per-frame — selamat.
+function _glbSkinnedMinMaxY(model){
+  var minY=Infinity, maxY=-Infinity, found=false;
+  var _vBind=new THREE.Vector4();
+  var _vSkin=new THREE.Vector4();
+  var _boneMat=new THREE.Matrix4();
+  var _tmp=new THREE.Vector4();
+  var _world=new THREE.Vector3();
+  model.traverse(function(mesh){
+    if(!mesh.isSkinnedMesh || !mesh.geometry) return;
+    var geo=mesh.geometry;
+    var posAttr=geo.attributes.position;
+    var skinIdxAttr=geo.attributes.skinIndex;
+    var skinWtAttr=geo.attributes.skinWeight;
+    if(!posAttr || !skinIdxAttr || !skinWtAttr || !mesh.skeleton) return;
+    mesh.skeleton.update();
+    var boneMatrices=mesh.skeleton.boneMatrices;
+    var bindMatrix=mesh.bindMatrix;
+    var bindMatrixInverse=mesh.bindMatrixInverse;
+    var count=posAttr.count;
+    var _getComp=function(attr,i,j){
+      return j===0?attr.getX(i):j===1?attr.getY(i):j===2?attr.getZ(i):attr.getW(i);
+    };
+    // Sample every vertex for max accuracy (one-time cost at load).
+    for(var i=0;i<count;i++){
+      _vBind.set(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i), 1).applyMatrix4(bindMatrix);
+      _vSkin.set(0,0,0,0);
+      for(var j=0;j<4;j++){
+        var w = _getComp(skinWtAttr,i,j);
+        if(w===0) continue;
+        var bi = _getComp(skinIdxAttr,i,j);
+        _boneMat.fromArray(boneMatrices, bi*16);
+        _tmp.copy(_vBind).applyMatrix4(_boneMat);
+        _vSkin.x += _tmp.x*w; _vSkin.y += _tmp.y*w; _vSkin.z += _tmp.z*w; _vSkin.w += _tmp.w*w;
+      }
+      _vSkin.applyMatrix4(bindMatrixInverse);
+      _world.set(_vSkin.x, _vSkin.y, _vSkin.z).applyMatrix4(mesh.matrixWorld);
+      if(_world.y<minY) minY=_world.y;
+      if(_world.y>maxY) maxY=_world.y;
+      found=true;
+    }
+  });
+  return found ? {minY:minY, maxY:maxY} : null;
+}
+
 function glbPrepareModel(data){
   // Clone scene so multiple heroes can share the cached data.
   // IMPORTANT: plain Object3D.clone() does NOT correctly clone a rigged
@@ -27913,6 +28202,21 @@ function glbPrepareModel(data){
   // box-built body parts (torso/head/etc, ~1.8 local units tall) are sized.
   model.updateMatrixWorld(true);
 
+  // FIX: FBXLoader membuang weight bone lebihan (>4 per vertex) tapi TAK
+  // menormalize semula baki weight tu supaya jumlahnya = 1.0. Bila jumlah
+  // weight < 1.0, transform skinning di GPU jadi "separuh kuasa" dan pada
+  // model yang sangat kecil ni boleh nampak macam mesh collapse/hilang
+  // terus di skrin walaupun bounding box (dikira di CPU, tak kira
+  // skinning) nampak normal — inilah sebab model "halimunan" walaupun
+  // semua log material/mesh nampak sah. normalizeSkinWeights() betulkan
+  // ini terus dalam buffer geometri.
+  model.traverse(function(c){
+    if(c.isSkinnedMesh && typeof c.normalizeSkinWeights==='function'){
+      c.normalizeSkinWeights();
+      console.log('[glbPrepareModel] normalized skin weights on', c.name);
+    }
+  });
+
   // Measure using raw geometry Box3 — this is the CORRECT reference
   // despite looking wrong at first glance (~0.017 for a full character).
   // See long history in earlier revisions of this file for why bone
@@ -27922,14 +28226,59 @@ function glbPrepareModel(data){
   box.getSize(size);
   var modelH=size.y;
 
+  // DEBUG: kalau model "halimunan" (tak nampak langsung, tiada error),
+  // punca paling biasa ialah modelH keluar 0/NaN/Infinity di sini (geometri
+  // rosak akibat isu skinning FBX, atau bounding box gagal dikira) — bila
+  // tu jadi, scale yang dikira jadi tak masuk akal (sifar atau raksasa) dan
+  // model efektifnya hilang. Log ni bagi kita nampak angka sebenar dalam
+  // console browser untuk diagnosis.
+  console.log('[glbPrepareModel] modelH (raw units) =', modelH, 'isFinite=', isFinite(modelH));
+
   // Scale to hero height (1.8 local units, matching the box-built rig),
   // × GLB_SIZE_MULT untuk besarkan sikit ikut permintaan.
   var s=1;
-  if(modelH>0.0001){
+  if(modelH>0.0001 && isFinite(modelH)){
     s=(1.8*GLB_SIZE_MULT)/modelH;
-    model.scale.set(s,s,s);
   }
+  // Safety-net: kalau geometri FBX rosak (box degenerate) hasil pengiraan s
+  // boleh jadi NaN/0/Infinity — buang scale mikroskopik/raksasa senyap yang
+  // buat model "halimunan", ganti dengan anggaran munasabah 1/100 (assume
+  // unit asal FBX ialah cm, konvensyen Blender/Maya paling biasa).
+  if(!isFinite(s) || s<=0){
+    console.warn('[glbPrepareModel] scale pelik ('+s+'), guna fallback 1/100 (anggap unit FBX = cm)');
+    s = 0.01;
+  }
+  model.scale.set(s,s,s);
+  console.log('[glbPrepareModel] final scale =', s);
   model.updateMatrixWorld(true);
+
+  // Safety-net tambahan: FBX yang di-export dengan normal terbalik atau
+  // backface culling salah setting boleh nampak "halimunan" dari sudut
+  // kamera tertentu walaupun model sebenarnya ada. Paksa DoubleSide supaya
+  // ia sentiasa render dari mana-mana sudut kamera.
+  var meshCount=0;
+  model.traverse(function(c){
+    if(c.isMesh && c.material){
+      meshCount++;
+      var mats = Array.isArray(c.material) ? c.material : [c.material];
+      mats.forEach(function(m){
+        m.side = THREE.DoubleSide;
+        m.needsUpdate = true;
+        // DEBUG: senarai keadaan sebenar setiap material — kalau opacity=0,
+        // visible=false, atau map gagal load, ini punca "halimunan".
+        console.log('[glbPrepareModel] mesh material:', c.name, {
+          type: m.type,
+          color: m.color ? m.color.getHexString() : null,
+          opacity: m.opacity,
+          transparent: m.transparent,
+          visible: m.visible,
+          hasMap: !!m.map,
+          mapImage: m.map ? (m.map.image ? (m.map.image.width+'x'+m.map.image.height) : 'NO_IMAGE_LOADED') : null,
+        });
+      });
+    }
+  });
+  console.log('[glbPrepareModel] total mesh count in FBX =', meshCount, '| model.visible=', model.visible);
 
   // Setup animation mixer and advance it ONE tick BEFORE measuring the
   // ground-alignment box. Box3.setFromObject reads the mesh's current
@@ -27959,9 +28308,25 @@ function glbPrepareModel(data){
   }
 
   // Recompute box AFTER scaling (and after posing) to place feet exactly
-  // at local y=0
-  var box2=new THREE.Box3().setFromObject(model);
-  model.position.y -= box2.min.y;
+  // at local y=0. Try TRUE skinned (posed) vertex positions first — this
+  // is the accurate method that actually reflects the animated pose.
+  // Box3.setFromObject() is kept ONLY as a fallback for non-skinned/static
+  // models (props etc.) since it can't read skinning at all.
+  var skinnedRange=_glbSkinnedMinMaxY(model);
+  var groundMinY, groundMaxY;
+  if(skinnedRange){
+    groundMinY=skinnedRange.minY; groundMaxY=skinnedRange.maxY;
+    console.log('[glbPrepareModel] TRUE skinned pose min.y=', groundMinY, 'max.y=', groundMaxY, 'height=', (groundMaxY-groundMinY));
+  } else {
+    var box2=new THREE.Box3().setFromObject(model);
+    groundMinY=box2.min.y; groundMaxY=box2.max.y;
+    console.log('[glbPrepareModel] no SkinnedMesh found, fallback Box3 min.y=', groundMinY, 'max.y=', groundMaxY, 'degenerate=', !isFinite(groundMinY));
+  }
+  if(isFinite(groundMinY)){
+    model.position.y -= groundMinY;
+  }
+  model.position.y += GLB_GROUND_OFFSET;
+  console.log('[glbPrepareModel] GLB_GROUND_OFFSET=', GLB_GROUND_OFFSET, '| model.position.y final (local, before heroGrp scale)=', model.position.y);
   model.updateMatrixWorld(true);
 
   return { model:model, mixer:mixer };
@@ -27969,6 +28334,28 @@ function glbPrepareModel(data){
 
 function glbApplySkin(heroGrp, skinId){
   if(!heroGrp) return;
+  // DEBUG: kenal pasti heroGrp MANA sebenarnya yang sedang menerima skin
+  // ni — window.smHero (Peta Sekolah), window.marioMesh (scene utama),
+  // atau window._mmoHero (dunia MMO). Juga semak heroGrp.parent (kalau
+  // null, heroGrp tak pernah ditambah ke mana-mana scene lagi — jadi
+  // walaupun model FBX/GLB berjaya dilekat sebagai child, tiada apa akan
+  // render sebab heroGrp sendiri "melayang" di luar scene graph).
+  var _which = (heroGrp===window.smHero) ? 'window.smHero (Peta Sekolah)'
+             : (heroGrp===window.marioMesh) ? 'window.marioMesh (scene utama)'
+             : (heroGrp===window._mmoHero) ? 'window._mmoHero (MMO)'
+             : 'TIDAK DIKENALI';
+  console.log('[glbApplySkin] target =', _which, '| heroGrp.parent=', heroGrp.parent ? (heroGrp.parent.type||heroGrp.parent) : 'NULL (tak dlm scene!)', '| heroGrp.visible=', heroGrp.visible, '| heroGrp.scale=', heroGrp.scale.x, heroGrp.scale.y, heroGrp.scale.z);
+  // Jejak ke atas rantaian parent sampai jumpa root scene, untuk confirm
+  // heroGrp ni sebenarnya sebahagian daripada window.smScene (scene yang
+  // AKTIF dirender masa Peta Sekolah dibuka) — bukan scene lain yang tak
+  // dirender langsung.
+  (function(){
+    var p=heroGrp, depth=0;
+    while(p.parent && depth<20){ p=p.parent; depth++; }
+    var rootIsSmScene = (typeof window.smScene!=='undefined' && p===window.smScene);
+    var rootIsMainScene = (typeof scene!=='undefined' && p===scene);
+    console.log('[glbApplySkin] root scene heroGrp ni ialah smScene?', rootIsSmScene, '| scene utama?', rootIsMainScene, '| root object type=', p.type);
+  })();
   // Skip if same GLB already applied
   if(heroGrp._glbSkinId === skinId && heroGrp._glbModel) return;
   // Remove any existing GLB first
@@ -41305,6 +41692,7 @@ menuGoMap = function(){
       setTimeout(()=>{ if(typeof mobaInviteStartListen==='function') mobaInviteStartListen(); }, 950);
       setTimeout(()=>{ if(typeof pbInviteStartListen==='function') pbInviteStartListen(); }, 950);
       setTimeout(()=>{ if(typeof chessInviteStartListen==='function') chessInviteStartListen(); }, 950);
+      setTimeout(()=>{ if(typeof gsInviteStartListen==='function') gsInviteStartListen(); }, 950);
     }
   });
 };

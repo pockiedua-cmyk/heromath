@@ -6800,46 +6800,14 @@ function authSaveSession(profile){
 function authClearSession(){try{localStorage.removeItem(SESSION_KEY);}catch(e){}}
 
 // ══════════════════════════════════════════════════════════════════
-//  ADMIN ACCOUNT  –  pre-seeded, protected
+//  ADMIN ACCOUNT — akaun admin sudah wujud dalam Firebase (dibootstrap
+//  sekali sahaja sebelum ini). Kod penciptaan & password lalai dibuang
+//  dari fail ini secara sengaja supaya tiada credential admin tertanam
+//  dalam kod client. Login admin tetap berfungsi seperti biasa kerana
+//  doLogin() sahkan terhadap hash TERSIMPAN di Firebase, bukan sebarang
+//  pemalar dalam fail ini.
 // ══════════════════════════════════════════════════════════════════
-(function seedAdmin(){
-  const ADMIN_USER = 'ADMIN';
-  const ADMIN_PASS = 'MATHERO2025'; // password lalai — dipakai HANYA kali pertama akaun admin dicipta
-  const ADMIN_HASH = simpleHash(ADMIN_PASS);
 
-  const ADMIN_DATA = {
-    username: ADMIN_USER,
-    name: 'Admin',
-    school: 'Sistem',
-    grade: 'Tingkatan 5',
-    hash: ADMIN_HASH,
-    remember: false,
-    isAdmin: true
-  };
-
-  function createAdminIfMissing(){
-    const users = authLoadUsers();
-    // Kalau akaun admin dah wujud, JANGAN sentuh — hormati data semasa
-    // (termasuk kalau password admin dah ditukar terus melalui Firebase Console).
-    if(users[ADMIN_USER] && users[ADMIN_USER].isAdmin){
-      return;
-    }
-    users[ADMIN_USER] = Object.assign({}, ADMIN_DATA, {
-      createdAt: new Date().toLocaleDateString('ms-MY')
-    });
-    authSaveUsers(users);
-    // Tulis juga ke Firebase supaya akaun admin wujud merentasi peranti
-    if(window._fbPresenceDb && window._fbRefFn && window._fbSetFn){
-      try{
-        const ref = window._fbRefFn(window._fbPresenceDb, 'users/' + ADMIN_USER);
-        window._fbSetFn(ref, users[ADMIN_USER]);
-      }catch(e){}
-    }
-  }
-
-  // Cipta akaun admin HANYA jika belum wujud (bootstrap kali pertama sahaja)
-  createAdminIfMissing();
-})();
 
 // ── Admin login check ──
 function isAdminUser(username){

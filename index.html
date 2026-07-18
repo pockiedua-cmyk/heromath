@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Math Hero — 10 Menara: permainan matematik interaktif untuk pelajar dengan cabaran sifir, bos, dan mod pelbagai pemain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <title>Pelajar Math Hero — 10 Menara</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -4013,86 +4016,91 @@ function genQ_T1(lvl){
   // lvl 3: ax = b
   // lvl 4: x/a = b  and  2x + a = b
   // lvl 5: ax + b = c  and  word problems
+  // JULAT RAWAK DIBESARKAN (2025-anti-hafal): sengaja diperbesarkan drpd versi
+  // asal supaya kombinasi {a,b,x,...} yang mungkin keluar jauh lebih banyak —
+  // murid tak boleh lagi catat/hafal jawapan sebab soalan "sama" jarang
+  // berulang dgn nombor sama persis. Struktur soalan & logik jawapan (ans)
+  // TAK berubah, hanya julat rand() dilebarkan.
   const bank = {
     1:[
-      ()=>{ const a=rand(1,10),b=rand(a+1,a+20); return {text:`x + ${a} = ${b}\nx = ?`, ans:b-a}; },
-      ()=>{ const a=rand(1,15),b=rand(a+2,a+25); return {text:`x + ${a} = ${b}\nx = ?`, ans:b-a}; },
-      ()=>{ const x=rand(1,20),a=rand(1,15); return {text:`${x+a} = x + ${a}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,8),b=rand(a+1,a+15); return {text:`${b} = x + ${a}\nx = ?`, ans:b-a}; },
-      ()=>{ const x=rand(2,15),a=rand(1,10); return {text:`x + ${a} = ${x+a}\nNilai x = ?`, ans:x}; },
-      ()=>{ const a=rand(5,20),b=rand(1,a-1); return {text:`${a} = ${b} + x\nx = ?`, ans:a-b}; },
-      ()=>{ const x=rand(1,12),a=rand(2,10); return {text:`Jumlah x dan ${a} ialah ${x+a}.\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,25),b=rand(a+1,a+40); return {text:`x + ${a} = ${b}\nx = ?`, ans:b-a}; },
+      ()=>{ const a=rand(1,30),b=rand(a+2,a+45); return {text:`x + ${a} = ${b}\nx = ?`, ans:b-a}; },
+      ()=>{ const x=rand(1,40),a=rand(1,30); return {text:`${x+a} = x + ${a}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,20),b=rand(a+1,a+30); return {text:`${b} = x + ${a}\nx = ?`, ans:b-a}; },
+      ()=>{ const x=rand(2,35),a=rand(1,25); return {text:`x + ${a} = ${x+a}\nNilai x = ?`, ans:x}; },
+      ()=>{ const a=rand(5,45),b=rand(1,a-1); return {text:`${a} = ${b} + x\nx = ?`, ans:a-b}; },
+      ()=>{ const x=rand(1,30),a=rand(2,25); return {text:`Jumlah x dan ${a} ialah ${x+a}.\nx = ?`, ans:x}; },
     ],
     2:[
-      ()=>{ const a=rand(1,15),b=rand(1,20); return {text:`x - ${a} = ${b}\nx = ?`, ans:a+b}; },
-      ()=>{ const x=rand(5,25),a=rand(1,10); return {text:`x - ${a} = ${x-a}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,12),b=rand(3,18); return {text:`${a} + x = ${a+b}\nx = ?`, ans:b}; },
-      ()=>{ const x=rand(3,18),a=rand(1,x-1); return {text:`x - ${a} = ${x-a}\nCari nilai x`, ans:x}; },
-      ()=>{ const a=rand(2,10),b=rand(2,15); return {text:`${a+b} - x = ${a}\nx = ?`, ans:b}; },
-      ()=>{ const x=rand(4,20),a=rand(1,8); return {text:`x - ${a} = ${x-a}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(3,12),b=rand(1,a-1); return {text:`${a} = x + ${b}\nx = ?`, ans:a-b}; },
+      ()=>{ const a=rand(1,30),b=rand(1,40); return {text:`x - ${a} = ${b}\nx = ?`, ans:a+b}; },
+      ()=>{ const x=rand(5,50),a=rand(1,25); return {text:`x - ${a} = ${x-a}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,25),b=rand(3,35); return {text:`${a} + x = ${a+b}\nx = ?`, ans:b}; },
+      ()=>{ const x=rand(3,40),a=rand(1,x-1); return {text:`x - ${a} = ${x-a}\nCari nilai x`, ans:x}; },
+      ()=>{ const a=rand(2,20),b=rand(2,30); return {text:`${a+b} - x = ${a}\nx = ?`, ans:b}; },
+      ()=>{ const x=rand(4,45),a=rand(1,20); return {text:`x - ${a} = ${x-a}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(3,25),b=rand(1,a-1); return {text:`${a} = x + ${b}\nx = ?`, ans:a-b}; },
     ],
     3:[
-      ()=>{ const a=rand(2,9),x=rand(2,12); return {text:`${a}x = ${a*x}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(3,8),x=rand(3,10); return {text:`${a*x} = ${a}x\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,7),x=rand(2,9); return {text:`${a}x = ${a*x}\nCari nilai x`, ans:x}; },
-      ()=>{ const a=rand(2,6),x=rand(2,8); return {text:`${a}x = ${a*x}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(4,10),x=rand(2,7); return {text:`${a*x} ÷ ${a} = x\n${a*x} ÷ ${a} = ?`, ans:x}; },
-      ()=>{ const x=rand(3,9),a=rand(2,5); return {text:`Hasil darab ${a} dan x ialah ${a*x}.\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(3,8),x=rand(2,6); return {text:`${a} × x = ${a*x}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,9),x=rand(2,25); return {text:`${a}x = ${a*x}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(3,8),x=rand(3,20); return {text:`${a*x} = ${a}x\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,7),x=rand(2,18); return {text:`${a}x = ${a*x}\nCari nilai x`, ans:x}; },
+      ()=>{ const a=rand(2,6),x=rand(2,16); return {text:`${a}x = ${a*x}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(4,10),x=rand(2,15); return {text:`${a*x} ÷ ${a} = x\n${a*x} ÷ ${a} = ?`, ans:x}; },
+      ()=>{ const x=rand(3,18),a=rand(2,5); return {text:`Hasil darab ${a} dan x ialah ${a*x}.\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(3,8),x=rand(2,14); return {text:`${a} × x = ${a*x}\nx = ?`, ans:x}; },
     ],
     4:[
-      ()=>{ const a=rand(2,8),b=rand(2,10); return {text:`x ÷ ${a} = ${b}\nx = ?`, ans:a*b}; },
-      ()=>{ const a=rand(1,8),x=rand(1,10); return {text:`2x + ${a} = ${2*x+a}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,6),x=rand(2,8); return {text:`3x - ${a} = ${3*x-a}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,6),b=rand(2,8); return {text:`x/${a} = ${b}\nx = ?`, ans:a*b}; },
-      ()=>{ const a=rand(1,5),x=rand(2,7); return {text:`4x - ${a} = ${4*x-a}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,6),x=rand(1,8); return {text:`2x + ${a} = ${2*x+a}\nCari x`, ans:x}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6),x=rand(1,7); return {text:`${a}x + ${b} = ${a*x+b}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,12),b=rand(2,15); return {text:`x ÷ ${a} = ${b}\nx = ?`, ans:a*b}; },
+      ()=>{ const a=rand(1,15),x=rand(1,20); return {text:`2x + ${a} = ${2*x+a}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,12),x=rand(2,15); return {text:`3x - ${a} = ${3*x-a}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,10),b=rand(2,15); return {text:`x/${a} = ${b}\nx = ?`, ans:a*b}; },
+      ()=>{ const a=rand(1,10),x=rand(2,14); return {text:`4x - ${a} = ${4*x-a}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,12),x=rand(1,16); return {text:`2x + ${a} = ${2*x+a}\nCari x`, ans:x}; },
+      ()=>{ const a=rand(2,8),b=rand(1,10),x=rand(1,14); return {text:`${a}x + ${b} = ${a*x+b}\nx = ?`, ans:x}; },
     ],
     5:[
-      ()=>{ const a=rand(2,5),b=rand(1,8),x=rand(1,7); return {text:`${a}x + ${b} = ${a*x+b}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,4),b=rand(1,6),x=rand(1,8); return {text:`${a}x - ${b} = ${a*x-b}\nx = ?`, ans:x}; },
-      ()=>{ const x=rand(3,12),g=Math.floor(x/2); return {text:`Ahmad ada ${x} guli. Dia bagi ${g} guli kepada rakannya.\nDia ada ${x} - ? = ${x-g} guli tinggal.\n? = ?`, ans: g }; },
-      ()=>{ const a=rand(2,4),b=rand(2,5),x=rand(2,6); return {text:`${a}x - ${b} = ${a*x-b}\nCari nilai x`, ans:x}; },
-      ()=>{ const x=rand(2,8),total=rand(x+3,x+15); return {text:`Siti beli ${x} buku. Adik beli ${total-x} buku.\nJumlah buku = ${total}.\nBilangan buku Siti = ?`, ans:x}; },
-      ()=>{ const a=rand(2,5),b=rand(1,4),x=rand(1,6); return {text:`${a}(x + ${b}) = ${a*(x+b)}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(3,6),b=rand(1,5),x=rand(1,5); return {text:`${a}x + ${b} = ${a*x+b}\nNilai x = ?`, ans:x}; },
+      ()=>{ const a=rand(2,7),b=rand(1,15),x=rand(1,14); return {text:`${a}x + ${b} = ${a*x+b}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,6),b=rand(1,12),x=rand(1,16); return {text:`${a}x - ${b} = ${a*x-b}\nx = ?`, ans:x}; },
+      ()=>{ const x=rand(3,24),g=Math.floor(x/2); return {text:`Ahmad ada ${x} guli. Dia bagi ${g} guli kepada rakannya.\nDia ada ${x} - ? = ${x-g} guli tinggal.\n? = ?`, ans: g }; },
+      ()=>{ const a=rand(2,6),b=rand(2,10),x=rand(2,12); return {text:`${a}x - ${b} = ${a*x-b}\nCari nilai x`, ans:x}; },
+      ()=>{ const x=rand(2,16),total=rand(x+3,x+30); return {text:`Siti beli ${x} buku. Adik beli ${total-x} buku.\nJumlah buku = ${total}.\nBilangan buku Siti = ?`, ans:x}; },
+      ()=>{ const a=rand(2,7),b=rand(1,8),x=rand(1,12); return {text:`${a}(x + ${b}) = ${a*(x+b)}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(3,9),b=rand(1,10),x=rand(1,10); return {text:`${a}x + ${b} = ${a*x+b}\nNilai x = ?`, ans:x}; },
     ],
     6:[ // x pada kedua-dua belah persamaan
-      ()=>{ const x=rand(3,12),a=rand(3,8),c=rand(1,a-1),b=rand(1,12); const d=(a-c)*x+b; return {text:`${a}x + ${b} = ${c}x + ${d}\nx = ?`, ans:x}; },
-      ()=>{ const x=rand(3,12),a=rand(4,9),c=rand(1,a-2),dd=rand(1,5); const b=(a-c)*x-dd; return {text:`${a}x - ${b} = ${c}x - ${dd}\nx = ?`, ans:x}; },
-      ()=>{ const x=rand(2,10),c=rand(2,6),a=c+rand(1,5); const d=(a-c)*x; return {text:`${a}x = ${c}x + ${d}\nx = ?`, ans:x}; },
-      ()=>{ const x=rand(3,15),a=rand(2,10); const total=2*x+a; return {text:`Umur Ali x tahun. Umur abangnya (x + ${a}) tahun.\nJumlah umur mereka ${total} tahun.\nx = ?`, ans:x}; },
-      ()=>{ const x=rand(2,14),a=rand(3,9),c=rand(1,a-1),b=rand(1,12); const d=(a-c)*x+b; return {text:`Selesaikan: ${a}x + ${b} = ${c}x + ${d}\nNilai x = ?`, ans:x}; },
+      ()=>{ const x=rand(3,25),a=rand(3,15),c=rand(1,a-1),b=rand(1,25); const d=(a-c)*x+b; return {text:`${a}x + ${b} = ${c}x + ${d}\nx = ?`, ans:x}; },
+      ()=>{ const x=rand(3,25),a=rand(4,18),c=rand(1,a-2),dd=rand(1,10); const b=(a-c)*x-dd; return {text:`${a}x - ${b} = ${c}x - ${dd}\nx = ?`, ans:x}; },
+      ()=>{ const x=rand(2,20),c=rand(2,12),a=c+rand(1,10); const d=(a-c)*x; return {text:`${a}x = ${c}x + ${d}\nx = ?`, ans:x}; },
+      ()=>{ const x=rand(3,30),a=rand(2,20); const total=2*x+a; return {text:`Umur Ali x tahun. Umur abangnya (x + ${a}) tahun.\nJumlah umur mereka ${total} tahun.\nx = ?`, ans:x}; },
+      ()=>{ const x=rand(2,28),a=rand(3,18),c=rand(1,a-1),b=rand(1,25); const d=(a-c)*x+b; return {text:`Selesaikan: ${a}x + ${b} = ${c}x + ${d}\nNilai x = ?`, ans:x}; },
     ],
     7:[ // persamaan dengan pecahan
-      ()=>{ const a=rand(2,6),k=rand(1,12),b=rand(1,10); const x=a*k,c=k+b; return {text:`x/${a} + ${b} = ${c}\nx = ?`, ans:x}; },
-      ()=>{ const b=rand(2,6),c=rand(2,12); const a=rand(1,Math.max(1,c*b-1)); const x=c*b-a; return {text:`(x + ${a}) / ${b} = ${c}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,7),b=rand(1,8),c=rand(1,10); const x=a*(c+b); return {text:`x/${a} - ${b} = ${c}\nx = ?`, ans:x}; },
-      ()=>{ const m=rand(2,6),b=rand(1,10); const a=2*m,x=m*b; return {text:`2x / ${a} = ${b}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,10),b=rand(2,20); const x=a*b; return {text:`RM x dibahagikan sama rata kepada ${a} orang.\nSetiap orang dapat RM${b}.\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,9),k=rand(1,20),b=rand(1,15); const x=a*k,c=k+b; return {text:`x/${a} + ${b} = ${c}\nx = ?`, ans:x}; },
+      ()=>{ const b=rand(2,8),c=rand(2,18); const a=rand(1,Math.max(1,c*b-1)); const x=c*b-a; return {text:`(x + ${a}) / ${b} = ${c}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12),c=rand(1,15); const x=a*(c+b); return {text:`x/${a} - ${b} = ${c}\nx = ?`, ans:x}; },
+      ()=>{ const m=rand(2,9),b=rand(1,15); const a=2*m,x=m*b; return {text:`2x / ${a} = ${b}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,15),b=rand(2,30); const x=a*b; return {text:`RM x dibahagikan sama rata kepada ${a} orang.\nSetiap orang dapat RM${b}.\nx = ?`, ans:x}; },
     ],
     8:[ // persamaan dengan kurungan
-      ()=>{ const a=rand(2,6),x=rand(1,10),b=rand(1,8); const d=a*(2*x+b); return {text:`${a}(2x + ${b}) = ${d}\nx = ?`, ans:x}; },
-      ()=>{ const b=rand(1,8),x=rand(b+1,b+12),a=rand(2,7); const d=a*(x-b); return {text:`${a}(x - ${b}) = ${d}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,6),b=rand(1,8),c=rand(1,15),x=rand(1,10); const d=a*(x+b)+c; return {text:`${a}(x + ${b}) + ${c} = ${d}\nx = ?`, ans:x}; },
-      ()=>{ const x=rand(2,12),a=rand(3,8),c=rand(1,a-1),b=rand(1,10); const d=(a-c)*x+a*b; return {text:`${a}(x + ${b}) = ${c}x + ${d}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,10),x=rand(2,20); const peri=2*(2*x+a); return {text:`Segiempat tepat: lebar = x, panjang = (x + ${a}).\nPerimeter = ${peri} unit.\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,8),x=rand(1,18),b=rand(1,12); const d=a*(2*x+b); return {text:`${a}(2x + ${b}) = ${d}\nx = ?`, ans:x}; },
+      ()=>{ const b=rand(1,12),x=rand(b+1,b+20),a=rand(2,10); const d=a*(x-b); return {text:`${a}(x - ${b}) = ${d}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,8),b=rand(1,12),c=rand(1,20),x=rand(1,18); const d=a*(x+b)+c; return {text:`${a}(x + ${b}) + ${c} = ${d}\nx = ?`, ans:x}; },
+      ()=>{ const x=rand(2,22),a=rand(3,14),c=rand(1,a-1),b=rand(1,18); const d=(a-c)*x+a*b; return {text:`${a}(x + ${b}) = ${c}x + ${d}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,18),x=rand(2,35); const peri=2*(2*x+a); return {text:`Segiempat tepat: lebar = x, panjang = (x + ${a}).\nPerimeter = ${peri} unit.\nx = ?`, ans:x}; },
     ],
     9:[ // masalah perkataan 2-langkah
-      ()=>{ const x=rand(3,20); const total=4*x; return {text:`Umur ayah 3 kali umur anak.\nJumlah umur mereka ${total} tahun.\nUmur anak (x) = ?`, ans:x}; },
-      ()=>{ const x=rand(5,40); const total=3*x+3; return {text:`Tiga nombor bulat berturutan: x, x+1, x+2\nJumlah ketiga-tiga nombor = ${total}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(5,30),b=rand(5,30),c=rand(1,20); const x=a+b+c; return {text:`Kedai ada x buku.\nTerjual ${a} buku (pagi), ${b} buku (petang).\nBaki = ${c} buku.\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,8),b=rand(1,8),x=rand(2,20); const peri=3*x+a+b; return {text:`Segitiga: sisi₁=x, sisi₂=(x+${a}), sisi₃=(x+${b})\nPerimeter = ${peri} cm\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,15),x=rand(2,20); const val=2*x+a; return {text:`Dua kali suatu nombor (x) ditambah ${a} bersamaan ${val}.\nCari nombor itu.`, ans:x}; },
+      ()=>{ const x=rand(3,35); const total=4*x; return {text:`Umur ayah 3 kali umur anak.\nJumlah umur mereka ${total} tahun.\nUmur anak (x) = ?`, ans:x}; },
+      ()=>{ const x=rand(5,60); const total=3*x+3; return {text:`Tiga nombor bulat berturutan: x, x+1, x+2\nJumlah ketiga-tiga nombor = ${total}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(5,40),b=rand(5,40),c=rand(1,25); const x=a+b+c; return {text:`Kedai ada x buku.\nTerjual ${a} buku (pagi), ${b} buku (petang).\nBaki = ${c} buku.\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,14),b=rand(1,14),x=rand(2,30); const peri=3*x+a+b; return {text:`Segitiga: sisi₁=x, sisi₂=(x+${a}), sisi₃=(x+${b})\nPerimeter = ${peri} cm\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,25),x=rand(2,35); const val=2*x+a; return {text:`Dua kali suatu nombor (x) ditambah ${a} bersamaan ${val}.\nCari nombor itu.`, ans:x}; },
     ],
     10:[ // CABARAN AKHIR — KBAT pelbagai langkah
-      ()=>{ const x=rand(2,15); const total=7*x; return {text:`3 adik-beradik kongsi RM${total}.\nAbang dapat 4×, adik kedua dapat 2× ganda wang adik bongsu (x).\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,15),x=rand(2,25); const b=3*x+a; return {text:`Harga sebuah buku RM x.\nAli beli 3 buku + caj penghantaran RM${a}.\nJumlah bayaran RM${b}.\nx = ?`, ans:x}; },
-      ()=>{ const k=rand(2,20); const b=3*k,x=5*k; return {text:`RM x dibahagikan dengan nisbah 2:3.\nBahagian lebih besar = RM${b}.\nx (jumlah) = ?`, ans:x}; },
-      ()=>{ const a=rand(5,30),c=rand(5,30),x=rand(5,40); const d=x+a+c; return {text:`Suatu nombor x ditambah ${a}, kemudian ditambah lagi ${c}.\nHasil akhir = ${d}\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,12),x=rand(5,30); const total=2*x+a; return {text:`Bilangan murid lelaki = x.\nBilangan murid perempuan = (x + ${a}).\nJumlah keseluruhan murid = ${total} orang.\nx = ?`, ans:x}; },
+      ()=>{ const x=rand(2,25); const total=7*x; return {text:`3 adik-beradik kongsi RM${total}.\nAbang dapat 4×, adik kedua dapat 2× ganda wang adik bongsu (x).\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,25),x=rand(2,35); const b=3*x+a; return {text:`Harga sebuah buku RM x.\nAli beli 3 buku + caj penghantaran RM${a}.\nJumlah bayaran RM${b}.\nx = ?`, ans:x}; },
+      ()=>{ const k=rand(2,30); const b=3*k,x=5*k; return {text:`RM x dibahagikan dengan nisbah 2:3.\nBahagian lebih besar = RM${b}.\nx (jumlah) = ?`, ans:x}; },
+      ()=>{ const a=rand(5,40),c=rand(5,40),x=rand(5,50); const d=x+a+c; return {text:`Suatu nombor x ditambah ${a}, kemudian ditambah lagi ${c}.\nHasil akhir = ${d}\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,20),x=rand(5,45); const total=2*x+a; return {text:`Bilangan murid lelaki = x.\nBilangan murid perempuan = (x + ${a}).\nJumlah keseluruhan murid = ${total} orang.\nx = ?`, ans:x}; },
     ],
   };
   const pool = bank[Math.min(lvl,10)] || bank[1];
@@ -4105,86 +4113,90 @@ function genQ_T1(lvl){
 // Tower 1: kembangkan ungkapan, Tower 2: faktorkan, Tower 3: tambah/tolak ungkapan
 // Tower 4: darab ungkapan, Tower 5: soalan pelbagai
 function genQ_T2(lvl){
+  // JULAT RAWAK DIBESARKAN (2025-anti-hafal): sama seperti genQ_T1 — rand()
+  // dilebarkan ~2x drpd versi asal supaya kombinasi {a,b,x,...} yang mungkin
+  // keluar jauh lebih banyak, murid tak boleh lagi catat/hafal jawapan.
+  // Struktur soalan & logik jawapan (ans) TAK berubah.
   const bank = {
     1:[
-      ()=>{ const a=rand(2,6),b=rand(1,8),x=rand(1,5); return {text:`Kembangkan: ${a}(x + ${b})\nJika x = ${x}, nilai ungkapan = ?`, ans: a*(x+b) }; },
-      ()=>{ const a=rand(2,5),b=rand(2,9),x=rand(1,6); return {text:`${a}(${b} + x) bila x = ${x}\n= ?`, ans: a*(b+x) }; },
-      ()=>{ const a=rand(2,7),b=rand(1,5),c=rand(1,5); return {text:`${a}x + ${b}x\nbila x = ${c}, nilai = ?`, ans:(a+b)*c}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6),x=rand(1,4); return {text:`${a}(x + ${b})\nbila x = ${x}, nilai = ?`, ans:a*(x+b)}; },
-      ()=>{ const a=rand(2,6),b=rand(1,5),c=rand(2,6); return {text:`${a}x + ${b}x\nbila x = ${c}\n= ?`, ans:(a+b)*c}; },
-      ()=>{ const a=rand(3,5),b=rand(2,7),x=rand(1,4); return {text:`Kembangkan ${a}(${b} - x)\nbila x = ${x}\n= ?`, ans:a*(b-x)}; },
-      ()=>{ const a=rand(2,4),b=rand(1,6),x=rand(1,5); return {text:`${a}x + ${b}\nbila x = ${x}, nilai = ?`, ans:a*x+b}; },
+      ()=>{ const a=rand(2,12),b=rand(1,16),x=rand(1,10); return {text:`Kembangkan: ${a}(x + ${b})\nJika x = ${x}, nilai ungkapan = ?`, ans: a*(x+b) }; },
+      ()=>{ const a=rand(2,10),b=rand(2,18),x=rand(1,12); return {text:`${a}(${b} + x) bila x = ${x}\n= ?`, ans: a*(b+x) }; },
+      ()=>{ const a=rand(2,14),b=rand(1,10),c=rand(1,10); return {text:`${a}x + ${b}x\nbila x = ${c}, nilai = ?`, ans:(a+b)*c}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12),x=rand(1,8); return {text:`${a}(x + ${b})\nbila x = ${x}, nilai = ?`, ans:a*(x+b)}; },
+      ()=>{ const a=rand(2,12),b=rand(1,10),c=rand(2,12); return {text:`${a}x + ${b}x\nbila x = ${c}\n= ?`, ans:(a+b)*c}; },
+      ()=>{ const a=rand(3,10),b=rand(2,14),x=rand(1,8); return {text:`Kembangkan ${a}(${b} - x)\nbila x = ${x}\n= ?`, ans:a*(b-x)}; },
+      ()=>{ const a=rand(2,8),b=rand(1,12),x=rand(1,10); return {text:`${a}x + ${b}\nbila x = ${x}, nilai = ?`, ans:a*x+b}; },
     ],
     2:[
-      ()=>{ const a=rand(2,8),b=rand(2,8),x=rand(3,8); return {text:`Nilai ${a}x - ${b} bila x = ${x}`, ans: a*x-b }; },
-      ()=>{ const a=rand(2,6),b=rand(1,6); return {text:`Faktor bagi ${a*b}x + ${a}: ${a}( ? )`, ans: b }; },
-      ()=>{ const a=rand(2,7),b=rand(1,8),x=rand(2,6); return {text:`${a}x + ${b}, bila x = ${x}\n= ?`, ans: a*x+b }; },
-      ()=>{ const a=rand(2,5),b=rand(2,7),x=rand(2,6); return {text:`Nilai ${a}x + ${b} bila x = ${x}`, ans:a*x+b}; },
-      ()=>{ const a=rand(2,6),b=rand(2,9),x=rand(2,7); return {text:`${a}x - ${b}, bila x = ${x}\n= ?`, ans:a*x-b}; },
-      ()=>{ const a=rand(2,4),b=rand(1,5); return {text:`Faktor bagi ${a*b}x + ${a*a}:\n${a}( ? )`, ans:b+a}; },
-      ()=>{ const a=rand(2,5),x=rand(1,6),b=rand(1,5); return {text:`${a}x² bila x = ${x}, tolak ${b}\n= ${a}*${x}² - ${b}\n= ?`, ans:a*x*x-b}; },
+      ()=>{ const a=rand(2,16),b=rand(2,16),x=rand(3,16); return {text:`Nilai ${a}x - ${b} bila x = ${x}`, ans: a*x-b }; },
+      ()=>{ const a=rand(2,12),b=rand(1,12); return {text:`Faktor bagi ${a*b}x + ${a}: ${a}( ? )`, ans: b }; },
+      ()=>{ const a=rand(2,14),b=rand(1,16),x=rand(2,12); return {text:`${a}x + ${b}, bila x = ${x}\n= ?`, ans: a*x+b }; },
+      ()=>{ const a=rand(2,10),b=rand(2,14),x=rand(2,12); return {text:`Nilai ${a}x + ${b} bila x = ${x}`, ans:a*x+b}; },
+      ()=>{ const a=rand(2,12),b=rand(2,18),x=rand(2,14); return {text:`${a}x - ${b}, bila x = ${x}\n= ?`, ans:a*x-b}; },
+      ()=>{ const a=rand(2,8),b=rand(1,10); return {text:`Faktor bagi ${a*b}x + ${a*a}:\n${a}( ? )`, ans:b+a}; },
+      ()=>{ const a=rand(2,10),x=rand(1,12),b=rand(1,10); return {text:`${a}x² bila x = ${x}, tolak ${b}\n= ${a}*${x}² - ${b}\n= ?`, ans:a*x*x-b}; },
     ],
     3:[
-      ()=>{ const a=rand(2,6),b=rand(1,5),c=rand(2,6),d=rand(1,5); return {text:`(${a}x + ${b}) + (${c}x + ${d})\nPekali x = ?`, ans: a+c }; },
-      ()=>{ const a=rand(3,8),b=rand(1,6),c=rand(1,a-1); return {text:`${a}x - ${c}x + ${b}\nPekali x = ?`, ans: a-c }; },
-      ()=>{ const a=rand(2,5),b=rand(1,4),c=rand(1,3),x=rand(1,4); return {text:`${a}x + ${b} + ${c}x\nbila x = ${x}, nilai = ?`, ans:(a+c)*x+b }; },
-      ()=>{ const a=rand(2,6),c=rand(1,a-1),b=rand(1,5); return {text:`(${a}x + ${b}) - (${c}x + ${b})\nPekali x = ?`, ans:a-c}; },
-      ()=>{ const a=rand(2,5),b=rand(2,6),c=rand(1,4); return {text:`${a}x + ${b}x - ${c}x\nPekali x = ?`, ans:a+b-c}; },
-      ()=>{ const a=rand(2,4),b=rand(1,5),c=rand(2,4),d=rand(1,4); return {text:`(${a}x + ${b}) + (${c}x - ${d})\nPekali x = ?`, ans:a+c}; },
-      ()=>{ const a=rand(3,7),b=rand(1,4),c=rand(1,3),x=rand(2,5); return {text:`${a}x - ${c}x + ${b}\nbila x = ${x}, nilai = ?`, ans:(a-c)*x+b}; },
+      ()=>{ const a=rand(2,12),b=rand(1,10),c=rand(2,12),d=rand(1,10); return {text:`(${a}x + ${b}) + (${c}x + ${d})\nPekali x = ?`, ans: a+c }; },
+      ()=>{ const a=rand(3,16),b=rand(1,12),c=rand(1,a-1); return {text:`${a}x - ${c}x + ${b}\nPekali x = ?`, ans: a-c }; },
+      ()=>{ const a=rand(2,10),b=rand(1,8),c=rand(1,6),x=rand(1,8); return {text:`${a}x + ${b} + ${c}x\nbila x = ${x}, nilai = ?`, ans:(a+c)*x+b }; },
+      ()=>{ const a=rand(2,12),c=rand(1,a-1),b=rand(1,10); return {text:`(${a}x + ${b}) - (${c}x + ${b})\nPekali x = ?`, ans:a-c}; },
+      ()=>{ const a=rand(2,10),b=rand(2,12),c=rand(1,8); return {text:`${a}x + ${b}x - ${c}x\nPekali x = ?`, ans:a+b-c}; },
+      ()=>{ const a=rand(2,8),b=rand(1,10),c=rand(2,8),d=rand(1,8); return {text:`(${a}x + ${b}) + (${c}x - ${d})\nPekali x = ?`, ans:a+c}; },
+      ()=>{ const a=rand(3,14),b=rand(1,8),c=rand(1,6),x=rand(2,10); return {text:`${a}x - ${c}x + ${b}\nbila x = ${x}, nilai = ?`, ans:(a-c)*x+b}; },
     ],
     4:[
-      ()=>{ const a=rand(2,5),b=rand(2,5); return {text:`${a}x × ${b}x\nPekali = ?`, ans: a*b }; },
-      ()=>{ const a=rand(2,6),b=rand(2,5),x=rand(2,4); return {text:`${a}x² bila x = ${x}\n= ?`, ans: a*x*x }; },
-      ()=>{ const a=rand(2,4),b=rand(1,5),c=rand(2,4),x=rand(2,5); return {text:`${a}(${b}x - ${c}), x = ${x}\n= ?`, ans: a*(b*x-c) }; },
-      ()=>{ const a=rand(2,4),b=rand(2,4); return {text:`${a}x × ${b}x = ?x²\nPekali x² = ?`, ans:a*b}; },
-      ()=>{ const a=rand(2,5),x=rand(2,4); return {text:`${a}x² bila x = ${x}\n= ${a} × ${x}² = ?`, ans:a*x*x}; },
-      ()=>{ const a=rand(2,3),b=rand(2,4),c=rand(1,3),x=rand(2,4); return {text:`${a}(${b}x + ${c}), x = ${x}\n= ?`, ans:a*(b*x+c)}; },
-      ()=>{ const a=rand(2,4),b=rand(1,4),x=rand(1,4); return {text:`${a}x(x + ${b}), x = ${x}\n= ?`, ans:a*x*(x+b)}; },
+      ()=>{ const a=rand(2,10),b=rand(2,10); return {text:`${a}x × ${b}x\nPekali = ?`, ans: a*b }; },
+      ()=>{ const a=rand(2,12),b=rand(2,10),x=rand(2,8); return {text:`${a}x² bila x = ${x}\n= ?`, ans: a*x*x }; },
+      ()=>{ const a=rand(2,8),b=rand(1,10),c=rand(2,8),x=rand(2,10); return {text:`${a}(${b}x - ${c}), x = ${x}\n= ?`, ans: a*(b*x-c) }; },
+      ()=>{ const a=rand(2,8),b=rand(2,8); return {text:`${a}x × ${b}x = ?x²\nPekali x² = ?`, ans:a*b}; },
+      ()=>{ const a=rand(2,10),x=rand(2,8); return {text:`${a}x² bila x = ${x}\n= ${a} × ${x}² = ?`, ans:a*x*x}; },
+      ()=>{ const a=rand(2,6),b=rand(2,8),c=rand(1,6),x=rand(2,8); return {text:`${a}(${b}x + ${c}), x = ${x}\n= ?`, ans:a*(b*x+c)}; },
+      ()=>{ const a=rand(2,8),b=rand(1,8),x=rand(1,8); return {text:`${a}x(x + ${b}), x = ${x}\n= ?`, ans:a*x*(x+b)}; },
     ],
     5:[
-      ()=>{ const a=rand(2,5),b=rand(1,4),c=rand(2,4),x=rand(1,4); return {text:`${a}x + ${b} - ${c}x, bila x = ${x}\n= ?`, ans: (a-c)*x+b }; },
-      ()=>{ const a=rand(2,6),b=rand(2,6),c=rand(1,5); return {text:`Nilai p bagi ${a}p + ${b}p = ${(a+b)*c}\np = ?`, ans: c }; },
-      ()=>{ const a=rand(2,5),b=rand(1,4),x=rand(2,5),d=rand(1,4); return {text:`${a}(x + ${b}) - ${d}, x = ${x}\n= ?`, ans: a*(x+b)-d }; },
-      ()=>{ const a=rand(2,4),b=rand(1,3),c=rand(1,3),x=rand(2,5); return {text:`${a}x + ${b} - ${c}x\nbila x = ${x}, nilai = ?`, ans:(a-c)*x+b}; },
-      ()=>{ const a=rand(2,5),b=rand(2,5),c=rand(1,4); return {text:`Nilai k bagi ${a}k - ${b}k = ${(a-b)*c}\nk = ?`, ans:c}; },
-      ()=>{ const a=rand(2,4),b=rand(1,4),x=rand(2,5),d=rand(1,3); return {text:`${a}(x - ${b}) + ${d}, x = ${x}\n= ?`, ans:a*(x-b)+d}; },
-      ()=>{ const a=rand(2,3),b=rand(1,4),c=rand(2,4),x=rand(1,4); return {text:`${a}(x + ${b}) + ${c}x, bila x = ${x}\n= ?`, ans:a*(x+b)+c*x}; },
+      ()=>{ const a=rand(2,10),b=rand(1,8),c=rand(2,8),x=rand(1,8); return {text:`${a}x + ${b} - ${c}x, bila x = ${x}\n= ?`, ans: (a-c)*x+b }; },
+      ()=>{ const a=rand(2,12),b=rand(2,12),c=rand(1,10); return {text:`Nilai p bagi ${a}p + ${b}p = ${(a+b)*c}\np = ?`, ans: c }; },
+      ()=>{ const a=rand(2,10),b=rand(1,8),x=rand(2,10),d=rand(1,8); return {text:`${a}(x + ${b}) - ${d}, x = ${x}\n= ?`, ans: a*(x+b)-d }; },
+      ()=>{ const a=rand(2,8),b=rand(1,6),c=rand(1,6),x=rand(2,10); return {text:`${a}x + ${b} - ${c}x\nbila x = ${x}, nilai = ?`, ans:(a-c)*x+b}; },
+      ()=>{ const a=rand(2,10),b=rand(2,10),c=rand(1,8); return {text:`Nilai k bagi ${a}k - ${b}k = ${(a-b)*c}\nk = ?`, ans:c}; },
+      ()=>{ const a=rand(2,8),b=rand(1,8),x=rand(2,10),d=rand(1,6); return {text:`${a}(x - ${b}) + ${d}, x = ${x}\n= ?`, ans:a*(x-b)+d}; },
+      ()=>{ const a=rand(2,6),b=rand(1,8),c=rand(2,8),x=rand(1,8); return {text:`${a}(x + ${b}) + ${c}x, bila x = ${x}\n= ?`, ans:a*(x+b)+c*x}; },
     ],
     6:[ // ungkapan 3 sebutan & darab dua kurungan mudah
-      ()=>{ const a=rand(2,6),b=rand(2,6),c=rand(1,8),x=rand(1,6); return {text:`${a}x + ${b}x - ${c}\nbila x = ${x}, nilai = ?`, ans:(a+b)*x-c}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6),c=rand(2,5),d=rand(1,6),x=rand(1,5); return {text:`(${a}x + ${b}) + (${c}x - ${d})\nbila x = ${x}, nilai = ?`, ans:(a+c)*x+(b-d)}; },
-      ()=>{ const a=rand(1,6),b=rand(1,6),x=rand(1,6); const val=(x+a)*(x+b); return {text:`(x + ${a})(x + ${b})\nbila x = ${x}, nilai = ?`, ans:val}; },
-      ()=>{ const a=rand(1,9),b=rand(1,9); const s=a+b,p=a*b; return {text:`x² + ${s}x + ${p} = (x + ${a})(x + ?)\nNilai ? = ?`, ans:b}; },
-      ()=>{ const a=rand(1,8),b=rand(1,8),x=rand(1,8); const peri=2*((x+a)+(x+b)); return {text:`Segiempat tepat: panjang=(x+${a}), lebar=(x+${b})\nPerimeter bila x=${x}\n= ?`, ans:peri}; },
+      ()=>{ const a=rand(2,12),b=rand(2,12),c=rand(1,16),x=rand(1,12); return {text:`${a}x + ${b}x - ${c}\nbila x = ${x}, nilai = ?`, ans:(a+b)*x-c}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12),c=rand(2,10),d=rand(1,12),x=rand(1,10); return {text:`(${a}x + ${b}) + (${c}x - ${d})\nbila x = ${x}, nilai = ?`, ans:(a+c)*x+(b-d)}; },
+      ()=>{ const a=rand(1,12),b=rand(1,12),x=rand(1,12); const val=(x+a)*(x+b); return {text:`(x + ${a})(x + ${b})\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(1,18),b=rand(1,18); const s=a+b,p=a*b; return {text:`x² + ${s}x + ${p} = (x + ${a})(x + ?)\nNilai ? = ?`, ans:b}; },
+      ()=>{ const a=rand(1,16),b=rand(1,16),x=rand(1,16); const peri=2*((x+a)+(x+b)); return {text:`Segiempat tepat: panjang=(x+${a}), lebar=(x+${b})\nPerimeter bila x=${x}\n= ?`, ans:peri}; },
     ],
     7:[ // darab kurungan negatif & FSTB
-      ()=>{ const a=rand(1,6),b=rand(1,6),x=rand(b+1,b+8); const val=(x-a)*(x+b); return {text:`(x - ${a})(x + ${b})\nbila x = ${x}, nilai = ?`, ans:val}; },
-      ()=>{ const a=rand(2,6),b=rand(1,8),c=rand(2,6),x=rand(1,6); const val=a*(x+b)-c*x; return {text:`${a}(x + ${b}) - ${c}x\nbila x = ${x}, nilai = ?`, ans:val}; },
-      ()=>{ const g=rand(2,9); const pairs=[[2,3],[3,4],[3,5],[4,5],[2,5],[5,6],[2,7]]; const pr=pairs[rand(0,pairs.length-1)]; const a=g*pr[0],b=g*pr[1]; return {text:`Faktor Sepunya Terbesar (FSTB) bagi ${a}x dan ${b}x ialah ?`, ans:g}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6),c=rand(2,5),d=rand(1,6),x=rand(1,6); const val=a*(x+b)+c*(x-d); return {text:`${a}(x + ${b}) + ${c}(x - ${d})\nbila x = ${x}, nilai = ?`, ans:val}; },
-      ()=>{ const a=rand(1,7),x=rand(1,8); const val=(x+a)*(x+a); return {text:`(x + ${a})²\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(1,12),b=rand(1,12),x=rand(b+1,b+16); const val=(x-a)*(x+b); return {text:`(x - ${a})(x + ${b})\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(2,12),b=rand(1,16),c=rand(2,12),x=rand(1,12); const val=a*(x+b)-c*x; return {text:`${a}(x + ${b}) - ${c}x\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const g=rand(2,18); const pairs=[[2,3],[3,4],[3,5],[4,5],[2,5],[5,6],[2,7]]; const pr=pairs[rand(0,pairs.length-1)]; const a=g*pr[0],b=g*pr[1]; return {text:`Faktor Sepunya Terbesar (FSTB) bagi ${a}x dan ${b}x ialah ?`, ans:g}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12),c=rand(2,10),d=rand(1,12),x=rand(1,12); const val=a*(x+b)+c*(x-d); return {text:`${a}(x + ${b}) + ${c}(x - ${d})\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(1,14),x=rand(1,16); const val=(x+a)*(x+a); return {text:`(x + ${a})²\nbila x = ${x}, nilai = ?`, ans:val}; },
     ],
     8:[ // faktorkan trinomial & darab kurungan negatif
-      ()=>{ const a=rand(1,9),b=rand(1,9); const s=a+b,p=a*b; return {text:`(x + ${a})(x + ${b}) = x² + ${s}x + ?\nPemalar (tanpa x) = ?`, ans:p}; },
-      ()=>{ const a=rand(1,8),b=rand(1,8); const s=a+b,p=a*b; return {text:`x² + ${s}x + ${p} = (x + ?)(x + ${b})\nNilai ? = ?`, ans:a}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6),c=rand(2,5),x=rand(1,6); const val=a*x*x+b*x-c; return {text:`${a}x² + ${b}x - ${c}\nbila x = ${x}, nilai = ?`, ans:val}; },
-      ()=>{ const a=rand(1,6),b=rand(1,6); const mx=Math.max(a,b); const x=rand(mx+1,mx+8); const val=(x-a)*(x-b); return {text:`(x - ${a})(x - ${b})\nbila x = ${x}, nilai = ?`, ans:val}; },
-      ()=>{ const a=rand(1,6),b=rand(1,5); const x=rand(b+2,b+10); const luas=(x+a)*(x-b); return {text:`Segiempat tepat: panjang=(x+${a}), lebar=(x-${b})\nLuas bila x=${x}\n= ?`, ans:luas}; },
+      ()=>{ const a=rand(1,18),b=rand(1,18); const s=a+b,p=a*b; return {text:`(x + ${a})(x + ${b}) = x² + ${s}x + ?\nPemalar (tanpa x) = ?`, ans:p}; },
+      ()=>{ const a=rand(1,16),b=rand(1,16); const s=a+b,p=a*b; return {text:`x² + ${s}x + ${p} = (x + ?)(x + ${b})\nNilai ? = ?`, ans:a}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12),c=rand(2,10),x=rand(1,12); const val=a*x*x+b*x-c; return {text:`${a}x² + ${b}x - ${c}\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(1,12),b=rand(1,12); const mx=Math.max(a,b); const x=rand(mx+1,mx+16); const val=(x-a)*(x-b); return {text:`(x - ${a})(x - ${b})\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(1,12),b=rand(1,10); const x=rand(b+2,b+20); const luas=(x+a)*(x-b); return {text:`Segiempat tepat: panjang=(x+${a}), lebar=(x-${b})\nLuas bila x=${x}\n= ?`, ans:luas}; },
     ],
     9:[ // masalah perkataan algebra
-      ()=>{ const a=rand(2,8),x=rand(2,10); const val=3*(x+a)-2*x; return {text:`Ungkapan: 3(x + ${a}) - 2x\nNilai bila x = ${x}?`, ans:val}; },
-      ()=>{ const a=rand(1,8),b=rand(1,6); const x=rand(b+2,b+12); const peri=x+(x+a)+(2*x-b); return {text:`Segitiga: sisi₁=x, sisi₂=(x+${a}), sisi₃=(2x-${b})\nPerimeter bila x=${x}\n= ?`, ans:peri}; },
-      ()=>{ const a=rand(2,6),b=rand(1,10),x=rand(2,15); const val=a*x+b; return {text:`Umur Aiman = ${a}x + ${b} tahun.\nUmur sebenar Aiman = ${val} tahun.\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(2,5),b=rand(1,5),c=rand(2,5),d=rand(1,5),x=rand(1,6); const val=(a+c)*x+(b-d); return {text:`${a}x + ${b} + ${c}x - ${d}\nbila x = ${x}, nilai = ?`, ans:val}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6),c=rand(2,5),d=rand(1,6),x=rand(1,6); const val=a*(x+b)-c*(x-d); return {text:`${a}(x + ${b}) - ${c}(x - ${d})\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(2,16),x=rand(2,20); const val=3*(x+a)-2*x; return {text:`Ungkapan: 3(x + ${a}) - 2x\nNilai bila x = ${x}?`, ans:val}; },
+      ()=>{ const a=rand(1,16),b=rand(1,12); const x=rand(b+2,b+24); const peri=x+(x+a)+(2*x-b); return {text:`Segitiga: sisi₁=x, sisi₂=(x+${a}), sisi₃=(2x-${b})\nPerimeter bila x=${x}\n= ?`, ans:peri}; },
+      ()=>{ const a=rand(2,12),b=rand(1,20),x=rand(2,30); const val=a*x+b; return {text:`Umur Aiman = ${a}x + ${b} tahun.\nUmur sebenar Aiman = ${val} tahun.\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(2,10),b=rand(1,10),c=rand(2,10),d=rand(1,10),x=rand(1,12); const val=(a+c)*x+(b-d); return {text:`${a}x + ${b} + ${c}x - ${d}\nbila x = ${x}, nilai = ?`, ans:val}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12),c=rand(2,10),d=rand(1,12),x=rand(1,12); const val=a*(x+b)-c*(x-d); return {text:`${a}(x + ${b}) - ${c}(x - ${d})\nbila x = ${x}, nilai = ?`, ans:val}; },
     ],
     10:[ // CABARAN AKHIR — KBAT algebra
-      ()=>{ const a=rand(2,6),b=rand(1,8),c=rand(2,6),d=rand(1,8),e=rand(1,5); return {text:`(${a}x + ${b}) + (${c}x + ${d}) - ${e}x\nPekali x dalam ungkapan ringkas = ?`, ans:a+c-e}; },
-      ()=>{ const x=rand(2,8),b=rand(1,10),a=rand(2,9); const val=a*x+b; return {text:`Ungkapan: ax + ${b}\nBila x = ${x}, nilai ungkapan = ${val}\nNilai a = ?`, ans:a}; },
-      ()=>{ const a=rand(1,9),b=rand(1,9); return {text:`(x + ${a})(x + ${b}) = x² + ?x + ${a*b}\nPekali x = ?`, ans:a+b}; },
-      ()=>{ const n1=rand(2,8),n2=rand(2,8),x=rand(2,20); const total=(n1+n2)*x; return {text:`Harga sebuah buku RM x.\nAli beli ${n1} buku, Siti beli ${n2} buku.\nJumlah perbelanjaan RM${total}.\nx = ?`, ans:x}; },
-      ()=>{ const a=rand(1,7),b=rand(1,7),xv=rand(1,8); const s=a+b,p=a*b; const val=(xv+a)*(xv+b); return {text:`x² + ${s}x + ${p} = (x+${a})(x+${b})\nNilai ungkapan bila x = ${xv}?`, ans:val}; },
+      ()=>{ const a=rand(2,12),b=rand(1,16),c=rand(2,12),d=rand(1,16),e=rand(1,10); return {text:`(${a}x + ${b}) + (${c}x + ${d}) - ${e}x\nPekali x dalam ungkapan ringkas = ?`, ans:a+c-e}; },
+      ()=>{ const x=rand(2,16),b=rand(1,20),a=rand(2,18); const val=a*x+b; return {text:`Ungkapan: ax + ${b}\nBila x = ${x}, nilai ungkapan = ${val}\nNilai a = ?`, ans:a}; },
+      ()=>{ const a=rand(1,18),b=rand(1,18); return {text:`(x + ${a})(x + ${b}) = x² + ?x + ${a*b}\nPekali x = ?`, ans:a+b}; },
+      ()=>{ const n1=rand(2,16),n2=rand(2,16),x=rand(2,40); const total=(n1+n2)*x; return {text:`Harga sebuah buku RM x.\nAli beli ${n1} buku, Siti beli ${n2} buku.\nJumlah perbelanjaan RM${total}.\nx = ?`, ans:x}; },
+      ()=>{ const a=rand(1,14),b=rand(1,14),xv=rand(1,16); const s=a+b,p=a*b; const val=(xv+a)*(xv+b); return {text:`x² + ${s}x + ${p} = (x+${a})(x+${b})\nNilai ungkapan bila x = ${xv}?`, ans:val}; },
     ],
   };
   const pool = bank[Math.min(lvl,10)] || bank[1];
@@ -4197,6 +4209,10 @@ function genQ_T2(lvl){
 // Tower 1: sin/cos/tan definisi (sudut mudah), Tower 2: sisi segitiga
 // Tower 3: cari sudut, Tower 4: nilai trigonometri, Tower 5: soalan konteks
 function genQ_T3(lvl){
+  // JULAT RAWAK DIBESARKAN (2025-anti-hafal): sama seperti T1/T2 — rand()
+  // magnitud (panjang, jarak, dsb) dilebarkan ~2x drpd versi asal. Sudut
+  // (30°/45°/60°/90°) & identiti trigonometri TAK diubah kerana ia set tetap
+  // dlm silibus, bukan julat rawak. Logik jawapan (ans) TAK berubah.
   // Use known exact values
   const triVals = [
     {deg:30, sin:1, sinD:2, cos:3, cosD:2, tan:1, tanD:2, sinN:'½', cosN:'√3/2', tanN:'1/√3'},  // sin30=0.5
@@ -4216,13 +4232,13 @@ function genQ_T3(lvl){
       ()=>{ return {text:`sin 90° = ?\n(Pilih nilai yang betul)`, ans:1, _opts:[0,1,2,3]}; },
     ],
     2:[
-      ()=>{ const h=rand(4,12); const opp=Math.round(h*0.5); return {text:`Dalam segitiga bersudut tepat,\nhipotenusa = ${h}, sudut = 30°\nSisi bertentangan = ?`, ans:opp, _opts:null}; },
-      ()=>{ const a=rand(3,8); return {text:`sin 60° = √3/2\nJika hipotenusa = ${a*2}, sisi bertentangan = ?`, ans:Math.round(a*1.732), _opts:null}; },
-      ()=>{ const b=rand(2,7); return {text:`cos 60° = ½\nJika sisi bersebelahan = ${b}, hipotenusa = ?`, ans:b*2, _opts:null}; },
-      ()=>{ const h=rand(4,10); return {text:`sin 45° = 1/√2 ≈ 0.707\nhipotenusa = ${h}\nSisi bertentangan ≈ ${Math.round(h*0.707)} = ?`, ans:Math.round(h*0.707), _opts:null}; },
-      ()=>{ const adj=rand(3,8); return {text:`tan 45° = 1\nSisi bertentangan = sisi bersebelahan\nJika sisi bersebelahan = ${adj},\nsisi bertentangan = ?`, ans:adj, _opts:null}; },
-      ()=>{ const h=rand(6,14); return {text:`cos 30° = √3/2\nJika hipotenusa = ${h*2},\nsisi bersebelahan = ${Math.round(h*1.732)} ≈ ?`, ans:Math.round(h*1.732), _opts:null}; },
-      ()=>{ const opp=rand(2,6); return {text:`sin 30° = ½\nJika sisi bertentangan = ${opp},\nhipotenusa = ?`, ans:opp*2, _opts:null}; },
+      ()=>{ const h=rand(4,24); const opp=Math.round(h*0.5); return {text:`Dalam segitiga bersudut tepat,\nhipotenusa = ${h}, sudut = 30°\nSisi bertentangan = ?`, ans:opp, _opts:null}; },
+      ()=>{ const a=rand(3,16); return {text:`sin 60° = √3/2\nJika hipotenusa = ${a*2}, sisi bertentangan = ?`, ans:Math.round(a*1.732), _opts:null}; },
+      ()=>{ const b=rand(2,14); return {text:`cos 60° = ½\nJika sisi bersebelahan = ${b}, hipotenusa = ?`, ans:b*2, _opts:null}; },
+      ()=>{ const h=rand(4,20); return {text:`sin 45° = 1/√2 ≈ 0.707\nhipotenusa = ${h}\nSisi bertentangan ≈ ${Math.round(h*0.707)} = ?`, ans:Math.round(h*0.707), _opts:null}; },
+      ()=>{ const adj=rand(3,16); return {text:`tan 45° = 1\nSisi bertentangan = sisi bersebelahan\nJika sisi bersebelahan = ${adj},\nsisi bertentangan = ?`, ans:adj, _opts:null}; },
+      ()=>{ const h=rand(6,28); return {text:`cos 30° = √3/2\nJika hipotenusa = ${h*2},\nsisi bersebelahan = ${Math.round(h*1.732)} ≈ ?`, ans:Math.round(h*1.732), _opts:null}; },
+      ()=>{ const opp=rand(2,12); return {text:`sin 30° = ½\nJika sisi bertentangan = ${opp},\nhipotenusa = ?`, ans:opp*2, _opts:null}; },
     ],
     3:[
       ()=>{ return {text:`Jika sin θ = ½, θ = ?°`, ans:30, _opts:[30,45,60,90]}; },
@@ -4234,57 +4250,57 @@ function genQ_T3(lvl){
       ()=>{ return {text:`Jika tan θ = 1/√3, θ = ?°`, ans:30, _opts:[30,45,60,90]}; },
     ],
     4:[
-      ()=>{ const a=rand(2,8); return {text:`Nilai sin 30° × ${a*2} = ?`, ans:a, _opts:null}; },
-      ()=>{ const a=rand(2,6); return {text:`cos 0° = 1\n${a} × cos 0° = ?`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,16); return {text:`Nilai sin 30° × ${a*2} = ?`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,12); return {text:`cos 0° = 1\n${a} × cos 0° = ?`, ans:a, _opts:null}; },
       ()=>{ return {text:`sin 30° + cos 60°\n= ½ + ½ = ?`, ans:1, _opts:[0,1,2,3] }; },
-      ()=>{ const a=rand(2,6); return {text:`tan 45° × ${a} = 1 × ${a} = ?`, ans:a, _opts:null}; },
-      ()=>{ const a=rand(2,8); return {text:`cos 60° × ${a*2}\n= ½ × ${a*2} = ?`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,12); return {text:`tan 45° × ${a} = 1 × ${a} = ?`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,16); return {text:`cos 60° × ${a*2}\n= ½ × ${a*2} = ?`, ans:a, _opts:null}; },
       ()=>{ return {text:`sin 60° × 2\n= √3/2 × 2 = √3 ≈ ?\n(pilih nilai terdekat)`, ans:2, _opts:[1,2,3,4]}; },
       ()=>{ return {text:`sin²30° + cos²30°\n= identiti asas = ?`, ans:1, _opts:[0,1,2,3]}; },
     ],
     5:[
-      ()=>{ const h=rand(6,14); return {text:`Tiang menegak tinggi ${h}m.\nSudut dongak 30°. Jarak mendatar = h/tan30°\n≈ h × √3 ≈ ${Math.round(h*1.73)}m\nTinggi tiang = ?`, ans:h, _opts:null}; },
+      ()=>{ const h=rand(6,28); return {text:`Tiang menegak tinggi ${h}m.\nSudut dongak 30°. Jarak mendatar = h/tan30°\n≈ h × √3 ≈ ${Math.round(h*1.73)}m\nTinggi tiang = ?`, ans:h, _opts:null}; },
       ()=>{ return {text:`sin 90° = ?\n(Nilai sinus sudut tegak lurus)`, ans:1, _opts:[0,1,2,3]}; },
       ()=>{ return {text:`sin²30° + cos²30° = ?\n(Identiti trigonometri asas)`, ans:1, _opts:[0,1,2,3]}; },
-      ()=>{ const d=rand(5,12); return {text:`Kapal terbang pada ketinggian ${d*2}m.\nSudut dongak dari tanah = 30°\nJarak mendatar ≈ ${d*2}/tan30° ≈ ${Math.round(d*2*1.73)}m\nKetinggian kapal = ?`, ans:d*2, _opts:null}; },
+      ()=>{ const d=rand(5,24); return {text:`Kapal terbang pada ketinggian ${d*2}m.\nSudut dongak dari tanah = 30°\nJarak mendatar ≈ ${d*2}/tan30° ≈ ${Math.round(d*2*1.73)}m\nKetinggian kapal = ?`, ans:d*2, _opts:null}; },
       ()=>{ return {text:`cos²45° + sin²45°\n= (1/√2)² + (1/√2)²\n= ½ + ½ = ?`, ans:1, _opts:[0,1,2,3]}; },
       ()=>{ return {text:`tan 60° × cos 60°\n= √3 × ½\n= √3/2 = sin ?°`, ans:60, _opts:[30,45,60,90]}; },
-      ()=>{ const a=rand(2,5); return {text:`sin 30° + sin 30° + ... (${a*2} kali)\n= ${a*2} × ½ = ?`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,10); return {text:`sin 30° + sin 30° + ... (${a*2} kali)\n= ${a*2} × ½ = ?`, ans:a, _opts:null}; },
     ],
     6:[ // Pythagoras & nisbah lanjutan
-      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,4); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Segitiga bersudut tegak: sisi₁ = ${a}, sisi₂ = ${b}\nHipotenusa (Teorem Pythagoras) = ?`, ans:c, _opts:null}; },
-      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,4); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Segitiga bersudut tegak: hipotenusa = ${c}, satu sisi = ${a}\nSisi satu lagi = ?`, ans:b, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const adj=rand(2,10); const opp=Math.round(adj*tanApprox[idx]); return {text:`tan ${v.deg}° ≈ ${tanApprox[idx]}\nSisi bersebelahan = ${adj}\nSisi bertentangan ≈ adj × tan${v.deg}°\n≈ ?`, ans:opp, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(4,16); const adj=Math.round(hyp*cosApprox[idx]); return {text:`cos ${v.deg}° ≈ ${cosApprox[idx]}\nHipotenusa = ${hyp}\nSisi bersebelahan ≈ hyp × cos${v.deg}°\n≈ ?`, ans:adj, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(4,16); const opp=Math.round(hyp*sinApprox[idx]); return {text:`sin ${v.deg}° ≈ ${sinApprox[idx]}\nHipotenusa = ${hyp}\nSisi bertentangan ≈ hyp × sin${v.deg}°\n≈ ?`, ans:opp, _opts:null}; },
+      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,8); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Segitiga bersudut tegak: sisi₁ = ${a}, sisi₂ = ${b}\nHipotenusa (Teorem Pythagoras) = ?`, ans:c, _opts:null}; },
+      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,8); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Segitiga bersudut tegak: hipotenusa = ${c}, satu sisi = ${a}\nSisi satu lagi = ?`, ans:b, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const adj=rand(2,20); const opp=Math.round(adj*tanApprox[idx]); return {text:`tan ${v.deg}° ≈ ${tanApprox[idx]}\nSisi bersebelahan = ${adj}\nSisi bertentangan ≈ adj × tan${v.deg}°\n≈ ?`, ans:opp, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(4,32); const adj=Math.round(hyp*cosApprox[idx]); return {text:`cos ${v.deg}° ≈ ${cosApprox[idx]}\nHipotenusa = ${hyp}\nSisi bersebelahan ≈ hyp × cos${v.deg}°\n≈ ?`, ans:adj, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(4,32); const opp=Math.round(hyp*sinApprox[idx]); return {text:`sin ${v.deg}° ≈ ${sinApprox[idx]}\nHipotenusa = ${hyp}\nSisi bertentangan ≈ hyp × sin${v.deg}°\n≈ ?`, ans:opp, _opts:null}; },
     ],
     7:[ // sudut dongak/tunduk dua langkah
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const dist=rand(5,20); const height=Math.round(dist*tanApprox[idx]); return {text:`Sudut dongak ke puncak menara = ${v.deg}°\nJarak mendatar dari menara = ${dist}m\nTinggi menara ≈ jarak × tan${v.deg}°\n≈ ?m`, ans:height, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const height=rand(5,20); const dist=Math.round(height/tanApprox[idx]); return {text:`Sudut dongak = ${v.deg}°\nTinggi objek = ${height}m\nJarak mendatar ≈ tinggi ÷ tan${v.deg}°\n≈ ?m`, ans:dist, _opts:null}; },
-      ()=>{ const a=rand(2,9); return {text:`${a} × (sin²60° + cos²60°)\n= ${a} × 1 = ?`, ans:a, _opts:null}; },
-      ()=>{ const a=rand(2,9); return {text:`${a} × sin90° + ${a} × cos0°\n= ${a}×1 + ${a}×1 = ?`, ans:a*2, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(4,14); const opp=Math.round(hyp*sinApprox[idx]),adj=Math.round(hyp*cosApprox[idx]); return {text:`Segitiga bersudut tegak, sudut = ${v.deg}°, hipotenusa = ${hyp}\nSisi bertentangan ≈ ${opp}, sisi bersebelahan ≈ ${adj}\nJumlah kedua-dua sisi ≈ ?`, ans:opp+adj, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const dist=rand(5,40); const height=Math.round(dist*tanApprox[idx]); return {text:`Sudut dongak ke puncak menara = ${v.deg}°\nJarak mendatar dari menara = ${dist}m\nTinggi menara ≈ jarak × tan${v.deg}°\n≈ ?m`, ans:height, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const height=rand(5,40); const dist=Math.round(height/tanApprox[idx]); return {text:`Sudut dongak = ${v.deg}°\nTinggi objek = ${height}m\nJarak mendatar ≈ tinggi ÷ tan${v.deg}°\n≈ ?m`, ans:dist, _opts:null}; },
+      ()=>{ const a=rand(2,18); return {text:`${a} × (sin²60° + cos²60°)\n= ${a} × 1 = ?`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,18); return {text:`${a} × sin90° + ${a} × cos0°\n= ${a}×1 + ${a}×1 = ?`, ans:a*2, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(4,28); const opp=Math.round(hyp*sinApprox[idx]),adj=Math.round(hyp*cosApprox[idx]); return {text:`Segitiga bersudut tegak, sudut = ${v.deg}°, hipotenusa = ${hyp}\nSisi bertentangan ≈ ${opp}, sisi bersebelahan ≈ ${adj}\nJumlah kedua-dua sisi ≈ ?`, ans:opp+adj, _opts:null}; },
     ],
     8:[ // identiti & gabungan nisbah
-      ()=>{ const a=rand(2,9); return {text:`${a} × sin30° + ${a} × cos60°\n= ${a}×½ + ${a}×½ = ?`, ans:a, _opts:null}; },
-      ()=>{ const k=rand(1,9); const a=2*k; return {text:`${2*a} × cos60° - ${a} × sin30°\n= ?`, ans:k, _opts:null}; },
-      ()=>{ const a=rand(2,9); return {text:`${a} × tan60° × tan30°\n= ${a} × 1 = ?\n(petunjuk: tan60° × tan30° = 1)`, ans:a, _opts:null}; },
-      ()=>{ const a=rand(2,9); return {text:`${a} × 2 × sin45° × cos45°\n= ${a} × 1 = ?\n(petunjuk: 2sin45°cos45° = 1)`, ans:a, _opts:null}; },
-      ()=>{ const a=rand(2,8); return {text:`${a} × (sin90° + cos0° + tan45°)\n= ${a} × 3 = ?`, ans:a*3, _opts:null}; },
+      ()=>{ const a=rand(2,18); return {text:`${a} × sin30° + ${a} × cos60°\n= ${a}×½ + ${a}×½ = ?`, ans:a, _opts:null}; },
+      ()=>{ const k=rand(1,18); const a=2*k; return {text:`${2*a} × cos60° - ${a} × sin30°\n= ?`, ans:k, _opts:null}; },
+      ()=>{ const a=rand(2,18); return {text:`${a} × tan60° × tan30°\n= ${a} × 1 = ?\n(petunjuk: tan60° × tan30° = 1)`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,18); return {text:`${a} × 2 × sin45° × cos45°\n= ${a} × 1 = ?\n(petunjuk: 2sin45°cos45° = 1)`, ans:a, _opts:null}; },
+      ()=>{ const a=rand(2,16); return {text:`${a} × (sin90° + cos0° + tan45°)\n= ${a} × 3 = ?`, ans:a*3, _opts:null}; },
     ],
     9:[ // masalah konteks lanjutan
-      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,4); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Tangga panjang ${c}m disandar pada dinding.\nKaki tangga ${a}m dari dinding.\nTinggi tangga menyentuh dinding = ?m`, ans:b, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const str=rand(10,30); const height=Math.round(str*sinApprox[idx]); return {text:`Tali layang-layang panjang ${str}m, sudut dongak ${v.deg}°.\nKetinggian layang-layang ≈ tali × sin${v.deg}°\n≈ ?m`, ans:height, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const ramp=rand(6,20); const base=Math.round(ramp*cosApprox[idx]); return {text:`Tunjang landasan (ramp) panjang ${ramp}m, sudut ${v.deg}° dari mendatar.\nPanjang tapak mendatar ≈ ramp × cos${v.deg}°\n≈ ?m`, ans:base, _opts:null}; },
-      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,4); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Segitiga bersudut tegak: sisi ${a}m, ${b}m, hipotenusa ${c}m\nPerimeter segitiga = ?m`, ans:a+b+c, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const shadow=rand(4,18); const height=Math.round(shadow*tanApprox[idx]); return {text:`Bayang pokok = ${shadow}m, sudut dongak matahari = ${v.deg}°.\nTinggi pokok ≈ bayang × tan${v.deg}°\n≈ ?m`, ans:height, _opts:null}; },
+      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,8); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Tangga panjang ${c}m disandar pada dinding.\nKaki tangga ${a}m dari dinding.\nTinggi tangga menyentuh dinding = ?m`, ans:b, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const str=rand(10,60); const height=Math.round(str*sinApprox[idx]); return {text:`Tali layang-layang panjang ${str}m, sudut dongak ${v.deg}°.\nKetinggian layang-layang ≈ tali × sin${v.deg}°\n≈ ?m`, ans:height, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const ramp=rand(6,40); const base=Math.round(ramp*cosApprox[idx]); return {text:`Tunjang landasan (ramp) panjang ${ramp}m, sudut ${v.deg}° dari mendatar.\nPanjang tapak mendatar ≈ ramp × cos${v.deg}°\n≈ ?m`, ans:base, _opts:null}; },
+      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(1,8); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Segitiga bersudut tegak: sisi ${a}m, ${b}m, hipotenusa ${c}m\nPerimeter segitiga = ?m`, ans:a+b+c, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const shadow=rand(4,36); const height=Math.round(shadow*tanApprox[idx]); return {text:`Bayang pokok = ${shadow}m, sudut dongak matahari = ${v.deg}°.\nTinggi pokok ≈ bayang × tan${v.deg}°\n≈ ?m`, ans:height, _opts:null}; },
     ],
     10:[ // CABARAN AKHIR — gabungan dua langkah
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(8,20); const opp=Math.round(hyp*sinApprox[idx]),adj=Math.round(hyp*cosApprox[idx]); const luas=Math.round(0.5*opp*adj); return {text:`Segitiga bersudut tegak: hipotenusa=${hyp}m, sudut=${v.deg}°\nSisi bertentangan≈${opp}m, sisi bersebelahan≈${adj}m\nLuas segitiga (½×opp×adj) ≈ ?m²`, ans:luas, _opts:null}; },
-      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(2,5); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Dua menara X dan Y berjarak ${a}m.\nKetinggian menara X ialah ${b}m lebih tinggi drpd Y.\nJarak garis lurus antara puncak menara (hipotenusa) = ?m`, ans:c, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const ramp=rand(10,24); const height=Math.round(ramp*sinApprox[idx]),base=Math.round(ramp*cosApprox[idx]); return {text:`Tunjang landasan panjang ${ramp}m, sudut ${v.deg}°.\nKetinggian≈${height}m, tapak≈${base}m\nJumlah keseluruhan (ramp+tinggi+tapak) ≈ ?m`, ans:ramp+height+base, _opts:null}; },
-      ()=>{ const a=rand(2,15),b=rand(2,15); return {text:`${a} × (sin²35° + cos²35°) + ${b} × tan45°\n= ${a}×1 + ${b}×1 = ?\n(petunjuk: sin²θ+cos²θ=1)`, ans:a+b, _opts:null}; },
-      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const dist=rand(8,20); const height=Math.round(dist*tanApprox[idx]); const los=Math.round(height/sinApprox[idx]); return {text:`Sudut dongak ke puncak bangunan = ${v.deg}°, jarak mendatar = ${dist}m.\nTinggi bangunan ≈ ${height}m.\nJarak garis pandang terus (hipotenusa) ≈ tinggi ÷ sin${v.deg}°\n≈ ?m`, ans:los, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const hyp=rand(8,40); const opp=Math.round(hyp*sinApprox[idx]),adj=Math.round(hyp*cosApprox[idx]); const luas=Math.round(0.5*opp*adj); return {text:`Segitiga bersudut tegak: hipotenusa=${hyp}m, sudut=${v.deg}°\nSisi bertentangan≈${opp}m, sisi bersebelahan≈${adj}m\nLuas segitiga (½×opp×adj) ≈ ?m²`, ans:luas, _opts:null}; },
+      ()=>{ const trp=triples[rand(0,triples.length-1)]; const k=rand(2,10); const a=trp[0]*k,b=trp[1]*k,c=trp[2]*k; return {text:`Dua menara X dan Y berjarak ${a}m.\nKetinggian menara X ialah ${b}m lebih tinggi drpd Y.\nJarak garis lurus antara puncak menara (hipotenusa) = ?m`, ans:c, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const ramp=rand(10,48); const height=Math.round(ramp*sinApprox[idx]),base=Math.round(ramp*cosApprox[idx]); return {text:`Tunjang landasan panjang ${ramp}m, sudut ${v.deg}°.\nKetinggian≈${height}m, tapak≈${base}m\nJumlah keseluruhan (ramp+tinggi+tapak) ≈ ?m`, ans:ramp+height+base, _opts:null}; },
+      ()=>{ const a=rand(2,30),b=rand(2,30); return {text:`${a} × (sin²35° + cos²35°) + ${b} × tan45°\n= ${a}×1 + ${b}×1 = ?\n(petunjuk: sin²θ+cos²θ=1)`, ans:a+b, _opts:null}; },
+      ()=>{ const idx=rand(0,2); const v=triVals[idx]; const dist=rand(8,40); const height=Math.round(dist*tanApprox[idx]); const los=Math.round(height/sinApprox[idx]); return {text:`Sudut dongak ke puncak bangunan = ${v.deg}°, jarak mendatar = ${dist}m.\nTinggi bangunan ≈ ${height}m.\nJarak garis pandang terus (hipotenusa) ≈ tinggi ÷ sin${v.deg}°\n≈ ?m`, ans:los, _opts:null}; },
     ],
   };
   const pool = bank[Math.min(lvl,10)] || bank[1];
@@ -4298,86 +4314,88 @@ function genQ_T3(lvl){
 // Tower 1: nilai fungsi, Tower 2: punca persamaan, Tower 3: faktorkan
 // Tower 4: rumus kuadratik, Tower 5: soalan pelbagai
 function genQ_T4(lvl){
+  // JULAT RAWAK DIBESARKAN (2025-anti-hafal): sama seperti T1/T2/T3 — rand()
+  // dilebarkan ~2x drpd versi asal. Logik jawapan (ans) TAK berubah.
   const bank = {
     1:[
-      ()=>{ const a=rand(1,4),b=rand(0,6),x=rand(-3,5); return {text:`f(x) = ${a}x + ${b}\nf(${x}) = ?`, ans:a*x+b}; },
-      ()=>{ const a=rand(1,3),b=rand(0,5),x=rand(1,4); return {text:`g(x) = ${a}x² + ${b}\ng(${x}) = ?`, ans:a*x*x+b}; },
-      ()=>{ const c=rand(2,8),x=rand(1,4); return {text:`h(x) = x² - ${c}\nh(${x}) = ?`, ans:x*x-c}; },
-      ()=>{ const a=rand(1,3),b=rand(1,5),x=rand(1,4); return {text:`f(x) = ${a}x² - ${b}\nf(${x}) = ?`, ans:a*x*x-b}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6),x=rand(0,3); return {text:`f(x) = ${a}x + ${b}\nf(${x}) = ?`, ans:a*x+b}; },
-      ()=>{ const b=rand(1,8),x=rand(2,5); return {text:`f(x) = x² + ${b}\nf(${x}) = ?`, ans:x*x+b}; },
-      ()=>{ const a=rand(1,3),b=rand(2,6),x=rand(1,3); return {text:`g(x) = ${a}x² + ${b}x\ng(${x}) = ?`, ans:a*x*x+b*x}; },
+      ()=>{ const a=rand(1,8),b=rand(0,12),x=rand(-6,10); return {text:`f(x) = ${a}x + ${b}\nf(${x}) = ?`, ans:a*x+b}; },
+      ()=>{ const a=rand(1,6),b=rand(0,10),x=rand(1,8); return {text:`g(x) = ${a}x² + ${b}\ng(${x}) = ?`, ans:a*x*x+b}; },
+      ()=>{ const c=rand(2,16),x=rand(1,8); return {text:`h(x) = x² - ${c}\nh(${x}) = ?`, ans:x*x-c}; },
+      ()=>{ const a=rand(1,6),b=rand(1,10),x=rand(1,8); return {text:`f(x) = ${a}x² - ${b}\nf(${x}) = ?`, ans:a*x*x-b}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12),x=rand(0,6); return {text:`f(x) = ${a}x + ${b}\nf(${x}) = ?`, ans:a*x+b}; },
+      ()=>{ const b=rand(1,16),x=rand(2,10); return {text:`f(x) = x² + ${b}\nf(${x}) = ?`, ans:x*x+b}; },
+      ()=>{ const a=rand(1,6),b=rand(2,12),x=rand(1,6); return {text:`g(x) = ${a}x² + ${b}x\ng(${x}) = ?`, ans:a*x*x+b*x}; },
     ],
     2:[
-      ()=>{ const a=rand(1,5),b=rand(1,6); return {text:`x² - ${a+b}x + ${a*b} = 0\nSatu punca = ${a}, punca lain = ?`, ans:b}; },
-      ()=>{ const a=rand(1,4),b=rand(1,5); return {text:`(x - ${a})(x + ${b}) = 0\nPunca positif = ?`, ans:a}; },
-      ()=>{ const a=rand(2,6); return {text:`x² - ${a*a} = 0\nx = ±? (ambil positif)`, ans:a}; },
-      ()=>{ const a=rand(1,5),b=rand(1,5); return {text:`x² - ${a+b}x + ${a*b} = 0\nPunca-punca ialah ${a} dan ?\n? = ?`, ans:b}; },
-      ()=>{ const a=rand(1,4),b=rand(1,4); return {text:`(x - ${a})(x - ${b}) = 0\nPunca terbesar = ?`, ans:Math.max(a,b)}; },
-      ()=>{ const a=rand(2,5); return {text:`x² = ${a*a}\nx = ± ?\n(Ambil nilai positif)`, ans:a}; },
-      ()=>{ const a=rand(1,4),b=rand(1,6); return {text:`(x + ${a})(x - ${b}) = 0\nPunca positif = ?`, ans:b}; },
+      ()=>{ const a=rand(1,10),b=rand(1,12); return {text:`x² - ${a+b}x + ${a*b} = 0\nSatu punca = ${a}, punca lain = ?`, ans:b}; },
+      ()=>{ const a=rand(1,8),b=rand(1,10); return {text:`(x - ${a})(x + ${b}) = 0\nPunca positif = ?`, ans:a}; },
+      ()=>{ const a=rand(2,12); return {text:`x² - ${a*a} = 0\nx = ±? (ambil positif)`, ans:a}; },
+      ()=>{ const a=rand(1,10),b=rand(1,10); return {text:`x² - ${a+b}x + ${a*b} = 0\nPunca-punca ialah ${a} dan ?\n? = ?`, ans:b}; },
+      ()=>{ const a=rand(1,8),b=rand(1,8); return {text:`(x - ${a})(x - ${b}) = 0\nPunca terbesar = ?`, ans:Math.max(a,b)}; },
+      ()=>{ const a=rand(2,10); return {text:`x² = ${a*a}\nx = ± ?\n(Ambil nilai positif)`, ans:a}; },
+      ()=>{ const a=rand(1,8),b=rand(1,12); return {text:`(x + ${a})(x - ${b}) = 0\nPunca positif = ?`, ans:b}; },
     ],
     3:[
-      ()=>{ const a=rand(1,4),b=rand(1,5); return {text:`Faktorkan: x² + ${a+b}x + ${a*b}\n= (x + ${a})(x + ?)`, ans:b}; },
-      ()=>{ const a=rand(2,5),b=rand(1,4); return {text:`x² - ${a+b}x + ${a*b}\n= (x - ${a})(x - ?)`, ans:b}; },
-      ()=>{ const a=rand(2,5),b=rand(1,4); return {text:`${a}x² - ${a*b}x = ${a}x(x - ?)\n? = ?`, ans:b}; },
-      ()=>{ const a=rand(1,4),b=rand(1,4); return {text:`x² + ${a+b}x + ${a*b}\n= (x + ?)(x + ${b})`, ans:a}; },
-      ()=>{ const a=rand(2,5),b=rand(1,4); return {text:`Faktorkan: x² - ${a+b}x + ${a*b}\n= (x - ?)(x - ${b})`, ans:a}; },
-      ()=>{ const a=rand(2,4),b=rand(2,4); return {text:`${a}x² + ${a*b}x = ${a}x(x + ?)\n? = ?`, ans:b}; },
-      ()=>{ const a=rand(1,3),b=rand(1,4); return {text:`x² - ${a*b}x\n= x(x - ?)\n? = ?`, ans:a*b}; },
+      ()=>{ const a=rand(1,8),b=rand(1,10); return {text:`Faktorkan: x² + ${a+b}x + ${a*b}\n= (x + ${a})(x + ?)`, ans:b}; },
+      ()=>{ const a=rand(2,10),b=rand(1,8); return {text:`x² - ${a+b}x + ${a*b}\n= (x - ${a})(x - ?)`, ans:b}; },
+      ()=>{ const a=rand(2,10),b=rand(1,8); return {text:`${a}x² - ${a*b}x = ${a}x(x - ?)\n? = ?`, ans:b}; },
+      ()=>{ const a=rand(1,8),b=rand(1,8); return {text:`x² + ${a+b}x + ${a*b}\n= (x + ?)(x + ${b})`, ans:a}; },
+      ()=>{ const a=rand(2,10),b=rand(1,8); return {text:`Faktorkan: x² - ${a+b}x + ${a*b}\n= (x - ?)(x - ${b})`, ans:a}; },
+      ()=>{ const a=rand(2,8),b=rand(2,8); return {text:`${a}x² + ${a*b}x = ${a}x(x + ?)\n? = ?`, ans:b}; },
+      ()=>{ const a=rand(1,6),b=rand(1,8); return {text:`x² - ${a*b}x\n= x(x - ?)\n? = ?`, ans:a*b}; },
     ],
     4:[
-      ()=>{ const p=rand(1,4),q=rand(-6,6); const disc=p*p-4*q; if(disc<0||Math.sqrt(disc)!==Math.floor(Math.sqrt(disc))){return {text:`x² + 2x - 3 = 0\n(x+3)(x-1)=0, punca positif = ?`, ans:1, opts:makeOpts(1,3)};} const r=Math.floor(Math.sqrt(disc)); return {text:`x² + ${p}x + ${q} = 0\nGunakan rumus: (-b ± √(b²-4ac))/2a\nPunca terbesar = ?`, ans:(-p+r)/2, opts:makeOpts((-p+r)/2,4)}; },
-      ()=>{ const a=rand(1,4); return {text:`x² = ${a*a}\nx = ±${a}\nHasil darab kedua-dua punca = ?`, ans:-(a*a)}; },
-      ()=>{ const r1=rand(1,5),r2=rand(1,5); return {text:`Punca-punca: ${r1} dan ${r2}\nHasil tambah punca = ?`, ans:r1+r2}; },
-      ()=>{ const r1=rand(1,4),r2=rand(1,4); return {text:`Punca-punca persamaan: ${r1} dan ${r2}\nHasil darab punca = ?`, ans:r1*r2}; },
+      ()=>{ const p=rand(1,6),q=rand(-10,10); const disc=p*p-4*q; if(disc<0||Math.sqrt(disc)!==Math.floor(Math.sqrt(disc))){return {text:`x² + 2x - 3 = 0\n(x+3)(x-1)=0, punca positif = ?`, ans:1, opts:makeOpts(1,3)};} const r=Math.floor(Math.sqrt(disc)); return {text:`x² + ${p}x + ${q} = 0\nGunakan rumus: (-b ± √(b²-4ac))/2a\nPunca terbesar = ?`, ans:(-p+r)/2, opts:makeOpts((-p+r)/2,4)}; },
+      ()=>{ const a=rand(1,8); return {text:`x² = ${a*a}\nx = ±${a}\nHasil darab kedua-dua punca = ?`, ans:-(a*a)}; },
+      ()=>{ const r1=rand(1,10),r2=rand(1,10); return {text:`Punca-punca: ${r1} dan ${r2}\nHasil tambah punca = ?`, ans:r1+r2}; },
+      ()=>{ const r1=rand(1,8),r2=rand(1,8); return {text:`Punca-punca persamaan: ${r1} dan ${r2}\nHasil darab punca = ?`, ans:r1*r2}; },
       ()=>{ return {text:`x² - 5x + 6 = 0\n(x-2)(x-3) = 0\nHasil tambah punca = 2 + 3 = ?`, ans:5, opts:makeOpts(5,3)}; },
       ()=>{ return {text:`x² + x - 6 = 0\n(x+3)(x-2) = 0\nPunca positif = ?`, ans:2, opts:makeOpts(2,3)}; },
-      ()=>{ const r1=rand(1,4),r2=rand(1,4); return {text:`Punca persamaan kuadratik: ${r1} dan -${r2}\nHasil tambah punca = ?`, ans:r1-r2}; },
+      ()=>{ const r1=rand(1,8),r2=rand(1,8); return {text:`Punca persamaan kuadratik: ${r1} dan -${r2}\nHasil tambah punca = ?`, ans:r1-r2}; },
     ],
     5:[
-      ()=>{ const a=rand(1,3),c=rand(1,8); return {text:`f(x) = ${a}x² + ${c}\nNilai minimum f(x) = ?`, ans:c}; },
-      ()=>{ const r1=rand(1,5),r2=rand(1,4); return {text:`(x-${r1})(x-${r2}) = 0\nNilai x² coefficient = 1\nHasil darab punca = ?`, ans:r1*r2}; },
-      ()=>{ const a=rand(2,5),b=rand(1,6); return {text:`Persegi panjang: panjang = x+${a}, lebar = x+${b}\nLuas = x²+${a+b}x+${a*b}\nNilai pekali x = ?`, ans:a+b}; },
-      ()=>{ const a=rand(1,3),c=rand(-6,-1); return {text:`f(x) = ${a}x² + ${c}\nNilai c (pemalar) = ?`, ans:c}; },
-      ()=>{ const a=rand(2,4),b=rand(1,4); return {text:`Sisi segiempat = (x+${b})\nLuas = x²+${2*b}x+${b*b}\nPekali x = ?`, ans:2*b}; },
-      ()=>{ const r1=rand(1,4),r2=rand(1,4); return {text:`Punca: ${r1} dan ${r2}\nPersamaan: x² - ${r1+r2}x + ${r1*r2} = 0\nNilai pemalar = ?`, ans:r1*r2}; },
-      ()=>{ const a=rand(1,3),b=rand(1,5); return {text:`f(x) = ${a}x²\nf(${b}) = ?`, ans:a*b*b}; },
+      ()=>{ const a=rand(1,6),c=rand(1,16); return {text:`f(x) = ${a}x² + ${c}\nNilai minimum f(x) = ?`, ans:c}; },
+      ()=>{ const r1=rand(1,10),r2=rand(1,8); return {text:`(x-${r1})(x-${r2}) = 0\nNilai x² coefficient = 1\nHasil darab punca = ?`, ans:r1*r2}; },
+      ()=>{ const a=rand(2,10),b=rand(1,12); return {text:`Persegi panjang: panjang = x+${a}, lebar = x+${b}\nLuas = x²+${a+b}x+${a*b}\nNilai pekali x = ?`, ans:a+b}; },
+      ()=>{ const a=rand(1,6),c=rand(-12,-1); return {text:`f(x) = ${a}x² + ${c}\nNilai c (pemalar) = ?`, ans:c}; },
+      ()=>{ const a=rand(2,8),b=rand(1,8); return {text:`Sisi segiempat = (x+${b})\nLuas = x²+${2*b}x+${b*b}\nPekali x = ?`, ans:2*b}; },
+      ()=>{ const r1=rand(1,8),r2=rand(1,8); return {text:`Punca: ${r1} dan ${r2}\nPersamaan: x² - ${r1+r2}x + ${r1*r2} = 0\nNilai pemalar = ?`, ans:r1*r2}; },
+      ()=>{ const a=rand(1,6),b=rand(1,10); return {text:`f(x) = ${a}x²\nf(${b}) = ?`, ans:a*b*b}; },
     ],
     6:[ // penilaian fungsi lanjutan (x negatif, 3 sebutan)
-      ()=>{ const a=rand(1,4),b=rand(1,8),c=rand(0,10),x=rand(-5,-1); return {text:`f(x) = ${a}x² + ${b}x + ${c}\nf(${x}) = ?`, ans:a*x*x+b*x+c}; },
-      ()=>{ const a=rand(1,3),b=rand(1,6),x=rand(-4,4); return {text:`g(x) = ${a}x² - ${b}x\ng(${x}) = ?`, ans:a*x*x-b*x}; },
-      ()=>{ const a=rand(1,3),b=rand(1,8),c=rand(1,10),x=rand(2,6); return {text:`h(x) = ${a}x² + ${b}x - ${c}\nh(${x}) = ?`, ans:a*x*x+b*x-c}; },
-      ()=>{ const x=rand(-4,4); return {text:`f(x) = x² - 2x + 1\n(petunjuk: ini ialah (x-1)²)\nf(${x}) = ?`, ans:(x-1)*(x-1)}; },
-      ()=>{ const a=rand(1,3),b=rand(1,6),c=rand(1,8),x=rand(-3,-1); return {text:`p(x) = ${a}x² - ${b}x + ${c}\np(${x}) = ?`, ans:a*x*x-b*x+c}; },
+      ()=>{ const a=rand(1,8),b=rand(1,16),c=rand(0,20),x=rand(-10,-1); return {text:`f(x) = ${a}x² + ${b}x + ${c}\nf(${x}) = ?`, ans:a*x*x+b*x+c}; },
+      ()=>{ const a=rand(1,6),b=rand(1,12),x=rand(-8,8); return {text:`g(x) = ${a}x² - ${b}x\ng(${x}) = ?`, ans:a*x*x-b*x}; },
+      ()=>{ const a=rand(1,6),b=rand(1,16),c=rand(1,20),x=rand(2,12); return {text:`h(x) = ${a}x² + ${b}x - ${c}\nh(${x}) = ?`, ans:a*x*x+b*x-c}; },
+      ()=>{ const x=rand(-8,8); return {text:`f(x) = x² - 2x + 1\n(petunjuk: ini ialah (x-1)²)\nf(${x}) = ?`, ans:(x-1)*(x-1)}; },
+      ()=>{ const a=rand(1,6),b=rand(1,12),c=rand(1,16),x=rand(-6,-1); return {text:`p(x) = ${a}x² - ${b}x + ${c}\np(${x}) = ?`, ans:a*x*x-b*x+c}; },
     ],
     7:[ // jumlah & hasil darab punca (punca negatif)
-      ()=>{ const r1=rand(1,6),r2=rand(1,6); return {text:`Punca persamaan kuadratik: ${r1} dan -${r2}\nHasil darab punca = ?`, ans:-(r1*r2)}; },
-      ()=>{ const r1=rand(1,5),r2=rand(1,5); return {text:`Punca: -${r1} dan -${r2}\nHasil tambah punca = ?`, ans:-(r1+r2)}; },
-      ()=>{ const r1=rand(1,5),r2=rand(1,5); return {text:`Punca: -${r1} dan -${r2}\nHasil darab punca = ?`, ans:r1*r2}; },
-      ()=>{ const r1=rand(1,6),r2=rand(1,6); const s=r2-r1; return {text:`Punca persamaan: ${r2} dan -${r1}\nHasil tambah punca = ?`, ans:s}; },
-      ()=>{ const a=rand(2,4),r1=rand(1,5),r2=rand(1,5); return {text:`${a}x² - ${a*(r1+r2)}x + ${a*r1*r2} = 0\nSatu punca = ${r1}, punca lain = ?`, ans:r2}; },
+      ()=>{ const r1=rand(1,12),r2=rand(1,12); return {text:`Punca persamaan kuadratik: ${r1} dan -${r2}\nHasil darab punca = ?`, ans:-(r1*r2)}; },
+      ()=>{ const r1=rand(1,10),r2=rand(1,10); return {text:`Punca: -${r1} dan -${r2}\nHasil tambah punca = ?`, ans:-(r1+r2)}; },
+      ()=>{ const r1=rand(1,10),r2=rand(1,10); return {text:`Punca: -${r1} dan -${r2}\nHasil darab punca = ?`, ans:r1*r2}; },
+      ()=>{ const r1=rand(1,12),r2=rand(1,12); const s=r2-r1; return {text:`Punca persamaan: ${r2} dan -${r1}\nHasil tambah punca = ?`, ans:s}; },
+      ()=>{ const a=rand(2,8),r1=rand(1,10),r2=rand(1,10); return {text:`${a}x² - ${a*(r1+r2)}x + ${a*r1*r2} = 0\nSatu punca = ${r1}, punca lain = ?`, ans:r2}; },
     ],
     8:[ // faktorkan pekali utama > 1 & diskriminan
-      ()=>{ const a=rand(2,4),r1=rand(1,5),r2=rand(1,5); const b=a*(r1+r2),c=a*r1*r2; return {text:`${a}x² + ${b}x + ${c} = ${a}(x + ${r1})(x + ?)\n? = ?`, ans:r2}; },
-      ()=>{ const a=rand(2,4),r1=rand(1,5),r2=rand(1,5); const b=a*(r1+r2),c=a*r1*r2; return {text:`${a}x² - ${b}x + ${c} = ${a}(x - ?)(x - ${r2})\n? = ?`, ans:r1}; },
-      ()=>{ const r1=rand(1,6),r2=rand(r1+1,r1+6); const s=r1+r2,p=r1*r2; return {text:`x² - ${s}x + ${p} = 0\nHasil tambah punca = ${s}, hasil darab = ${p}\nPunca lebih besar = ?`, ans:r2}; },
-      ()=>{ const a=rand(2,5),b=rand(2,8); return {text:`${a}x² + ${a*b}x = ${a}x(x + ?)\n? = ?`, ans:b}; },
-      ()=>{ const a=rand(1,3),bb=rand(2,8),cc=rand(1,6); const disc=bb*bb-4*a*cc; return {text:`Diskriminan bagi ${a}x² + ${bb}x + ${cc} = 0\n= b² - 4ac = ${bb}² - 4(${a})(${cc})\n= ?`, ans:disc}; },
+      ()=>{ const a=rand(2,8),r1=rand(1,10),r2=rand(1,10); const b=a*(r1+r2),c=a*r1*r2; return {text:`${a}x² + ${b}x + ${c} = ${a}(x + ${r1})(x + ?)\n? = ?`, ans:r2}; },
+      ()=>{ const a=rand(2,8),r1=rand(1,10),r2=rand(1,10); const b=a*(r1+r2),c=a*r1*r2; return {text:`${a}x² - ${b}x + ${c} = ${a}(x - ?)(x - ${r2})\n? = ?`, ans:r1}; },
+      ()=>{ const r1=rand(1,12),r2=rand(r1+1,r1+12); const s=r1+r2,p=r1*r2; return {text:`x² - ${s}x + ${p} = 0\nHasil tambah punca = ${s}, hasil darab = ${p}\nPunca lebih besar = ?`, ans:r2}; },
+      ()=>{ const a=rand(2,10),b=rand(2,16); return {text:`${a}x² + ${a*b}x = ${a}x(x + ?)\n? = ?`, ans:b}; },
+      ()=>{ const a=rand(1,6),bb=rand(2,16),cc=rand(1,12); const disc=bb*bb-4*a*cc; return {text:`Diskriminan bagi ${a}x² + ${bb}x + ${cc} = 0\n= b² - 4ac = ${bb}² - 4(${a})(${cc})\n= ?`, ans:disc}; },
     ],
     9:[ // konteks dunia sebenar — peluru & luas
-      ()=>{ const a=rand(1,3),b=rand(5,15),x=rand(1,4); return {text:`Ketinggian bola h(t) = -${a}t² + ${b}t (meter)\nKetinggian pada t = ${x} saat\n= -${a}(${x})² + ${b}(${x})\n= ?`, ans:-a*x*x+b*x}; },
-      ()=>{ const a=rand(2,6),x=rand(2,8); return {text:`Taman segiempat tepat: panjang=(x+${a})m, lebar=x m\nLuas = x(x+${a}) m²\nLuas bila x = ${x}m\n= ?`, ans:x*(x+a)}; },
-      ()=>{ const x=rand(2,10),a=rand(1,8); const luas=x*(x+a); return {text:`Luas segiempat tepat = x(x+${a}) = ${luas} m²\n(x mestilah positif)\nNilai x = ?`, ans:x}; },
-      ()=>{ const c=rand(10,40),a=rand(1,3); return {text:`Ketinggian maksimum bagi f(x) = -${a}x² + ${c}\n(nilai maksimum berlaku bila x=0)\nKetinggian maksimum = ?`, ans:c}; },
-      ()=>{ const a=rand(1,3),b=rand(5,20),x=rand(1,6); return {text:`Keuntungan kedai P(x) = -${a}x² + ${b}x (RM ratus)\nKeuntungan bila x = ${x}\n= -${a}(${x})² + ${b}(${x})\n= ?`, ans:-a*x*x+b*x}; },
+      ()=>{ const a=rand(1,6),b=rand(5,30),x=rand(1,8); return {text:`Ketinggian bola h(t) = -${a}t² + ${b}t (meter)\nKetinggian pada t = ${x} saat\n= -${a}(${x})² + ${b}(${x})\n= ?`, ans:-a*x*x+b*x}; },
+      ()=>{ const a=rand(2,12),x=rand(2,16); return {text:`Taman segiempat tepat: panjang=(x+${a})m, lebar=x m\nLuas = x(x+${a}) m²\nLuas bila x = ${x}m\n= ?`, ans:x*(x+a)}; },
+      ()=>{ const x=rand(2,20),a=rand(1,16); const luas=x*(x+a); return {text:`Luas segiempat tepat = x(x+${a}) = ${luas} m²\n(x mestilah positif)\nNilai x = ?`, ans:x}; },
+      ()=>{ const c=rand(10,80),a=rand(1,6); return {text:`Ketinggian maksimum bagi f(x) = -${a}x² + ${c}\n(nilai maksimum berlaku bila x=0)\nKetinggian maksimum = ?`, ans:c}; },
+      ()=>{ const a=rand(1,6),b=rand(5,40),x=rand(1,12); return {text:`Keuntungan kedai P(x) = -${a}x² + ${b}x (RM ratus)\nKeuntungan bila x = ${x}\n= -${a}(${x})² + ${b}(${x})\n= ?`, ans:-a*x*x+b*x}; },
     ],
     10:[ // CABARAN AKHIR — KBAT fungsi kuadratik
-      ()=>{ const a=rand(2,4),r1=rand(1,5),r2=rand(1,5),xv=rand(1,6); const val=a*(xv+r1)*(xv+r2); return {text:`f(x) = ${a}(x + ${r1})(x + ${r2})\nf(${xv}) = ?`, ans:val}; },
-      ()=>{ const a=rand(1,3),h=rand(-4,4),k=rand(1,10),xv=rand(-3,6); const val=a*(xv-h)*(xv-h)+k; return {text:`f(x) = ${a}(x - (${h}))² + ${k}\nf(${xv}) = ?`, ans:val}; },
-      ()=>{ const a=rand(2,6),x=rand(2,8),costM2=rand(2,10); const luas=x*(x+a); const total=luas*costM2; return {text:`Taman segiempat tepat: panjang=(x+${a})m, lebar=x m\nKos pasang rumput RM${costM2}/m²\nBila x=${x}m, jumlah kos = luas × RM${costM2}\n= ?`, ans:total}; },
-      ()=>{ const a=rand(2,4),r1=rand(1,6),r2=rand(1,6); const b=a*(r1+r2),c=a*r1*r2; return {text:`${a}x² + ${b}x + ${c} = 0, punca = -${r1} dan -${r2}\nHasil tambah punca - Hasil darab punca = ?`, ans:(-(r1+r2))-(r1*r2)}; },
-      ()=>{ const a=rand(1,3),b=rand(6,20),t1=rand(1,3); const t2=t1+rand(1,3); const h1=-a*t1*t1+b*t1,h2=-a*t2*t2+b*t2; return {text:`h(t) = -${a}t² + ${b}t\nh(${t2}) - h(${t1}) = ?\n(h(${t1})=${h1}, h(${t2})=${h2})`, ans:h2-h1}; },
+      ()=>{ const a=rand(2,8),r1=rand(1,10),r2=rand(1,10),xv=rand(1,12); const val=a*(xv+r1)*(xv+r2); return {text:`f(x) = ${a}(x + ${r1})(x + ${r2})\nf(${xv}) = ?`, ans:val}; },
+      ()=>{ const a=rand(1,6),h=rand(-8,8),k=rand(1,20),xv=rand(-6,12); const val=a*(xv-h)*(xv-h)+k; return {text:`f(x) = ${a}(x - (${h}))² + ${k}\nf(${xv}) = ?`, ans:val}; },
+      ()=>{ const a=rand(2,12),x=rand(2,16),costM2=rand(2,20); const luas=x*(x+a); const total=luas*costM2; return {text:`Taman segiempat tepat: panjang=(x+${a})m, lebar=x m\nKos pasang rumput RM${costM2}/m²\nBila x=${x}m, jumlah kos = luas × RM${costM2}\n= ?`, ans:total}; },
+      ()=>{ const a=rand(2,8),r1=rand(1,12),r2=rand(1,12); const b=a*(r1+r2),c=a*r1*r2; return {text:`${a}x² + ${b}x + ${c} = 0, punca = -${r1} dan -${r2}\nHasil tambah punca - Hasil darab punca = ?`, ans:(-(r1+r2))-(r1*r2)}; },
+      ()=>{ const a=rand(1,6),b=rand(6,40),t1=rand(1,6); const t2=t1+rand(1,6); const h1=-a*t1*t1+b*t1,h2=-a*t2*t2+b*t2; return {text:`h(t) = -${a}t² + ${b}t\nh(${t2}) - h(${t1}) = ?\n(h(${t1})=${h1}, h(${t2})=${h2})`, ans:h2-h1}; },
     ],
   };
   const pool = bank[Math.min(lvl,10)] || bank[1];
@@ -4390,86 +4408,90 @@ function genQ_T4(lvl){
 // Tower 1: kebarangkalian asas, Tower 2: pelengkap
 // Tower 3: dua peristiwa bebas, Tower 4: jadual/pokok, Tower 5: KBAT
 function genQ_T5(lvl){
+  // JULAT RAWAK DIBESARKAN (2025-anti-hafal): sama seperti genQ_T1 — julat rand()
+  // dilebarkan ~2x drpd versi asal supaya kombinasi nombor jauh lebih banyak.
+  // Logik jawapan (ans) TAK disentuh; pemalar tetap (spt t=6 dadu, t=10/12 asas
+  // pecahan) dikekalkan kerana ia bahagian struktur soalan, bukan julat rawak.
   const bank = {
     1:[
-      ()=>{ const n=rand(3,8),t=rand(n+2,12); return {text:`Sebuah beg ada ${t} bola.\n${n} bola merah.\nP(bola merah) = ?/${t}`, ans:n}; },
-      ()=>{ const n=rand(2,6),t=10; return {text:`${t} kad bernombor 1-${t}.\nP(nombor ${n}) = 1/${t}\nNilai ${t} = ?`, ans:t}; },
-      ()=>{ const g=rand(2,6),b=rand(2,5); return {text:`${g+b} pelajar: ${g} perempuan, ${b} lelaki.\nP(lelaki) = ${b}/${g+b}\nBilangan lelaki = ?`, ans:b}; },
-      ()=>{ const r=rand(2,6),t=rand(r+2,10); return {text:`Beg ada ${t} bola.\n${r} bola biru.\nP(bola biru) = ?/${t}`, ans:r}; },
-      ()=>{ const n=rand(1,4),t=6; return {text:`Dadu standard (1-6).\nP(nombor ${n}) = 1/${t}\nJumlah muka dadu = ?`, ans:t}; },
-      ()=>{ const a=rand(3,7),t=rand(a+2,12); return {text:`${t} kad dalam kotak.\n${a} kad berwarna merah.\nP(kad merah) = ?/${t}`, ans:a}; },
-      ()=>{ const b=rand(2,5),r=rand(2,5); return {text:`${b+r} bola: ${b} biru, ${r} merah.\nP(merah) = ${r}/${b+r}\nBilangan bola merah = ?`, ans:r}; },
+      ()=>{ const n=rand(3,16),t=rand(n+2,24); return {text:`Sebuah beg ada ${t} bola.\n${n} bola merah.\nP(bola merah) = ?/${t}`, ans:n}; },
+      ()=>{ const n=rand(2,12),t=10; return {text:`${t} kad bernombor 1-${t}.\nP(nombor ${n}) = 1/${t}\nNilai ${t} = ?`, ans:t}; },
+      ()=>{ const g=rand(2,12),b=rand(2,10); return {text:`${g+b} pelajar: ${g} perempuan, ${b} lelaki.\nP(lelaki) = ${b}/${g+b}\nBilangan lelaki = ?`, ans:b}; },
+      ()=>{ const r=rand(2,12),t=rand(r+2,20); return {text:`Beg ada ${t} bola.\n${r} bola biru.\nP(bola biru) = ?/${t}`, ans:r}; },
+      ()=>{ const n=rand(1,6),t=6; return {text:`Dadu standard (1-6).\nP(nombor ${n}) = 1/${t}\nJumlah muka dadu = ?`, ans:t}; },
+      ()=>{ const a=rand(3,14),t=rand(a+2,24); return {text:`${t} kad dalam kotak.\n${a} kad berwarna merah.\nP(kad merah) = ?/${t}`, ans:a}; },
+      ()=>{ const b=rand(2,10),r=rand(2,10); return {text:`${b+r} bola: ${b} biru, ${r} merah.\nP(merah) = ${r}/${b+r}\nBilangan bola merah = ?`, ans:r}; },
     ],
     2:[
-      ()=>{ const a=rand(2,7),t=rand(a+2,12); return {text:`P(A) = ${a}/${t}\nP(bukan A) = ?/${t}`, ans:t-a}; },
-      ()=>{ const a=rand(1,5),t=8; return {text:`P(hujan) = ${a}/${t}\nP(tidak hujan) = ?/${t}`, ans:t-a}; },
-      ()=>{ const a=rand(2,6),t=10; return {text:`P(lulus) = ${a}/${t}\nP(gagal) = (${t}-${a})/${t} = ?/${t}`, ans:t-a}; },
-      ()=>{ const a=rand(1,4),t=6; return {text:`P(nombor genap) = ${a}/${t}\nP(nombor ganjil) = ?/${t}`, ans:t-a}; },
-      ()=>{ const a=rand(2,5),t=9; return {text:`P(menang) = ${a}/${t}\nP(kalah) = ?/${t}`, ans:t-a}; },
-      ()=>{ const a=rand(3,7),t=10; return {text:`P(bola merah) = ${a}/10\nP(bukan merah) = ?/10`, ans:t-a}; },
-      ()=>{ const a=rand(1,4),t=8; return {text:`P(A) = ${a}/${t}\n1 - P(A) = ?/${t}`, ans:t-a}; },
+      ()=>{ const a=rand(2,14),t=rand(a+2,24); return {text:`P(A) = ${a}/${t}\nP(bukan A) = ?/${t}`, ans:t-a}; },
+      ()=>{ const a=rand(1,7),t=8; return {text:`P(hujan) = ${a}/${t}\nP(tidak hujan) = ?/${t}`, ans:t-a}; },
+      ()=>{ const a=rand(2,9),t=10; return {text:`P(lulus) = ${a}/${t}\nP(gagal) = (${t}-${a})/${t} = ?/${t}`, ans:t-a}; },
+      ()=>{ const a=rand(1,5),t=6; return {text:`P(nombor genap) = ${a}/${t}\nP(nombor ganjil) = ?/${t}`, ans:t-a}; },
+      ()=>{ const a=rand(2,8),t=9; return {text:`P(menang) = ${a}/${t}\nP(kalah) = ?/${t}`, ans:t-a}; },
+      ()=>{ const a=rand(3,9),t=10; return {text:`P(bola merah) = ${a}/10\nP(bukan merah) = ?/10`, ans:t-a}; },
+      ()=>{ const a=rand(1,7),t=8; return {text:`P(A) = ${a}/${t}\n1 - P(A) = ?/${t}`, ans:t-a}; },
     ],
     3:[
       ()=>{ return {text:`Dua dadu dilancarkan.\nP(dadu 1 = 1) = 1/6\nP(dadu 2 = 1) = 1/6\nP(kedua-duanya = 1) = 1/?`, ans:36}; },
-      ()=>{ const r=rand(2,4),b=rand(2,4),t=r+b; return {text:`${t} bola: ${r} merah, ${b} biru.\nAmbil 1 bola, ganti, ambil lagi.\nP(merah,merah) = ${r}²/${t}² = ${r*r}/${t*t}\nNilai ${t*t} = ?`, ans:t*t}; },
-      ()=>{ const p=rand(2,5),q=rand(2,5); return {text:`P(A) = 1/${p}, P(B) = 1/${q}, bebas.\nP(A dan B) = 1/${p*q}\nNilai ${p}×${q} = ?`, ans:p*q}; },
-      ()=>{ const p=rand(2,4),q=rand(2,4); return {text:`P(X) = 1/${p}, P(Y) = 1/${q}, bebas.\nP(X dan Y) = 1/?\n? = ?`, ans:p*q}; },
+      ()=>{ const r=rand(2,8),b=rand(2,8),t=r+b; return {text:`${t} bola: ${r} merah, ${b} biru.\nAmbil 1 bola, ganti, ambil lagi.\nP(merah,merah) = ${r}²/${t}² = ${r*r}/${t*t}\nNilai ${t*t} = ?`, ans:t*t}; },
+      ()=>{ const p=rand(2,10),q=rand(2,10); return {text:`P(A) = 1/${p}, P(B) = 1/${q}, bebas.\nP(A dan B) = 1/${p*q}\nNilai ${p}×${q} = ?`, ans:p*q}; },
+      ()=>{ const p=rand(2,8),q=rand(2,8); return {text:`P(X) = 1/${p}, P(Y) = 1/${q}, bebas.\nP(X dan Y) = 1/?\n? = ?`, ans:p*q}; },
       ()=>{ return {text:`Syiling dibalik 2 kali.\nP(kepala pertama) = 1/2\nP(kepala kedua) = 1/2\nP(kepala,kepala) = 1/?`, ans:4}; },
-      ()=>{ const p=rand(2,3),q=rand(2,3); return {text:`Dua peristiwa bebas:\nP(A) = 1/${p}, P(B) = 1/${q}\nP(A ∩ B) = 1/?\n? = ?`, ans:p*q}; },
+      ()=>{ const p=rand(2,6),q=rand(2,6); return {text:`Dua peristiwa bebas:\nP(A) = 1/${p}, P(B) = 1/${q}\nP(A ∩ B) = 1/?\n? = ?`, ans:p*q}; },
       ()=>{ return {text:`Dadu dilancar 2 kali.\nP(dpt 6 pertama) = 1/6\nP(dpt 6 kedua) = 1/6\nP(dua-dua dapat 6) = 1/?`, ans:36}; },
     ],
     4:[
-      ()=>{ const t=rand(20,40),a=rand(5,t/2|0); return {text:`Jadual frekuensi:\nJumlah = ${t}\nFrekuensi A = ${a}\nKebarangkalian A = ${a}/${t}\nNilai pengangka = ?`, ans:a}; },
-      ()=>{ const r=rand(2,5),b=rand(2,5),t=r+b; return {text:`Pokok kebarangkalian:\n${t} bola (${r} merah, ${b} biru)\nP(biru) = ?/${t}`, ans:b}; },
-      ()=>{ const a=rand(3,7),b=rand(2,5),t=rand(a+b+2,15); return {text:`P(A) = ${a}/${t}, P(B) = ${b}/${t}, saling eksklusif\nP(A atau B) = ${a+b}/${t}\nNilai pengangka = ?`, ans:a+b}; },
-      ()=>{ const a=rand(4,8),t=20; return {text:`Jadual: 20 pelajar\n${a} suka sains, lain suka math\nP(suka sains) = ${a}/20\nNilai pengangka = ?`, ans:a}; },
-      ()=>{ const a=rand(2,5),b=rand(2,4),t=a+b+rand(2,5); return {text:`Pokok kebarangkalian:\nJumlah = ${t}\nCabang A = ${a}, cabang B = ${b}\nP(A atau B) = ${a+b}/${t}\nPengangka = ?`, ans:a+b}; },
-      ()=>{ const r=rand(3,6),g=rand(2,5),t=r+g; return {text:`${t} buah: ${r} merah, ${g} hijau\nP(merah) = ${r}/${t}\nBilangan buah merah = ?`, ans:r}; },
-      ()=>{ const a=rand(3,6),b=rand(2,4),t=rand(a+b+1,15); return {text:`P(A) = ${a}/${t}, P(B) = ${b}/${t}\nA dan B saling eksklusif\nP(A∪B) = ?/${t}`, ans:a+b}; },
+      ()=>{ const t=rand(20,80),a=rand(5,t/2|0); return {text:`Jadual frekuensi:\nJumlah = ${t}\nFrekuensi A = ${a}\nKebarangkalian A = ${a}/${t}\nNilai pengangka = ?`, ans:a}; },
+      ()=>{ const r=rand(2,10),b=rand(2,10),t=r+b; return {text:`Pokok kebarangkalian:\n${t} bola (${r} merah, ${b} biru)\nP(biru) = ?/${t}`, ans:b}; },
+      ()=>{ const a=rand(3,14),b=rand(2,10),t=rand(a+b+2,30); return {text:`P(A) = ${a}/${t}, P(B) = ${b}/${t}, saling eksklusif\nP(A atau B) = ${a+b}/${t}\nNilai pengangka = ?`, ans:a+b}; },
+      ()=>{ const a=rand(4,16),t=20; return {text:`Jadual: 20 pelajar\n${a} suka sains, lain suka math\nP(suka sains) = ${a}/20\nNilai pengangka = ?`, ans:a}; },
+      ()=>{ const a=rand(2,10),b=rand(2,8),t=a+b+rand(2,10); return {text:`Pokok kebarangkalian:\nJumlah = ${t}\nCabang A = ${a}, cabang B = ${b}\nP(A atau B) = ${a+b}/${t}\nPengangka = ?`, ans:a+b}; },
+      ()=>{ const r=rand(3,12),g=rand(2,10),t=r+g; return {text:`${t} buah: ${r} merah, ${g} hijau\nP(merah) = ${r}/${t}\nBilangan buah merah = ?`, ans:r}; },
+      ()=>{ const a=rand(3,12),b=rand(2,8),t=rand(a+b+1,30); return {text:`P(A) = ${a}/${t}, P(B) = ${b}/${t}\nA dan B saling eksklusif\nP(A∪B) = ?/${t}`, ans:a+b}; },
     ],
     5:[
-      ()=>{ const n=rand(3,7),t=rand(10,20); const q=t-n; return {text:`Peristiwa A: ${n}/${t}, Peristiwa B: ${q}/${t}\nP(A) + P(B) = ${n+q}/${t}\n${n+q}/${t} = ?`, ans:1}; },
-      ()=>{ const p=rand(2,5),q=rand(2,4); return {text:`Eksperimen diulang ${p*q} kali.\nP(berjaya) = 1/${p}\nJangkaan bilangan kejayaan = ${p*q}/${p} = ?`, ans:q}; },
-      ()=>{ const a=rand(1,4),b=rand(1,4),t=12; return {text:`P(A) = ${a}/${t}, P(A∩B) = ${a*b}/${t*t}\nP(B|A) = P(A∩B)/P(A) = ${b}/${t}\nNilai ${b} = ?`, ans:b}; },
-      ()=>{ const n=rand(2,5),t=rand(8,15); return {text:`P(A) + P(bukan A) = 1\nP(A) = ${n}/${t}\nP(bukan A) = ?/${t}`, ans:t-n}; },
-      ()=>{ const p=rand(2,4),q=rand(2,5); return {text:`${p*q} cubaan, P(berjaya) = 1/${p}\nJangkaan kejayaan = ${p*q}/${p} = ?`, ans:q}; },
-      ()=>{ const a=rand(2,5),b=rand(2,4),t=rand(a+b+2,12); return {text:`P(A) = ${a}/${t}, P(B) = ${b}/${t}\nsaling eksklusif\nP(A atau B) = ?/${t}`, ans:a+b}; },
-      ()=>{ const r=rand(2,4),b=rand(2,4),t=r+b; return {text:`${t} bola: ${r} merah, ${b} biru.\nAmbil 2 bola berturut-turut (ganti).\nP(merah kemudian biru)\n= ${r}/${t} × ${b}/${t} = ${r*b}/${t*t}\nNilai ${r*b} = ?`, ans:r*b}; },
+      ()=>{ const n=rand(3,14),t=rand(10,40); const q=t-n; return {text:`Peristiwa A: ${n}/${t}, Peristiwa B: ${q}/${t}\nP(A) + P(B) = ${n+q}/${t}\n${n+q}/${t} = ?`, ans:1}; },
+      ()=>{ const p=rand(2,10),q=rand(2,8); return {text:`Eksperimen diulang ${p*q} kali.\nP(berjaya) = 1/${p}\nJangkaan bilangan kejayaan = ${p*q}/${p} = ?`, ans:q}; },
+      ()=>{ const a=rand(1,8),b=rand(1,8),t=12; return {text:`P(A) = ${a}/${t}, P(A∩B) = ${a*b}/${t*t}\nP(B|A) = P(A∩B)/P(A) = ${b}/${t}\nNilai ${b} = ?`, ans:b}; },
+      ()=>{ const n=rand(2,10),t=rand(8,30); return {text:`P(A) + P(bukan A) = 1\nP(A) = ${n}/${t}\nP(bukan A) = ?/${t}`, ans:t-n}; },
+      ()=>{ const p=rand(2,8),q=rand(2,10); return {text:`${p*q} cubaan, P(berjaya) = 1/${p}\nJangkaan kejayaan = ${p*q}/${p} = ?`, ans:q}; },
+      ()=>{ const a=rand(2,10),b=rand(2,8),t=rand(a+b+2,24); return {text:`P(A) = ${a}/${t}, P(B) = ${b}/${t}\nsaling eksklusif\nP(A atau B) = ?/${t}`, ans:a+b}; },
+      ()=>{ const r=rand(2,8),b=rand(2,8),t=r+b; return {text:`${t} bola: ${r} merah, ${b} biru.\nAmbil 2 bola berturut-turut (ganti).\nP(merah kemudian biru)\n= ${r}/${t} × ${b}/${t} = ${r*b}/${t*t}\nNilai ${r*b} = ?`, ans:r*b}; },
     ],
     6:[ // jangkaan & peristiwa gabungan
-      ()=>{ const p=rand(2,6),n=rand(2,8); const total=p*n; return {text:`P(kejayaan) = 1/${p}\nDalam ${total} percubaan, jangkaan bilangan kejayaan = ${total}/${p} = ?`, ans:n}; },
-      ()=>{ const p=rand(2,5),q=rand(2,5); return {text:`P(A) = 1/${p}, P(B) = 1/${q}, bebas.\nP(A dan bukan B) = 1/${p} × (${q}-1)/${q}\nNilai penyebut (${p}×${q}) = ?`, ans:p*q}; },
-      ()=>{ const r=rand(3,8),b=rand(3,8),t=r+b; return {text:`Beg ada ${t} bola (${r} merah, ${b} biru).\nSatu bola merah diambil dan TIDAK dikembalikan.\nBilangan bola tinggal dalam beg = ?`, ans:t-1}; },
-      ()=>{ const r=rand(2,5),b=rand(2,5),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1, GANTI, ambil lagi.\nP(merah, biru) = ${r}/${t} × ${b}/${t} = ${r*b}/${t*t}\nNilai pengangka (${r}×${b}) = ?`, ans:r*b}; },
-      ()=>{ const p=rand(2,6),trials=rand(2,6); const total=p*trials; return {text:`P(menang) = 1/${p} setiap permainan.\nJika dimainkan ${total} kali, jangkaan bilangan menang = ?`, ans:trials}; },
+      ()=>{ const p=rand(2,12),n=rand(2,16); const total=p*n; return {text:`P(kejayaan) = 1/${p}\nDalam ${total} percubaan, jangkaan bilangan kejayaan = ${total}/${p} = ?`, ans:n}; },
+      ()=>{ const p=rand(2,10),q=rand(2,10); return {text:`P(A) = 1/${p}, P(B) = 1/${q}, bebas.\nP(A dan bukan B) = 1/${p} × (${q}-1)/${q}\nNilai penyebut (${p}×${q}) = ?`, ans:p*q}; },
+      ()=>{ const r=rand(3,16),b=rand(3,16),t=r+b; return {text:`Beg ada ${t} bola (${r} merah, ${b} biru).\nSatu bola merah diambil dan TIDAK dikembalikan.\nBilangan bola tinggal dalam beg = ?`, ans:t-1}; },
+      ()=>{ const r=rand(2,10),b=rand(2,10),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1, GANTI, ambil lagi.\nP(merah, biru) = ${r}/${t} × ${b}/${t} = ${r*b}/${t*t}\nNilai pengangka (${r}×${b}) = ?`, ans:r*b}; },
+      ()=>{ const p=rand(2,12),trials=rand(2,12); const total=p*trials; return {text:`P(menang) = 1/${p} setiap permainan.\nJika dimainkan ${total} kali, jangkaan bilangan menang = ?`, ans:trials}; },
     ],
     7:[ // pensampelan tanpa ganti
-      ()=>{ const r=rand(2,5),b=rand(2,5),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1 bola merah (TIDAK dikembalikan).\nBilangan bola merah tinggal = ?`, ans:r-1}; },
-      ()=>{ const r=rand(3,6),b=rand(3,6),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1 bola merah (tidak dikembalikan).\nP(bola kedua merah) = (${r-1})/(${t-1})\nNilai penyebut = ?`, ans:t-1}; },
-      ()=>{ const r=rand(3,6),b=rand(3,6),t=r+b; return {text:`${t} kad (${r} bernombor genap, ${b} bernombor ganjil).\nSatu kad genap diambil (tidak dikembalikan).\nBilangan kad genap tinggal = ?`, ans:r-1}; },
-      ()=>{ const r=rand(3,7),b=rand(2,5),t=r+b; const num=r*(r-1); return {text:`${t} bola (${r} merah, ${b} biru). Ambil 2 bola berturutan (TANPA ganti).\nP(merah,merah) = ${r}/${t} × ${r-1}/${t-1} = ${num}/(${t}×${t-1})\nNilai pengangka = ?`, ans:num}; },
-      ()=>{ const t=rand(10,20),a=rand(2,8); return {text:`${t} pelajar dalam kelas, ${a} memakai cermin mata.\nSeorang pelajar dipilih dan dikeluarkan dari kelas.\nBilangan pelajar tinggal dalam kelas = ?`, ans:t-1}; },
+      ()=>{ const r=rand(2,10),b=rand(2,10),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1 bola merah (TIDAK dikembalikan).\nBilangan bola merah tinggal = ?`, ans:r-1}; },
+      ()=>{ const r=rand(3,12),b=rand(3,12),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1 bola merah (tidak dikembalikan).\nP(bola kedua merah) = (${r-1})/(${t-1})\nNilai penyebut = ?`, ans:t-1}; },
+      ()=>{ const r=rand(3,12),b=rand(3,12),t=r+b; return {text:`${t} kad (${r} bernombor genap, ${b} bernombor ganjil).\nSatu kad genap diambil (tidak dikembalikan).\nBilangan kad genap tinggal = ?`, ans:r-1}; },
+      ()=>{ const r=rand(3,14),b=rand(2,10),t=r+b; const num=r*(r-1); return {text:`${t} bola (${r} merah, ${b} biru). Ambil 2 bola berturutan (TANPA ganti).\nP(merah,merah) = ${r}/${t} × ${r-1}/${t-1} = ${num}/(${t}×${t-1})\nNilai pengangka = ?`, ans:num}; },
+      ()=>{ const t=rand(10,40),a=rand(2,16); return {text:`${t} pelajar dalam kelas, ${a} memakai cermin mata.\nSeorang pelajar dipilih dan dikeluarkan dari kelas.\nBilangan pelajar tinggal dalam kelas = ?`, ans:t-1}; },
     ],
     8:[ // kebarangkalian bersyarat & pokok 2 tahap
-      ()=>{ const b=rand(2,6),a=rand(2,6); const t=12; return {text:`P(A) = ${a}/${t}, P(A∩B) = ${a*b}/${t*t}\nP(B|A) = P(A∩B)/P(A) = ${b}/${t}\nNilai pengangka P(B|A) = ?`, ans:b}; },
-      ()=>{ const r=rand(3,7),b=rand(3,7),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1 bola merah (tidak dikembalikan), ambil lagi.\nP(kedua-dua merah) = ${r}/${t} × ${r-1}/${t-1}\nPenyebut kedua = ?`, ans:t-1}; },
-      ()=>{ const a=rand(2,5),b=rand(2,5),c=rand(2,5); const t=a+b+c; return {text:`Pokok kebarangkalian 3 cabang: A=${a}, B=${b}, C=${c} (drpd jumlah ${t})\nP(A atau C) = (${a}+${c})/${t}\nNilai pengangka = ?`, ans:a+c}; },
-      ()=>{ const p=rand(2,5),q=rand(2,5); return {text:`P(A) = 1/${p}, P(B|A) = 1/${q}\nP(A dan B) = P(A) × P(B|A) = 1/${p*q}\nNilai penyebut (${p}×${q}) = ?`, ans:p*q}; },
-      ()=>{ const t=rand(20,40),a=rand(5,15),b=rand(3,10); return {text:`Jadual: ${t} murid, ${a} suka Bola Sepak, ${b} drpd mereka juga suka Bola Jaring.\nP(suka Bola Jaring | suka Bola Sepak) = ${b}/${a}\nNilai pengangka = ?`, ans:b}; },
+      ()=>{ const b=rand(2,12),a=rand(2,12); const t=12; return {text:`P(A) = ${a}/${t}, P(A∩B) = ${a*b}/${t*t}\nP(B|A) = P(A∩B)/P(A) = ${b}/${t}\nNilai pengangka P(B|A) = ?`, ans:b}; },
+      ()=>{ const r=rand(3,14),b=rand(3,14),t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 1 bola merah (tidak dikembalikan), ambil lagi.\nP(kedua-dua merah) = ${r}/${t} × ${r-1}/${t-1}\nPenyebut kedua = ?`, ans:t-1}; },
+      ()=>{ const a=rand(2,10),b=rand(2,10),c=rand(2,10); const t=a+b+c; return {text:`Pokok kebarangkalian 3 cabang: A=${a}, B=${b}, C=${c} (drpd jumlah ${t})\nP(A atau C) = (${a}+${c})/${t}\nNilai pengangka = ?`, ans:a+c}; },
+      ()=>{ const p=rand(2,10),q=rand(2,10); return {text:`P(A) = 1/${p}, P(B|A) = 1/${q}\nP(A dan B) = P(A) × P(B|A) = 1/${p*q}\nNilai penyebut (${p}×${q}) = ?`, ans:p*q}; },
+      ()=>{ const t=rand(20,80),a=rand(5,30),b=rand(3,20); return {text:`Jadual: ${t} murid, ${a} suka Bola Sepak, ${b} drpd mereka juga suka Bola Jaring.\nP(suka Bola Jaring | suka Bola Sepak) = ${b}/${a}\nNilai pengangka = ?`, ans:b}; },
     ],
     9:[ // masalah perkataan gabungan
-      ()=>{ const r=rand(3,8),b=rand(3,8),g=rand(2,6); const t=r+b+g; return {text:`Beg ada ${t} bola: ${r} merah, ${b} biru, ${g} hijau.\nP(bukan hijau) = (${r}+${b})/${t}\nNilai pengangka = ?`, ans:r+b}; },
-      ()=>{ const a=rand(3,8),t=rand(a+5,20); return {text:`P(lulus Matematik) = ${a}/${t}\nDalam ${t*2} pelajar, jangkaan bilangan lulus = ?`, ans:a*2}; },
-      ()=>{ const p=rand(2,5),q=rand(2,5); return {text:`Dua kotak: Kotak A P(merah)=1/${p}, Kotak B P(merah)=1/${q}\nSatu bola diambil dari setiap kotak (bebas).\nP(kedua-dua merah) = 1/${p*q}\nNilai penyebut = ?`, ans:p*q}; },
-      ()=>{ const r=rand(3,7),b=rand(3,7); const t=r+b; return {text:`${t} pelajar (${r} lelaki, ${b} perempuan).\nDua pelajar dipilih TANPA ganti.\nBilangan pelajar tinggal selepas pemilihan pertama = ?`, ans:t-1}; },
-      ()=>{ const a=rand(3,9),t=rand(a+3,20); return {text:`P(hujan esok) = ${a}/${t}\nP(tidak hujan) = (${t}-${a})/${t}\nJumlah P(hujan) + P(tidak hujan) = ?`, ans:1}; },
+      ()=>{ const r=rand(3,16),b=rand(3,16),g=rand(2,12); const t=r+b+g; return {text:`Beg ada ${t} bola: ${r} merah, ${b} biru, ${g} hijau.\nP(bukan hijau) = (${r}+${b})/${t}\nNilai pengangka = ?`, ans:r+b}; },
+      ()=>{ const a=rand(3,16),t=rand(a+5,40); return {text:`P(lulus Matematik) = ${a}/${t}\nDalam ${t*2} pelajar, jangkaan bilangan lulus = ?`, ans:a*2}; },
+      ()=>{ const p=rand(2,10),q=rand(2,10); return {text:`Dua kotak: Kotak A P(merah)=1/${p}, Kotak B P(merah)=1/${q}\nSatu bola diambil dari setiap kotak (bebas).\nP(kedua-dua merah) = 1/${p*q}\nNilai penyebut = ?`, ans:p*q}; },
+      ()=>{ const r=rand(3,14),b=rand(3,14); const t=r+b; return {text:`${t} pelajar (${r} lelaki, ${b} perempuan).\nDua pelajar dipilih TANPA ganti.\nBilangan pelajar tinggal selepas pemilihan pertama = ?`, ans:t-1}; },
+      ()=>{ const a=rand(3,18),t=rand(a+3,40); return {text:`P(hujan esok) = ${a}/${t}\nP(tidak hujan) = (${t}-${a})/${t}\nJumlah P(hujan) + P(tidak hujan) = ?`, ans:1}; },
     ],
     10:[ // CABARAN AKHIR — KBAT kebarangkalian
-      ()=>{ const r=rand(3,7),b=rand(2,5); const t=r+b; const num=r*(r-1),den=t*(t-1); return {text:`${t} bola (${r} merah, ${b} biru). Ambil 2 bola TANPA ganti.\nP(kedua-dua merah) = ${num}/${den}\nNilai pengangka (${r}×${r-1}) = ?`, ans:num}; },
-      ()=>{ const p=rand(2,4),q=rand(2,4),r=rand(2,4); return {text:`3 peristiwa bebas: P(A)=1/${p}, P(B)=1/${q}, P(C)=1/${r}\nP(A dan B dan C) = 1/(${p}×${q}×${r})\nNilai penyebut = ?`, ans:p*q*r}; },
-      ()=>{ const a=rand(6,16),b=rand(3,a-1); const t=rand(20,40); return {text:`${t} murid: ${a} suka Sains, ${b} drpd mereka juga suka Matematik.\nP(suka Matematik | suka Sains) = ${b}/${a}\nNilai pengangka P(Matematik|Sains) = ?`, ans:b}; },
-      ()=>{ const r=rand(3,6),b=rand(3,6),g=rand(2,5); const t=r+b+g; const num=r*b; return {text:`${t} bola: ${r} merah, ${b} biru, ${g} hijau.\nAmbil 1, GANTI, ambil lagi.\nP(merah, biru) = ${r}/${t} × ${b}/${t} = ${num}/${t*t}\nNilai pengangka = ?`, ans:num}; },
-      ()=>{ const r=rand(4,9),b=rand(3,8); const t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 2 bola — SATU merah, SATU biru.\nBilangan cara (${r} × ${b}) = ?`, ans:r*b}; },
+      ()=>{ const r=rand(3,14),b=rand(2,10); const t=r+b; const num=r*(r-1),den=t*(t-1); return {text:`${t} bola (${r} merah, ${b} biru). Ambil 2 bola TANPA ganti.\nP(kedua-dua merah) = ${num}/${den}\nNilai pengangka (${r}×${r-1}) = ?`, ans:num}; },
+      ()=>{ const p=rand(2,8),q=rand(2,8),r=rand(2,8); return {text:`3 peristiwa bebas: P(A)=1/${p}, P(B)=1/${q}, P(C)=1/${r}\nP(A dan B dan C) = 1/(${p}×${q}×${r})\nNilai penyebut = ?`, ans:p*q*r}; },
+      ()=>{ const a=rand(6,32),b=rand(3,a-1); const t=rand(20,80); return {text:`${t} murid: ${a} suka Sains, ${b} drpd mereka juga suka Matematik.\nP(suka Matematik | suka Sains) = ${b}/${a}\nNilai pengangka P(Matematik|Sains) = ?`, ans:b}; },
+      ()=>{ const r=rand(3,12),b=rand(3,12),g=rand(2,10); const t=r+b+g; const num=r*b; return {text:`${t} bola: ${r} merah, ${b} biru, ${g} hijau.\nAmbil 1, GANTI, ambil lagi.\nP(merah, biru) = ${r}/${t} × ${b}/${t} = ${num}/${t*t}\nNilai pengangka = ?`, ans:num}; },
+      ()=>{ const r=rand(4,18),b=rand(3,16); const t=r+b; return {text:`${t} bola (${r} merah, ${b} biru). Ambil 2 bola — SATU merah, SATU biru.\nBilangan cara (${r} × ${b}) = ?`, ans:r*b}; },
     ],
   };
   const pool = bank[Math.min(lvl,10)] || bank[1];
@@ -6782,7 +6804,7 @@ function authClearSession(){try{localStorage.removeItem(SESSION_KEY);}catch(e){}
 // ══════════════════════════════════════════════════════════════════
 (function seedAdmin(){
   const ADMIN_USER = 'ADMIN';
-  const ADMIN_PASS = 'MATHERO2025'; // cheat code / admin password
+  const ADMIN_PASS = 'MATHERO2025'; // password lalai — dipakai HANYA kali pertama akaun admin dicipta
   const ADMIN_HASH = simpleHash(ADMIN_PASS);
 
   const ADMIN_DATA = {
@@ -6795,15 +6817,18 @@ function authClearSession(){try{localStorage.removeItem(SESSION_KEY);}catch(e){}
     isAdmin: true
   };
 
-  function forceUpdateAdmin(){
+  function createAdminIfMissing(){
     const users = authLoadUsers();
-    const existing = users[ADMIN_USER] || {};
-    // Always overwrite critical fields — hash, isAdmin — regardless of Firebase sync
-    users[ADMIN_USER] = Object.assign({}, existing, ADMIN_DATA, {
-      createdAt: existing.createdAt || new Date().toLocaleDateString('ms-MY')
+    // Kalau akaun admin dah wujud, JANGAN sentuh — hormati data semasa
+    // (termasuk kalau password admin dah ditukar terus melalui Firebase Console).
+    if(users[ADMIN_USER] && users[ADMIN_USER].isAdmin){
+      return;
+    }
+    users[ADMIN_USER] = Object.assign({}, ADMIN_DATA, {
+      createdAt: new Date().toLocaleDateString('ms-MY')
     });
     authSaveUsers(users);
-    // PENTING: Tulis juga ke Firebase supaya tak di-overwrite oleh sync
+    // Tulis juga ke Firebase supaya akaun admin wujud merentasi peranti
     if(window._fbPresenceDb && window._fbRefFn && window._fbSetFn){
       try{
         const ref = window._fbRefFn(window._fbPresenceDb, 'users/' + ADMIN_USER);
@@ -6812,17 +6837,8 @@ function authClearSession(){try{localStorage.removeItem(SESSION_KEY);}catch(e){}
     }
   }
 
-  // Run immediately on page load
-  forceUpdateAdmin();
-
-  // Keep checking — Firebase sync boleh overwrite admin bila-bila masa
-  // (bukan sekali sahaja, sebab _fbSyncUsersOnce boleh lambat atau berulang)
-  setInterval(()=>{
-    const users = authLoadUsers();
-    if(!users[ADMIN_USER] || !users[ADMIN_USER].isAdmin || users[ADMIN_USER].hash !== ADMIN_HASH){
-      forceUpdateAdmin();
-    }
-  }, 2000);
+  // Cipta akaun admin HANYA jika belum wujud (bootstrap kali pertama sahaja)
+  createAdminIfMissing();
 })();
 
 // ── Admin login check ──
@@ -7277,7 +7293,7 @@ function parentSearchChild(){
     }
     const [uname,u]=match;
     document.getElementById('prChildFoundUsername').value=uname;
-    resEl.innerHTML='<div class="login-ok" style="display:block;">✅ Dijumpai: <b>'+u.name+'</b> — '+(u.school||'')+' ('+(u.grade||'-')+')</div>';
+    resEl.innerHTML='<div class="login-ok" style="display:block;">✅ Dijumpai: <b>'+smapEscHtml(u.name)+'</b> — '+smapEscHtml(u.school||'')+' ('+smapEscHtml(u.grade||'-')+')</div>';
   }
 
   // Guna cache Firebase kalau ada, kalau tidak ambil terus dari Firebase
@@ -7492,7 +7508,7 @@ function _parentAddChildSearch(){
   if(!match){ resEl.innerHTML='<div class="login-err" style="display:block;">⚠ Nama pelajar tidak dijumpai.</div>'; return; }
   const [uname,u]=match;
   document.getElementById('pacFoundUsername').value=uname;
-  resEl.innerHTML='<div class="login-ok" style="display:block;">✅ Dijumpai: <b>'+u.name+'</b> — '+(u.school||'')+'</div>';
+  resEl.innerHTML='<div class="login-ok" style="display:block;">✅ Dijumpai: <b>'+smapEscHtml(u.name)+'</b> — '+smapEscHtml(u.school||'')+'</div>';
 }
 
 function _parentAddChildConfirm(){
@@ -8383,11 +8399,11 @@ Guna emoji yang sesuai. Jawab dalam format HTML dengan tag <p>, <strong>, dan <u
       cdLoad.style.display='block';
       cdEl.innerHTML='';
 
-      fetch('https://api.anthropic.com/v1/messages',{
+      fetch(HEROMATH_AI_ENDPOINT,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          model:'claude-sonnet-4-6',
+          model:'claude-sonnet-5',
           max_tokens:1000,
           messages:[{role:'user',content:prompt}]
         })
@@ -8500,11 +8516,11 @@ Berikan analisis dalam format berikut (WAJIB ikut format ini):
   </div>`;
 
   try{
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    const resp = await fetch(HEROMATH_AI_ENDPOINT,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        model:'claude-sonnet-4-6',
+        model:'claude-sonnet-5',
         max_tokens:1000,
         messages:[{role:'user',content:prompt}]
       })
@@ -20213,11 +20229,11 @@ async function _npcAiReply(npcId, playerText, playerName){
   // Keep last 16 turns to save tokens
   while(hist.length > 16) hist.shift();
   try{
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
+    const res = await fetch(HEROMATH_AI_ENDPOINT,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-haiku-4-5-20251001',
         max_tokens:160,
         system: persona.system + '\n\n' + antiRepeat + '\nSoalan semasa player: "'+playerText+'". Konteks: Nama player: '+playerName+'. Markah: '+(typeof score!=='undefined'?score:0)+'. Tahap: '+(typeof level!=='undefined'?level:1)+'. '+contextNote+' JAWAB SOALAN SEMASA secara langsung dalam Bahasa Malaysia, 1-3 ayat. Jangan ulang info dari sembang lepas.',
         messages: hist.map(h=>({role:h.role, content:h.content}))
@@ -21621,12 +21637,25 @@ const TOYYIBPAY_CONFIG = {
   returnUrl: window.location.href.split('?')[0] + '?payment_return=1',
 };
 
+// ── AI Proxy Endpoint (Claude API) ──
+// PENTING: JANGAN sesekali fetch terus ke https://api.anthropic.com dari browser —
+// Anthropic sekat direct browser call (CORS), dan API key TAK BOLEH letak di client-side.
+// Kena guna backend proxy yang simpan API key server-side, sama pattern macam
+// TOYYIBPAY_CONFIG.vercelFunctionUrl di atas.
+// Deploy fail /api/ask-claude.js (Vercel) dengan env var ANTHROPIC_API_KEY,
+// atau netlify/functions/ask-claude.js (Netlify) kalau guna backend Netlify.
+const HEROMATH_AI_ENDPOINT = window.location.origin + '/api/ask-claude';
+
 const SHOP_KEY = 'mariomath_shop_v1';
 
 // ── Shop item catalogue ──
 const SHOP_ITEMS = [
   // ── PET STARTER ──
   {id:'pikachu_starter', cat:'pet', icon:'⚡', name:'PIKACHU STARTER', desc:'Pet pertama untuk lawan & tangkap pet liar! (Tak boleh upgrade)', price:0, type:'starter', uses:1},
+  // ── PET ZAPREZ (Legenda, model FBX sebenar, boleh berjalan & ikut hero) ──
+  // Hanya di KEDAI (50 Rare Coin) — TIDAK boleh disummon/ditangkap di rumput.
+  // Boleh beli berulang kali supaya boleh di-combine (3x sama tahap → naik tahap).
+  {id:'pet_zaprez', cat:'pet', icon:'🐉', name:'ZAPREZ', desc:'Pet Legenda — model FBX sebenar, betul-betul berjalan & ikut hero! Boleh gabung (combine) utk naik tahap. Tak muncul di rumput, khas di Kedai sahaja.', price:50, currency:'rare', type:'petRare', petId:'zaprez'},
   // Power items
   {id:'shield',    cat:'power',   icon:'🛡️', name:'PERISAI KEBAL',  desc:'Kebal 10 saat (guna dalam game)',         price:300,  type:'consumable', uses:3},
   {id:'timeboost', cat:'power',   icon:'⏱️', name:'MASA +15 SAAT',  desc:'Tambah 15 saat masa soalan',               price:200,  type:'consumable', uses:3},
@@ -21659,7 +21688,7 @@ const SHOP_ITEMS = [
   {id:'glb_demon',   cat:'glb_skin', icon:'😈', name:'GLB DEMON',     desc:'Syaitan bertanduk merah — model 3D penuh! (40 Rare Coin)',  price:40, currency:'rare', type:'wearable', glbSkin:'skin_demon'},
   {id:'glb_samurai', cat:'glb_skin', icon:'⛩️', name:'GLB SAMURAI',   desc:'Samurai pedang katana — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_samurai'},
   {id:'glb_mech',    cat:'glb_skin', icon:'🦾', name:'GLB MECHA PILOT', desc:'Pilot mech gergasi — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_mech'},
-  {id:'glb_custom_fbx', cat:'glb_skin', icon:'🎮', name:'CUSTOM HERO (FBX)', desc:'Skin FBX custom — model 3D penuh! (30 Rare Coin)', price:30, currency:'rare', type:'wearable', glbSkin:'skin_custom_fbx'},
+  {id:'glb_custom_fbx', cat:'glb_skin', icon:'🎮', name:'CUSTOM HERO', desc:'Skin GLB custom — model 3D penuh! [ADMIN/DEBUG SAHAJA] (1 Rare Coin)', price:1, currency:'rare', type:'wearable', glbSkin:'skin_custom_fbx', adminOnly:true},
   // ── Kenderaan Sekolah (Rare Coin) — boleh ditunggang keliling peta sekolah ──
   {id:'veh_neonmoto',   cat:'vehicle', icon:'🏍️', name:'MOTOSIKAL NEON RACER', desc:'Motor sport neon biru-ungu, laju & bergaya! (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
   {id:'veh_hoverboard', cat:'vehicle', icon:'🛹', name:'PAPAN HOVER ANTI-GRAVITI', desc:'Papan hoverboard terapung dgn cincin tenaga neon (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
@@ -22985,7 +23014,7 @@ function _ghRenderChat(){
   box.innerHTML=_ghChatMessages.map(function(m){
     var role=(function(){var gi=_ghGetGuildInfo();return m.from===_ghUser()?(gi?gi.role:'member'):'member';})();
     var clr=role==='leader'?'#ffd700':role==='assistant'?'#66aaff':'#aaffaa';
-    return '<div style="margin:2px 0;font-size:7px;"><span style="color:'+clr+';font-weight:bold;">'+m.from+':</span> <span style="color:#ccc;">'+m.msg+'</span></div>';
+    return '<div style="margin:2px 0;font-size:7px;"><span style="color:'+clr+';font-weight:bold;">'+smapEscHtml(m.from)+':</span> <span style="color:#ccc;">'+smapEscHtml(m.msg)+'</span></div>';
   }).join('');
   box.scrollTop=box.scrollHeight;
 }
@@ -23024,7 +23053,7 @@ var GS={
   kills:0,totalGold:0,
   guildName:'',guildId:'',
   shipLevel:1,maxHp:200,hp:200,cannonDmg:15,cannonCount:4,speedMult:1,armorMult:1,
-  rivalShip:null,rivalActive:false,
+  rivalShip:null,rivalActive:false,rivalHp:0,rivalMaxHp:0,rivalRespawnCd:0,
   heroMesh:null,heroLocalX:0,heroLocalZ:0,deckHalfW:5,deckHalfZ:12,
   keys:{},mouseDown:false,mouseX:0,
   helmUser:null,atHelm:false,
@@ -24483,6 +24512,14 @@ function gsUpdateProjectiles(dt){
           }});
         }
       });
+      // Player projectile — check hit vs rival guild ship
+      if(p.life>0&&GS.rivalShip&&GS.rivalHp>0){
+        var dxr=p.x-GS.rivalShip.position.x,dzr=p.z-GS.rivalShip.position.z;
+        if(Math.sqrt(dxr*dxr+dzr*dzr)<6){
+          p.life=0;
+          gsRivalHit(p.dmg);
+        }
+      }
     }
     if(p.life<=0){
       GS.scene.remove(p.mesh);
@@ -24568,8 +24605,13 @@ function gsUpdateCrewPositions(){
 //  RIVAL GUILD SHIP (Guild vs Guild)
 // ═══════════════════════════════════════════════════════
 function gsUpdateRival(dt,now){
-  // Placeholder for guild vs guild — rival ship appears when another guild room exists nearby
-  // For now, AI rival ship circles in the distance
+  // AI rival ship: masih clone kapal sendiri (bukan guild sebenar dari Firebase),
+  // TAPI sekarang ada HP sebenar — boleh ditembak, kalah, dapat reward, & respawn
+  // selepas cooldown. Sebelum ini ia cuma dekorasi (boleh ditarget tapi immortal).
+  if(GS.rivalRespawnCd>0){
+    GS.rivalRespawnCd=Math.max(0,GS.rivalRespawnCd-dt);
+    return;
+  }
   if(!GS.rivalShip&&GS.shipLevel>=2){
     GS.rivalShip=gsBuildShip(1);
     GS.rivalShip.traverse(function(ch){
@@ -24579,7 +24621,24 @@ function gsUpdateRival(dt,now){
       }
     });
     GS.rivalShip.position.set(GS.shipX+80,0,GS.shipZ+80);
+    // HP scales gently with our own ship level so it stays a fair fight
+    GS.rivalMaxHp=120+GS.shipLevel*35;
+    GS.rivalHp=GS.rivalMaxHp;
+    // HP bar (same visual language as gsBuildMonster)
+    var hpBg=new THREE.Mesh(new THREE.PlaneGeometry(6,0.25),new THREE.MeshBasicMaterial({color:0x330000,depthTest:false}));
+    hpBg.position.set(0,6.5,0);GS.rivalShip.add(hpBg);
+    var hpFill=new THREE.Mesh(new THREE.PlaneGeometry(5.9,0.2),new THREE.MeshBasicMaterial({color:0xff3333,depthTest:false}));
+    hpFill.position.set(0,6.5,0.02);GS.rivalShip.add(hpFill);
+    GS.rivalShip.userData.hpBg=hpBg;GS.rivalShip.userData.hpFill=hpFill;
+    var nCvs=document.createElement('canvas');nCvs.width=256;nCvs.height=64;
+    var nctx=nCvs.getContext('2d');
+    nctx.font='bold 26px monospace';nctx.textAlign='center';nctx.textBaseline='middle';
+    nctx.lineWidth=5;nctx.strokeStyle='rgba(0,0,0,0.8)';nctx.strokeText('⚔️ KAPAL SAINGAN',128,32);
+    nctx.fillStyle='#ff5544';nctx.fillText('⚔️ KAPAL SAINGAN',128,32);
+    var nSpr=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(nCvs),transparent:true,depthTest:false}));
+    nSpr.scale.set(5,1.25,1);nSpr.position.set(0,7.2,0);GS.rivalShip.add(nSpr);
     GS.scene.add(GS.rivalShip);
+    gsToast('⚔️ Kapal saingan muncul berdekatan!','#ff6644');
   }
   if(GS.rivalShip){
     var ra=now*0.0003;
@@ -24588,6 +24647,36 @@ function gsUpdateRival(dt,now){
     GS.rivalShip.position.y=Math.sin(now*0.002)*0.2;
     GS.rivalShip.rotation.y=ra+Math.PI;
     GS.rivalShip.rotation.z=Math.sin(now*0.0015)*0.02;
+    if(GS.rivalShip.userData.hpFill&&GS.rivalMaxHp>0){
+      var pct=Math.max(0,GS.rivalHp/GS.rivalMaxHp);
+      GS.rivalShip.userData.hpFill.scale.x=pct;
+      GS.rivalShip.userData.hpFill.position.x=-(5.9*(1-pct))/2;
+    }
+  }
+}
+// Dipanggil bila cannonball player kena kapal saingan (lihat gsUpdateProjectiles)
+function gsRivalHit(dmg){
+  if(!GS.rivalShip||GS.rivalHp<=0)return;
+  GS.rivalHp=Math.max(0,GS.rivalHp-dmg);
+  GS.rivalShip.traverse(function(ch){
+    if(ch.isMesh&&ch.material&&ch.material.emissive){
+      var orig=ch.material.emissive.clone();
+      ch.material.emissive.set(0xffffff);
+      setTimeout(function(){if(ch.material&&ch.material.emissive)ch.material.emissive.copy(orig);},120);
+    }
+  });
+  if(GS.rivalHp<=0){
+    var goldReward=40+GS.shipLevel*15;
+    var u=gsUser();
+    var d=shopLoadData(u);
+    d.points=(d.points||0)+goldReward;
+    shopSaveData(u,d);
+    gsToast('🏆 Kapal saingan dikalahkan! +'+goldReward+' Gold','#ffd700');
+    GS.scene.remove(GS.rivalShip);
+    GS.rivalShip=null;GS.rivalHp=0;GS.rivalMaxHp=0;
+    GS.rivalRespawnCd=60; // saat sebelum kapal saingan baru muncul semula
+  } else {
+    gsToast('💥 Kapal saingan kena! '+GS.rivalHp+'/'+GS.rivalMaxHp+' HP','#ff8800');
   }
 }
 
@@ -24938,7 +25027,7 @@ function gsChatRender(){
   GS.chatMessages.forEach(function(m){
     var rc=m.role==='captain'?'#ffd700':m.role==='officer'?'#66aaff':'#aaa';
     var roleIcon=m.role==='captain'?'👑':m.role==='officer'?'⭐':'';
-    html+='<div style="margin-bottom:3px;"><span style="color:'+rc+';font-size:7px;">'+roleIcon+m.user+':</span> <span style="color:#ddd;font-size:7px;">'+gsChatEsc(m.text)+'</span></div>';
+    html+='<div style="margin-bottom:3px;"><span style="color:'+rc+';font-size:7px;">'+roleIcon+gsChatEsc(m.user)+':</span> <span style="color:#ddd;font-size:7px;">'+gsChatEsc(m.text)+'</span></div>';
   });
   box.innerHTML=html;
   box.scrollTop=box.scrollHeight;
@@ -25064,6 +25153,7 @@ function gsExit(){
   if(GS.ship){GS.scene.remove(GS.ship);GS.ship=null;}
   if(GS.heroMesh){GS.scene.remove(GS.heroMesh);GS.heroMesh=null;}
   if(GS.rivalShip){GS.scene.remove(GS.rivalShip);GS.rivalShip=null;}
+  GS.rivalHp=0;GS.rivalMaxHp=0;GS.rivalRespawnCd=0;
   // Hide canvas
   if(GS.canvas)GS.canvas.style.display='none';
   // Remove HUD
@@ -25149,6 +25239,20 @@ function shopRender(){
     const grid=document.getElementById('shopGrid'+cat.charAt(0).toUpperCase()+cat.slice(1));
     const items=SHOP_ITEMS.filter(i=>i.cat===cat);
     grid.innerHTML=items.map(item=>{
+      // ── Pet dibeli guna Rare Coin (cth ZAPREZ) — beli berulang kali
+      // dibenarkan supaya pemain boleh kumpul 3x utk combine, jadi TIDAK
+      // pernah ditandakan "sudah dimiliki/disabled" macam item lain. ──
+      if(item.type==='petRare'){
+        const bagCount=petLoadBag().filter(p=>p.id===item.petId).length;
+        const canAffordRare=rarePts>=item.price;
+        return `<div class="shop-item">
+          <span class="item-icon">${item.icon}</span>
+          <div class="item-name" style="color:#ffd700;">${item.name}</div>
+          <div class="item-desc">${item.desc}</div>
+          <div class="item-price" style="color:#ff8c00;">🪙 ${item.price} RARE COIN${bagCount>0?' <span style="color:#00e676;">(Dlm beg: '+bagCount+'x)</span>':''}</div>
+          <button class="shop-btn buy-btn" style="${canAffordRare?'':'opacity:0.5;cursor:not-allowed;'}" ${canAffordRare?'':'disabled'} onclick="shopBuyPetRare('${item.id}')">🪙 BELI ${item.price} RARE COIN</button>
+        </div>`;
+      }
       const ownedCount=item.type==='wearable'?(d.owned[item.id]?1:0):(d.owned[item.id]||0);
       const isOwned=ownedCount>0;
       const isEquipped=d.equipped&&(d.equipped[item.id.startsWith('hat_')?'hat':item.id.startsWith('shirt_')?'shirt':cat]===item.id);
@@ -25217,7 +25321,8 @@ function shopRender(){
   const glbGrid=document.getElementById('shopGridGlbSkin');
   if(glbGrid){
     const glbItems=SHOP_ITEMS.filter(i=>i.cat==='glb_skin');
-    glbGrid.innerHTML=glbItems.map(item=>{
+    const _isAdminShopper=(typeof isAdminUser==='function')&&isAdminUser(shopGetUsername());
+    glbGrid.innerHTML=glbItems.filter(item=>!item.adminOnly||_isAdminShopper).map(item=>{
       const isOwned=!!(d.owned&&d.owned[item.id]);
       const isEquipped=!!(d.equipped&&d.equipped['glb_skin']===item.glbSkin);
       const canAfford=rarePts>=item.price;
@@ -25232,7 +25337,7 @@ function shopRender(){
       }
       return `<div class="shop-item${isOwned?' owned':''}${isEquipped?' equipped':''}" style="${isEquipped?'border:2px solid #ffa500;':isOwned?'border:2px solid #00e676;':''}">
         <span class="item-icon" style="font-size:2.2em;">${item.icon}</span>
-        <div class="item-name" style="color:#ffd700;">${item.name}</div>
+        <div class="item-name" style="color:#ffd700;">${item.name}${item.adminOnly?' <span style="color:#c084fc;font-size:0.7em;">👑ADMIN</span>':''}</div>
         <div class="item-desc">${item.desc}</div>
         <div class="item-price" style="${isOwned?'color:#00e676;':'color:#ff8c00;'}">
           ${isOwned?'✅ DIMILIKI':'🪙 '+item.price+' RARE COIN'}
@@ -25432,6 +25537,10 @@ function shopBuyGlbSkin(itemId){
   const d=shopLoadData(u);
   const item=SHOP_ITEMS.find(i=>i.id===itemId);
   if(!item||!item.glbSkin) return;
+  if(item.adminOnly && !(typeof isAdminUser==='function' && isAdminUser(u))){
+    document.getElementById('shopMsg').textContent='🚫 Item ini khas untuk ADMIN sahaja!';
+    return;
+  }
   const rarePts=(d.owned&&d.owned['rare_coin'])||0;
   if(rarePts<item.price){
     document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi!';
@@ -25492,6 +25601,38 @@ function shopEquipGlbSkin(itemId){
 }
 
 // ── Beli Kenderaan dengan Rare Coin ──
+// ── Beli Pet dengan Rare Coin (cth ZAPREZ) — masuk terus ke beg pet.
+// Beli berulang kali dibenarkan (bukan "sekali beli, dimiliki selamanya")
+// supaya pemain boleh kumpul 3x pet sama utk guna sistem petCombine().
+function shopBuyPetRare(itemId){
+  const u=shopGetUsername();
+  const d=shopLoadData(u);
+  const item=SHOP_ITEMS.find(i=>i.id===itemId);
+  if(!item||!item.petId) return;
+  const rarePts=(d.owned&&d.owned['rare_coin'])||0;
+  if(rarePts<item.price){
+    document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi! Tonton iklan untuk dapatkan 🪙';
+    return;
+  }
+  const base=PET_DEFS.find(p=>p.id===item.petId);
+  if(!base) return;
+  d.owned=d.owned||{};
+  d.owned['rare_coin']=rarePts-item.price;
+  shopSaveData(u,d);
+  const bag=petLoadBag();
+  bag.push({
+    id:base.id, emoji:base.emoji, name:base.name,
+    rarity:base.rarity, rarColor:base.rarColor,
+    level:1, caughtAt:Date.now()
+  });
+  petSaveBag(bag);
+  petUpdateBagCount();
+  const rareEl=document.getElementById('shopRarePts');
+  if(rareEl) rareEl.textContent=d.owned['rare_coin'];
+  document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! Masuk ke beg pet 🐾';
+  shopRender();
+}
+
 function shopBuyVehicle(itemId){
   const u=shopGetUsername();
   const d=shopLoadData(u);
@@ -25651,7 +25792,7 @@ function mmoCallToyyibpayApi(orderId, item, username, shopData){
       })
       .then(r=>{
         return r.text().then(text => {
-          console.log('ToyyibPay raw response:', text.substring(0,500));
+          
           try{ return JSON.parse(text); }catch(e){
             throw new Error('ToyyibPay returned non-JSON: ' + text.substring(0,200));
           }
@@ -25755,7 +25896,7 @@ function mmoCheckPendingOrder(){
     .then(r=>r.json())
     .then(res=>{
       if(res.success){
-        console.log('Verify SUCCESS: +' + (res.qty || qty) + ' Rare Coin');
+        
         localStorage.removeItem(TOPUP_ORDER_KEY);
         const u=shopGetUsername();
         // Update local storage terus (Firebase mungkin belum siap)
@@ -25772,7 +25913,7 @@ function mmoCheckPendingOrder(){
         if(msgEl) msgEl.textContent='✅ +' + coinAmt + ' Rare Coin berjaya ditambah!';
         shopRender();
       } else {
-        console.log('Verify: payment not confirmed yet', res);
+        
         if(msgEl) msgEl.textContent='Pembayaran masih diproses...';
         setTimeout(mmoCheckPendingOrder, 5000);
       }
@@ -25818,7 +25959,7 @@ function mmoInitPaymentReturnCheck(){
           d.owned = d.owned || {};
           d.owned['rare_coin'] = (d.owned['rare_coin']||0) + coinAmt;
           shopSaveData(u, d);
-          console.log('✅ ToyyibPay direct credit: +' + coinAmt + ' Rare Coin (bill ' + bc + ')');
+          
           // Retry push ke Firebase setiap 2s sampai berjaya
           let retryCount = 0;
           const retryInterval = setInterval(() => {
@@ -25826,7 +25967,7 @@ function mmoInitPaymentReturnCheck(){
               _shopPushRareCoinToFirebase(u, d.owned['rare_coin']);
               shopSyncRareCoinFromFirebase(u);
               clearInterval(retryInterval);
-              console.log('Rare Coin synced to Firebase');
+              
             } else if(++retryCount > 15) {
               clearInterval(retryInterval);
               console.warn('Firebase not available after 30s — coin safe in localStorage');
@@ -28033,7 +28174,12 @@ var GLB_SKINS = {
   skin_demon       : { name:'Demon',        file:'skins/demon.fbx',       fileWalk:'skins/demon_walk.fbx',       price:40, desc:'Syaitan bertanduk merah',           icon:'😈' },
   skin_samurai     : { name:'Samurai',      file:'skins/samurai.fbx',     fileWalk:'skins/samurai_walk.fbx',     price:35, desc:'Samurai pedang katana',              icon:'⛩️' },
   skin_mech        : { name:'Mecha Pilot',  file:'skins/mech_pilot.fbx',  fileWalk:'skins/mech_pilot_walk.fbx',  price:35, desc:'Pilot mech gergasi',                icon:'🦾' },
-  skin_custom_fbx  : { name:'Custom Hero',  file:'skins/custom_hero.fbx', fileWalk:'skins/custom_hero_walk.fbx', price:30, desc:'Skin FBX custom',                   icon:'🎮' },
+  skin_custom_fbx  : { name:'Custom Hero',  file:'skins/custom_hero.glb', fileWalk:'skins/custom_hero_walk.glb', price:1, desc:'Skin GLB custom (ADMIN/DEBUG)',                   icon:'🎮' },
+  // ── PET ZAPREZ (Legenda, model FBX sebenar — bukan procedural) ──
+  // Letakkan fail fbx anda di path di bawah (relatif ke index.html):
+  //   pets/zaprez.fbx       = rig idle/diam
+  //   pets/zaprez_walk.fbx  = rig berjalan (guna semasa pet bergerak ikut hero)
+  pet_zaprez       : { name:'Zaprez',       file:'pets/zaprez.fbx',       fileWalk:'pets/zaprez_walk.fbx',       price:50, desc:'Pet Legenda — model FBX sebenar, berjalan ikut hero', icon:'🐉' },
 };
 var _glbCache = {};          // "skinId|idle" / "skinId|walk" → { scene, animations }
 var _glbLoading = {};        // same key → true (loading in progress)
@@ -28165,7 +28311,7 @@ function _glbSkinnedMinMaxY(model){
   return found ? {minY:minY, maxY:maxY} : null;
 }
 
-function glbPrepareModel(data){
+function glbPrepareModel(data, forcedScale){
   // Clone scene so multiple heroes can share the cached data.
   // IMPORTANT: plain Object3D.clone() does NOT correctly clone a rigged
   // (skinned) model — the cloned SkinnedMesh keeps pointing at the
@@ -28213,7 +28359,7 @@ function glbPrepareModel(data){
   model.traverse(function(c){
     if(c.isSkinnedMesh && typeof c.normalizeSkinWeights==='function'){
       c.normalizeSkinWeights();
-      console.log('[glbPrepareModel] normalized skin weights on', c.name);
+      
     }
   });
 
@@ -28232,12 +28378,23 @@ function glbPrepareModel(data){
   // tu jadi, scale yang dikira jadi tak masuk akal (sifar atau raksasa) dan
   // model efektifnya hilang. Log ni bagi kita nampak angka sebenar dalam
   // console browser untuk diagnosis.
-  console.log('[glbPrepareModel] modelH (raw units) =', modelH, 'isFinite=', isFinite(modelH));
+  
 
   // Scale to hero height (1.8 local units, matching the box-built rig),
   // × GLB_SIZE_MULT untuk besarkan sikit ikut permintaan.
+  // BUG FIX: kalau forcedScale diberi (glbApplySkin hantar scale rig idle
+  // masa sediakan rig walk), guna terus nombor tu dan JANGAN kira semula
+  // drpd modelH rig walk sendiri. Sebab bug asal: rig idle & rig walk
+  // ada bounding-box TINGGI berbeza (pose berdiri vs pose berlari/pose
+  // badan rendah semasa bergerak), jadi kalau setiap rig kira scale-nya
+  // sendiri secara berasingan, saiz creature "melompat" besar/kecil bila
+  // animasi bertukar antara idle↔walk (nampak macam bug saiz berubah).
+  // Dengan kongsi SATU scale (dikira sekali drpd rig idle), saiz creature
+  // kekal konsisten tak kira animasi mana sedang main.
   var s=1;
-  if(modelH>0.0001 && isFinite(modelH)){
+  if(typeof forcedScale==='number' && forcedScale>0 && isFinite(forcedScale)){
+    s = forcedScale;
+  } else if(modelH>0.0001 && isFinite(modelH)){
     s=(1.8*GLB_SIZE_MULT)/modelH;
   }
   // Safety-net: kalau geometri FBX rosak (box degenerate) hasil pengiraan s
@@ -28249,7 +28406,7 @@ function glbPrepareModel(data){
     s = 0.01;
   }
   model.scale.set(s,s,s);
-  console.log('[glbPrepareModel] final scale =', s);
+  
   model.updateMatrixWorld(true);
 
   // Safety-net tambahan: FBX yang di-export dengan normal terbalik atau
@@ -28266,19 +28423,11 @@ function glbPrepareModel(data){
         m.needsUpdate = true;
         // DEBUG: senarai keadaan sebenar setiap material — kalau opacity=0,
         // visible=false, atau map gagal load, ini punca "halimunan".
-        console.log('[glbPrepareModel] mesh material:', c.name, {
-          type: m.type,
-          color: m.color ? m.color.getHexString() : null,
-          opacity: m.opacity,
-          transparent: m.transparent,
-          visible: m.visible,
-          hasMap: !!m.map,
-          mapImage: m.map ? (m.map.image ? (m.map.image.width+'x'+m.map.image.height) : 'NO_IMAGE_LOADED') : null,
-        });
+        
       });
     }
   });
-  console.log('[glbPrepareModel] total mesh count in FBX =', meshCount, '| model.visible=', model.visible);
+  
 
   // Setup animation mixer and advance it ONE tick BEFORE measuring the
   // ground-alignment box. Box3.setFromObject reads the mesh's current
@@ -28316,20 +28465,20 @@ function glbPrepareModel(data){
   var groundMinY, groundMaxY;
   if(skinnedRange){
     groundMinY=skinnedRange.minY; groundMaxY=skinnedRange.maxY;
-    console.log('[glbPrepareModel] TRUE skinned pose min.y=', groundMinY, 'max.y=', groundMaxY, 'height=', (groundMaxY-groundMinY));
+    
   } else {
     var box2=new THREE.Box3().setFromObject(model);
     groundMinY=box2.min.y; groundMaxY=box2.max.y;
-    console.log('[glbPrepareModel] no SkinnedMesh found, fallback Box3 min.y=', groundMinY, 'max.y=', groundMaxY, 'degenerate=', !isFinite(groundMinY));
+    
   }
   if(isFinite(groundMinY)){
     model.position.y -= groundMinY;
   }
   model.position.y += GLB_GROUND_OFFSET;
-  console.log('[glbPrepareModel] GLB_GROUND_OFFSET=', GLB_GROUND_OFFSET, '| model.position.y final (local, before heroGrp scale)=', model.position.y);
+  
   model.updateMatrixWorld(true);
 
-  return { model:model, mixer:mixer };
+  return { model:model, mixer:mixer, scale:s };
 }
 
 function glbApplySkin(heroGrp, skinId){
@@ -28344,7 +28493,7 @@ function glbApplySkin(heroGrp, skinId){
              : (heroGrp===window.marioMesh) ? 'window.marioMesh (scene utama)'
              : (heroGrp===window._mmoHero) ? 'window._mmoHero (MMO)'
              : 'TIDAK DIKENALI';
-  console.log('[glbApplySkin] target =', _which, '| heroGrp.parent=', heroGrp.parent ? (heroGrp.parent.type||heroGrp.parent) : 'NULL (tak dlm scene!)', '| heroGrp.visible=', heroGrp.visible, '| heroGrp.scale=', heroGrp.scale.x, heroGrp.scale.y, heroGrp.scale.z);
+  
   // Jejak ke atas rantaian parent sampai jumpa root scene, untuk confirm
   // heroGrp ni sebenarnya sebahagian daripada window.smScene (scene yang
   // AKTIF dirender masa Peta Sekolah dibuka) — bukan scene lain yang tak
@@ -28354,7 +28503,7 @@ function glbApplySkin(heroGrp, skinId){
     while(p.parent && depth<20){ p=p.parent; depth++; }
     var rootIsSmScene = (typeof window.smScene!=='undefined' && p===window.smScene);
     var rootIsMainScene = (typeof scene!=='undefined' && p===scene);
-    console.log('[glbApplySkin] root scene heroGrp ni ialah smScene?', rootIsSmScene, '| scene utama?', rootIsMainScene, '| root object type=', p.type);
+    
   })();
   // Skip if same GLB already applied
   if(heroGrp._glbSkinId === skinId && heroGrp._glbModel) return;
@@ -28384,9 +28533,27 @@ function glbApplySkin(heroGrp, skinId){
     // supplied for this skin — better a static hero than no hero).
     var walkModel=null, walkMixer=null;
     if(data.walk){
-      var walkPrep = glbPrepareModel(data.walk);
+      // Kongsi scale rig idle dgn rig walk supaya saiz creature TAK
+      // berubah bila animasi tukar idle↔walk (lihat nota panjang dalam
+      // glbPrepareModel pasal kenapa mengira scale berasingan utk setiap
+      // rig punca bug "kecil bila jalan, besar bila diam").
+      var walkPrep = glbPrepareModel(data.walk, idlePrep.scale);
       walkModel = walkPrep.model;
       walkMixer = walkPrep.mixer;
+      // Jaminan tambahan (belt-and-suspenders): paksa scale walkModel
+      // SAMA PERSIS dgn idleModel selepas dibina, tak kira apa-apa
+      // pengiraan dalaman glbPrepareModel — supaya walau fail idle.fbx
+      // & walk.fbx datang dari sumber/unit eksport berbeza, saiz akhir
+      // yang kita render tetap identik antara dua rig.
+      walkModel.scale.copy(idleModel.scale);
+      // Jaminan sama utk KEDUDUKAN Y (paras tanah): kalau rig idle & rig
+      // walk dikira letak kaki di paras tanah sedikit berbeza (0.1-0.2
+      // unit lari naik/turun), bila model bertukar nampak macam "size
+      // berubah" walhal sebenarnya ia model TERBENAM sikit dlm tanah atau
+      // terapung sikit — bukan literal saiz berubah. Paksa Y sama supaya
+      // takde lonjakan kedudukan langsung bila idle↔walk bertukar.
+      walkModel.position.y = idleModel.position.y;
+      walkModel.updateMatrixWorld(true);
       heroGrp.add(walkModel);
       walkModel.updateMatrixWorld(true);
     }
@@ -29361,7 +29528,7 @@ function _dashFetchAndRender(silent){
       ]).then(([trackSnap,usersSnap])=>{
           const data = trackSnap.val()||{};
           const nUsers = Object.keys(data).length;
-          console.log('[Dashboard] Firebase berjaya. Bilangan pengguna:', nUsers);
+          
           window._fbTrackCache = data;
           try{ localStorage.setItem('mariomath_tracking_v1',JSON.stringify(data)); }catch(e){}
           // Update users cache supaya pelajar baru (tiada tracking) turut muncul
@@ -30040,7 +30207,7 @@ function deleteUserAccount(username){
   try{ localStorage.removeItem('mmorpg_save_'+uname); }catch(e){}
   // 5. Kosongkan tracking cache supaya dashboard segar semula
   if(window._fbTrackCache) delete window._fbTrackCache[uname];
-  console.log('[DeleteUser] Akaun dipadam:', uname);
+  
 }
 
 // ── Penguasaan Topik ──
@@ -31441,7 +31608,7 @@ function _damMigrateLegacySifir(){
       }catch(e){}
     });
     localStorage.setItem(migDone, '1');
-    console.log('[HeroMath] Migrasi data sifir lama ke Firebase tracking berjaya.');
+    
   }catch(e){ console.warn('Migration error:', e); }
 }
 // Jalankan migration bila Firebase ready
@@ -34184,9 +34351,9 @@ function damChatRender(){
   box.innerHTML=_damChatMsgs.map(m=>{
     const t=m.ts?new Date(m.ts).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'}):'';
     return `<div style="font-size:clamp(6px,1.3vw,9px);line-height:1.5;word-break:break-word;">
-      <span style="color:${m.color||'#aaa'};font-size:clamp(5px,1vw,7px);">${m.who}</span>
+      <span style="color:${m.color||'#aaa'};font-size:clamp(5px,1vw,7px);">${smapEscHtml(m.who)}</span>
       <span style="color:#555;font-size:clamp(4px,0.8vw,6px);margin-left:3px;">${t}</span>
-      <br><span style="color:#ddd;">${m.text}</span>
+      <br><span style="color:#ddd;">${smapEscHtml(m.text)}</span>
     </div>`;
   }).join('');
   box.scrollTop=box.scrollHeight;
@@ -35162,7 +35329,7 @@ function arenaUpdateLobbyList(players){
     const isMe = p.name===_arenaMyKey;
     const row = document.createElement('div');
     row.className='arena-player-row';
-    row.innerHTML=`<span class="aprow-dot" style="background:${isMe?'#ffd700':'#00e676'}"></span><span class="aprow-name">${p.display||p.name}${isMe?' (Kamu)':''}</span><span class="aprow-hero">${p.hero||''}</span>`;
+    row.innerHTML=`<span class="aprow-dot" style="background:${isMe?'#ffd700':'#00e676'}"></span><span class="aprow-name">${smapEscHtml(p.display||p.name)}${isMe?' (Kamu)':''}</span><span class="aprow-hero">${smapEscHtml(p.hero||'')}</span>`;
     list.appendChild(row);
   });
 }
@@ -47717,6 +47884,20 @@ const PET_DEFS = [
       {id:'brave',  emoji:'🪶',name:'BRAVE BIRD',dmg:24,cd:3,desc:'Serangan burung gagah - 24 dmg'},
       {id:'recover',emoji:'💚',name:'RECOVER',dmg:-30,cd:10,desc:'Pemulihan cahaya - +30 HP (ULT)'}
     ]},
+  // ── ZAPREZ — pet Legenda khas guna model FBX SEBENAR (bukan procedural THREE.js).
+  // isFbxPet:true    → petBuildSummonMesh akan panggil glbApplySkin() guna fbxSkinId
+  //                    di atas (pets/zaprez.fbx + pets/zaprez_walk.fbx) supaya pet ni
+  //                    betul-betul berjalan (animasi rig walk) semasa ikut hero.
+  // noWildSpawn:true → TIDAK akan muncul sebagai pet liar di rumput (GRASS_ZONES).
+  //                    Hanya boleh didapati melalui KEDAI (50 Rare Coin).
+  // Sama macam pet Legenda lain, boleh di-combine (3x sama tahap → naik 1 tahap).
+  {id:'zaprez',   emoji:'🐉', name:'ZAPREZ',          rarity:'Legenda', color:0xffd700, rarColor:'#ffd700',
+    isFbxPet:true, fbxSkinId:'pet_zaprez', noWildSpawn:true,
+    skills:[
+      {id:'zap_serang', emoji:'⚡',name:'ZAP SERANG',dmg:26,cd:3.5,desc:'Serangan tenaga Zaprez - 26 dmg'},
+      {id:'zap_hentak', emoji:'💢',name:'HENTAKAN',dmg:18,cd:2.5,desc:'Hentakan kuasa - 18 dmg'},
+      {id:'zap_ultra',  emoji:'🌟',name:'ZAPREZ ULTRA',dmg:38,cd:11,desc:'Ledakan kuasa legenda - 38 dmg (ULT)'}
+    ]},
 ];
 const GRASS_ZONES = [
   // Depan sekolah kiri & kanan
@@ -47760,7 +47941,7 @@ function _petFbWriteBag(arr){
   if(!window._fbSetFn){ console.warn('[PET-FB] _fbSetFn not ready'); return; }
   try{
     window._fbSetFn(r, arr);
-    console.log('[PET-FB] Written to Firebase:', arr.length, 'pets', arr.map(p=>p.id));
+    
   }catch(e){ console.warn('[PET-FB] Write error:', e); }
 }
 // Flag: pet sync dari Firebase telah selesai
@@ -47783,13 +47964,13 @@ function petSyncFromFirebase(callback){
     if(Array.isArray(fbData) && fbData.length > 0){
       // Firebase ada data — tulis ke localStorage
       try{ localStorage.setItem(PET_STORAGE_KEY, JSON.stringify(fbData)); }catch(e){}
-      console.log('[PET-SYNC] Firebase→localStorage:', fbData.length, 'pets');
+      
     } else if(local.length > 0){
       // Firebase kosong, localStorage ada data — push ke Firebase
       _petFbWriteBag(local);
-      console.log('[PET-SYNC] localStorage→Firebase:', local.length, 'pets');
+      
     } else {
-      console.log('[PET-SYNC] Tiada data di Firebase mahupun localStorage');
+      
     }
     _petSyncedFromFb=true;
     _petAttachBagListener();
@@ -47855,7 +48036,7 @@ function petSaveBag(arr){
       if(u){
         const r=window._fbRefFn(window._fbPresenceDb,'users/'+u+'/pets');
         window._fbSetFn(r,arr);
-        console.log('[PET-SAVE] Backup write ke Firebase:', arr.length, 'pets');
+        
       }
     }catch(e){}
   }
@@ -47971,9 +48152,11 @@ function petSpawnOne(){
   // Kurang kemunculan Legenda (5%), Nadir (15%), Biasa (80%)
   const roll = Math.random();
   let pool;
-  if(roll < 0.05)      pool = PET_DEFS.filter(p=>p.rarity==='Legenda');
-  else if(roll < 0.20) pool = PET_DEFS.filter(p=>p.rarity==='Nadir');
-  else                 pool = PET_DEFS.filter(p=>p.rarity==='Biasa');
+  // .filter(!noWildSpawn) — pet macam ZAPREZ (kedai sahaja, 50 Rare Coin) tidak
+  // sekali-kali masuk pool spawn liar di rumput, walau rarity Legenda.
+  if(roll < 0.05)      pool = PET_DEFS.filter(p=>p.rarity==='Legenda' && !p.noWildSpawn);
+  else if(roll < 0.20) pool = PET_DEFS.filter(p=>p.rarity==='Nadir' && !p.noWildSpawn);
+  else                 pool = PET_DEFS.filter(p=>p.rarity==='Biasa' && !p.noWildSpawn);
   const def = pool[Math.floor(Math.random()*pool.length)];
   return { def, x, z, wanderTx:x, wanderTz:z, wanderTimer:2, animT:0, wobble:Math.random()*Math.PI*2, mesh:null, sprite:null, _facing:Math.random()*Math.PI*2 };
 }
@@ -50923,25 +51106,38 @@ function petBuildSummonMesh(scene){
 
   const group = new THREE.Group();
 
-  // Panggil builder khusus ikut id
-  switch(def.id){
-    case 'kucing':  _buildKucing(THREE, group, scale); break;
-    case 'scorbunny':_buildScorbunny(THREE, group, scale); break;
-    case 'burung':  _buildBurung(THREE, group, scale); break;
-    case 'katak':   _buildKatak (THREE, group, scale); break;
-    case 'rama':    _buildRama  (THREE, group, scale); break;
-    case 'musang':  _buildMusang(THREE, group, scale); break;
-    case 'naga':    _buildNaga  (THREE, group, scale); break;
-    case 'lugia':   _buildLugia  (THREE, group, scale); break;
-    case 'hooh':    _buildHooh   (THREE, group, scale); break;
-    case 'groudon': _buildGroudon(THREE, group, scale); break;
-    case 'geodude': _buildGeodude(THREE, group, scale); break;
-    case 'oddish':  _buildOddish (THREE, group, scale); break;
-    case 'eevee':   _buildEevee  (THREE, group, scale); break;
-    case 'jigglypuff':_buildJigglypuff(THREE, group, scale); break;
-    case 'meowth':  _buildMeowth (THREE, group, scale); break;
-    case 'pikachu': _buildPikachu(THREE, group, scale); break;
-    default:        _buildKucing(THREE, group, scale); break;
+  if(def.isFbxPet && def.fbxSkinId){
+    // ── Pet model FBX SEBENAR (cth ZAPREZ) — bukan procedural THREE.js.
+    // Guna semula enjin glbApplySkin/glbSetMoving/glbUpdateMixers yang
+    // sedia ada untuk skin hero FBX; ia generik (hanya attach child ke
+    // group yang diberi + urus mixer idle/walk), jadi selamat dipakai di
+    // sini walaupun "group" ni pet, bukan heroGrp sebenar.
+    // Saiz pet dikecilkan drpd saiz hero (GLB_SIZE_MULT dikira utk hero
+    // ~1.8 unit) supaya nampak sepadan dgn pet lain, bukan sebesar hero.
+    group.scale.setScalar(scale * 1.0);
+    if(typeof glbApplySkin==='function') glbApplySkin(group, def.fbxSkinId);
+    group._isFbxPet = true;
+  } else {
+    // Panggil builder khusus ikut id (pet procedural biasa)
+    switch(def.id){
+      case 'kucing':  _buildKucing(THREE, group, scale); break;
+      case 'scorbunny':_buildScorbunny(THREE, group, scale); break;
+      case 'burung':  _buildBurung(THREE, group, scale); break;
+      case 'katak':   _buildKatak (THREE, group, scale); break;
+      case 'rama':    _buildRama  (THREE, group, scale); break;
+      case 'musang':  _buildMusang(THREE, group, scale); break;
+      case 'naga':    _buildNaga  (THREE, group, scale); break;
+      case 'lugia':   _buildLugia  (THREE, group, scale); break;
+      case 'hooh':    _buildHooh   (THREE, group, scale); break;
+      case 'groudon': _buildGroudon(THREE, group, scale); break;
+      case 'geodude': _buildGeodude(THREE, group, scale); break;
+      case 'oddish':  _buildOddish (THREE, group, scale); break;
+      case 'eevee':   _buildEevee  (THREE, group, scale); break;
+      case 'jigglypuff':_buildJigglypuff(THREE, group, scale); break;
+      case 'meowth':  _buildMeowth (THREE, group, scale); break;
+      case 'pikachu': _buildPikachu(THREE, group, scale); break;
+      default:        _buildKucing(THREE, group, scale); break;
+    }
   }
 
   // ── Shadow di lantai ──
@@ -50975,7 +51171,7 @@ function petBuildSummonMesh(scene){
     group._crown = crown;
   }
 
-  group.position.set(_petSummonX, 1.2, _petSummonZ);
+  group.position.set(_petSummonX, def.isFbxPet ? 0 : 1.2, _petSummonZ);
   scene.add(group);
   _petSummonMesh  = group;
   _petSummonScene = scene;
@@ -50991,7 +51187,9 @@ function petSummonUpdate(dt, ts){
 
   // Posisi target: ikut sebelah kiri-belakang hero
   const ang = hs.facing - 2.4; // offset sudut dari arah hero
-  const dist = 2.2;
+  // Pet FBX sebenar (cth ZAPREZ) ikut lebih jauh drpd pet procedural biasa
+  // (model FBX lagi besar secara visual, jadi jarak dekat nampak sesak).
+  const dist = _petSummonMesh._isFbxPet ? 4.0 : 2.2;
   const targetX = hs.x + Math.sin(ang)*dist;
   const targetZ = hs.z + Math.cos(ang)*dist;
 
@@ -51004,7 +51202,11 @@ function petSummonUpdate(dt, ts){
   _petSummonT += dt;
   _petSummonIdle += dt;
   const bounce = Math.sin(_petSummonT * 4.5) * 0.12;
-  const floatY = 1.15 + bounce;
+  // Pet model FBX SEBENAR (cth ZAPREZ) berjalan di ATAS TANAH — jangan
+  // terapung/bounce macam pet procedural lain (yang sengaja "melayang").
+  // glbPrepareModel() dah selaraskan kaki model ke y=0 dalam ruang tempatan
+  // group, jadi group cukup diletak pada y=0 (tanah) sahaja.
+  const floatY = _petSummonMesh._isFbxPet ? 0 : (1.15 + bounce);
 
   _petSummonMesh.position.set(_petSummonX, floatY, _petSummonZ);
 
@@ -51019,6 +51221,13 @@ function petSummonUpdate(dt, ts){
   const moveDz = targetZ - _petSummonZ;
   const moveDist = Math.sqrt(moveDx*moveDx + moveDz*moveDz);
   _petSummonMesh.rotation.z = Math.sin(_petSummonT * 5) * Math.min(moveDist*0.08, 0.2);
+
+  // ── Pet model FBX SEBENAR (cth ZAPREZ): tukar rig idle↔walk ikut
+  // pergerakan sebenar. glbUpdateMixers(dt) (dipanggil setiap frame di
+  // game loop utama) yang uruskan animasi mixer-nya.
+  if(_petSummonMesh._isFbxPet && typeof glbSetMoving==='function'){
+    glbSetMoving(_petSummonMesh, moveDist > 0.015);
+  }
 
   // ── Animasi sayap burung (flap cepat) ──
   const m = _petSummonMesh;
@@ -51074,9 +51283,18 @@ function petSummonUpdate(dt, ts){
       sp.scale.setScalar(0.6 + tw*0.7);
     });
   }
-  // ── Nafas comel halus (squash & stretch ringan, semua pet) ──
-  const breathe = 1 + Math.sin(_petSummonT * 3.2) * 0.025;
-  m.scale.set(breathe, 2-breathe, breathe);
+  // ── Nafas comel halus (squash & stretch ringan, semua pet PROCEDURAL) ──
+  // BUG FIX: line ni dulu terpakai pada SEMUA pet (termasuk pet FBX macam
+  // ZAPREZ) — ia overwrite m.scale SETIAP FRAME, jadi terus membatalkan/
+  // menimpa saiz (0.25×) yang kita set sekali sahaja masa group dibina di
+  // petBuildSummonMesh(). Ini punca sebenar pet FBX nampak besar/tak
+  // konsisten saiz — bukan sekadar isu rig idle/walk. Pet FBX tak perlukan
+  // efek nafas box-built ni (model FBX sendiri ada animasi rig), jadi
+  // kekalkan scale group yang kita set sebelum ni untuk pet FBX.
+  if(!m._isFbxPet){
+    const breathe = 1 + Math.sin(_petSummonT * 3.2) * 0.025;
+    m.scale.set(breathe, 2-breathe, breathe);
+  }
 
   // Glow ring putar + pulse opacity
   if(_petSummonMesh._glowRing){
@@ -57144,6 +57362,10 @@ function mmoMonsterSound(type, variant){
 // ── Skill Particle Effect ──
 let mmoFxParticles = [];
 
+function mmoFxCleanupParticles(scene, particles) {
+  particles.forEach(function(p){ scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); });
+  mmoFxParticles = [];
+}
 function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
   mmoFxParticles = [];
   const dur = 0.85;
@@ -57219,7 +57441,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       }
       requestAnimationFrame(step2);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     step2();
     return;
   }
@@ -57250,7 +57472,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       }
       requestAnimationFrame(stepIce);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepIce();
     return;
   }
@@ -57287,7 +57509,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       });
       requestAnimationFrame(stepBolt);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepBolt();
     return;
   }
@@ -57311,7 +57533,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       particles.forEach((p, i) => { if (i > 0) { p.material.opacity = Math.max(0, 1 - t * 2); p.scale.setScalar(1 + t * 2); } });
       requestAnimationFrame(stepSlash);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepSlash();
     return;
   }
@@ -57339,7 +57561,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       particles.forEach((p, i) => { if (i > 1) { p.material.opacity = Math.max(0, 1 - Math.abs(t - 0.3) * 2.5); p.scale.setScalar(1 + t * 3); } });
       requestAnimationFrame(stepBeam);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepBeam();
     return;
   }
@@ -57372,7 +57594,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       }
       requestAnimationFrame(stepHeal);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepHeal();
     return;
   }
@@ -57394,7 +57616,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       particles.forEach((p, i) => { if (i > 0) { p.material.opacity = Math.max(0, 1 - Math.abs(t - 0.5) * 2); p.scale.setScalar(1 + t * 2); } });
       requestAnimationFrame(stepShield);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepShield();
     return;
   }
@@ -57422,7 +57644,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       });
       requestAnimationFrame(stepDrain);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepDrain();
     return;
   }
@@ -57447,7 +57669,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       });
       requestAnimationFrame(stepPoison);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepPoison();
     return;
   }
@@ -57479,7 +57701,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       }
       requestAnimationFrame(stepSummon);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepSummon();
     return;
   }
@@ -57501,7 +57723,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       particles.forEach((p, i) => { if (i > 0) { p.material.opacity = Math.max(0, 1 - t * 2); p.position.y += 0.02; } });
       requestAnimationFrame(stepRoar);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepRoar();
     return;
   }
@@ -57541,7 +57763,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       }
       requestAnimationFrame(stepDual);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepDual();
     return;
   }
@@ -57566,7 +57788,7 @@ function mmoPlaySkillEffect(fx, scene, startPos, endPos, callback) {
       });
       requestAnimationFrame(stepGen);
     }
-    function cleanup2() { particles.forEach(p => { scene.remove(p); if(p.geometry)p.geometry.dispose(); if(p.material)p.material.dispose(); }); mmoFxParticles = []; }
+    function cleanup2() { mmoFxCleanupParticles(scene, particles); }
     stepGen();
   }
 }
@@ -65476,42 +65698,53 @@ function bossRenderOnlineList(){
 function bossInviteSendTo(target){
   const me=(playerProfile&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
   if(_bossInvitedPlayers.includes(me))return;
-  if(_bossInvitedPlayers.length>=1){bossShowToast('❌ Sudah ada 1 rakan dijemput.');return;}
+  if(_bossInvitedPlayers.length>=2){bossShowToast('❌ Sudah ada 2 rakan dijemput (maksimum).');return;}
   if(!_bossInvitePendingBoss)return;
-  _bossInvitedPlayers.push(target.toUpperCase());
   const bossId=_bossInvitePendingBoss.id;
   const bossName=_bossInvitePendingBoss.name;
   const disp=(playerProfile&&(playerProfile.displayName||playerProfile.name))||me;
-  const roomId=me+'_'+bossId+'_'+Date.now();
   if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn)return;
-  // Create room in Firebase
-  try{
-    const roomRef=window._fbRefFn(window._fbPresenceDb,'boss_rooms/'+roomId);
-    window._fbSetFn(roomRef,{
-      host:me,roomId:roomId,
-      monsterId:bossId,monsterName:bossName,
-      monsterHp:0,maxMonsterHp:0,
-      turn:0,phase:'waiting',
-      players:{
-        [me]:{name:me,joined:true,jobId:mmorpgState.selectedJob?mmorpgState.selectedJob.id:null,jobColor:mmorpgState.selectedJob?mmorpgState.selectedJob.color:null,hp:0,mp:0,maxHp:0,maxMp:0,action:null,damage:0,question:null,answer:null,correct:null},
-        [target.toUpperCase()]:{name:target.toUpperCase(),joined:false,jobId:null,jobColor:null,hp:0,mp:0,maxHp:0,maxMp:0,action:null,damage:0,question:null,answer:null,correct:null}
-      },
-      allCorrect:true,ts:Date.now()
-    });
-  }catch(e){}
-  // Send invite with roomId
+  const isFirstInvite=_bossInvitedPlayers.length===0;
+  _bossInvitedPlayers.push(target.toUpperCase());
+  const emptySlot={name:target.toUpperCase(),joined:false,jobId:null,jobColor:null,hp:0,mp:0,maxHp:0,maxMp:0,action:null,damage:0,question:null,answer:null,correct:null};
+  if(isFirstInvite){
+    // Rakan pertama — cipta bilik baru (host + rakan ini)
+    const roomId=me+'_'+bossId+'_'+Date.now();
+    _bossRoomId=roomId;
+    try{
+      const roomRef=window._fbRefFn(window._fbPresenceDb,'boss_rooms/'+roomId);
+      window._fbSetFn(roomRef,{
+        host:me,roomId:roomId,
+        monsterId:bossId,monsterName:bossName,
+        monsterHp:0,maxMonsterHp:0,
+        turn:0,phase:'waiting',
+        players:{
+          [me]:{name:me,joined:true,jobId:mmorpgState.selectedJob?mmorpgState.selectedJob.id:null,jobColor:mmorpgState.selectedJob?mmorpgState.selectedJob.color:null,hp:0,mp:0,maxHp:0,maxMp:0,action:null,damage:0,question:null,answer:null,correct:null},
+          [target.toUpperCase()]:emptySlot
+        },
+        allCorrect:true,ts:Date.now()
+      });
+    }catch(e){}
+    bossListenToRoom(roomId,me);
+  } else {
+    // Rakan ke-2 — TAMBAH ke bilik SEDIA ADA (bukan cipta bilik baru & timpa rakan pertama)
+    const roomId=_bossRoomId;
+    if(!roomId){bossShowToast('❌ Ralat: bilik tidak wujud.');return;}
+    try{
+      const slotRef=window._fbRefFn(window._fbPresenceDb,'boss_rooms/'+roomId+'/players/'+target.toUpperCase());
+      window._fbSetFn(slotRef,emptySlot);
+    }catch(e){}
+  }
+  // Send invite with roomId (bilik yang sama utk kedua-dua rakan)
   try{
     const inviteRef=window._fbRefFn(window._fbPresenceDb,'boss_invites/'+target.toUpperCase());
     window._fbSetFn(inviteRef,{
       from:me,fromDisplay:disp,
       bossId:bossId,bossName:bossName,
-      roomId:roomId,
+      roomId:_bossRoomId,
       status:'pending',ts:Date.now()
     });
   }catch(e){}
-  // Listen for room changes
-  _bossRoomId=roomId;
-  bossListenToRoom(roomId,me);
   bossShowToast('⏳ Menjemput '+target+'...');
   bossRenderOnlineList();
 }
@@ -66684,7 +66917,7 @@ function pvpInviteSendTo(target){
       const toast=document.getElementById('bossInviteToast');
       if(!toast)return;
       toast.style.display='block';
-      toast.innerHTML='<div style="color:#ff4444;font-size:12px;text-align:center;padding:12px;font-family:monospace;">✖ '+(d.fromDisplay||target)+' menolak cabaran.</div>';
+      toast.innerHTML='<div style="color:#ff4444;font-size:12px;text-align:center;padding:12px;font-family:monospace;">✖ '+smapEscHtml(d.fromDisplay||target)+' menolak cabaran.</div>';
       setTimeout(()=>{toast.style.display='none';},2000);
     }
   });
@@ -68032,7 +68265,7 @@ window.mmoTP=function(markerId){
   mmorpgState._mmWaypoint=null;
   mmorpgState._mmoTargetRotY=null;
   if(window.adminTeleportFlash)adminTeleportFlash('⚡ '+mk.name,'#a855f7');
-  console.log('Teleported to '+mk.name+' ('+mk.wx+', '+mk.wz+')');
+  
 };
 
 // ── Spawn monster for testing ──
@@ -68042,11 +68275,11 @@ window.mmoSpawn=function(monsterId){
   if(!mmorpgState.active){console.warn('MMORPG not active');return;}
   if(mmoBattle.active){console.warn('Already in battle');return;}
   const boss=MMORPG_BOSSES[monsterId];
-  if(boss){mmoStartBattle(boss);console.log('Boss spawned: '+boss.name+' (Lv.'+boss.lv+')');return;}
+  if(boss){mmoStartBattle(boss);return;}
   const mon=MMORPG_MONSTERS.find(m=>m.id===monsterId);
   if(!mon){console.warn('Monster "'+monsterId+'" not found. Options: '+Object.keys(MMORPG_BOSSES).join(', ')+' | '+MMORPG_MONSTERS.map(m=>m.id).join(', '));return;}
   mmoStartBattle(mon);
-  console.log('Battle started: '+mon.name+' (Lv.'+mon.lv+')');
+  
 };
 
 // ══════════════════════════════════════════════

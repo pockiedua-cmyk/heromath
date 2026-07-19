@@ -98,6 +98,69 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 #playerNameInput{background:#111;border:3px solid #ffd700;color:#ffd700;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.6vw,10px);padding:6px 10px;text-align:center;width:175px;outline:none;text-transform:uppercase;display:block;margin:0 auto;}
 .resume-tag{color:#00e676;font-size:clamp(5px,1.2vw,7px);margin:5px 0;padding:4px 8px;border:2px solid #00e676;display:inline-block;}
 
+/* ── Solo Leveling Tower mini-game (Open-World Action RPG) ── */
+#soloTowerOverlay{display:none;position:fixed;inset:0;background:#000;z-index:150;overflow:hidden;}
+#soloTowerOverlay.show{display:block;}
+#soloCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+#soloTowerHud{position:absolute;top:0;left:0;width:100%;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));pointer-events:none;text-align:center;background:linear-gradient(180deg,rgba(5,0,15,0.75),transparent);}
+#soloFloorLabel{color:#00eaff;font-family:'Press Start 2P',monospace;font-size:clamp(8px,2vw,12px);text-shadow:2px 2px 0 #000;}
+#soloRankLabel{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,9px);margin-top:4px;letter-spacing:2px;text-shadow:2px 2px 0 #000;}
+#soloBestLabel{color:#8899cc;font-family:'Press Start 2P',monospace;font-size:clamp(4px,1vw,6px);margin-top:3px;}
+#soloMonsterName{color:#ff88cc;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,9px);margin-top:8px;text-shadow:2px 2px 0 #000;}
+#soloEnemiesLeft{color:#ffcc66;font-family:'Press Start 2P',monospace;font-size:clamp(5px,1.1vw,7px);margin-top:3px;}
+#soloPlayerHp{margin-top:6px;font-size:16px;text-shadow:1px 1px 0 #000;}
+#soloJoyZone{position:absolute;left:0;bottom:0;width:45%;height:45%;z-index:11;touch-action:none;}
+/* Joystick kiri — TETAP/sentiasa kelihatan (bukan cuma muncul bila disentuh),
+   sama gaya visual macam mobaJoystick (ring translusen + knob tengah).
+   Base tak lagi ikut posisi jari (elak "hilang" bila skrin kecil / user tak
+   perasan ada joystick) — hanya knob dalam base yang bergerak ikut arah tujah.
+   Opacity/kontra dinaikkan supaya kekal jelas walau atas background terang. */
+#soloJoyBase{position:fixed;left:calc(18px + env(safe-area-inset-left));bottom:calc(18px + env(safe-area-inset-bottom));width:104px;height:104px;border-radius:50%;background:rgba(5,15,30,0.62);border:3px solid rgba(0,220,255,0.55);z-index:13;pointer-events:none;box-shadow:0 0 18px rgba(0,0,0,0.4),0 0 16px rgba(0,180,255,0.25) inset;transition:border-color .15s,box-shadow .15s;}
+#soloJoyBase.active{border-color:rgba(0,240,255,0.85);box-shadow:0 0 22px rgba(0,0,0,0.4),0 0 24px rgba(0,200,255,0.4) inset;}
+#soloJoyStick{position:absolute;width:46px;height:46px;left:29px;top:29px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(0,234,255,0.95),rgba(0,60,100,0.95));border:2.5px solid rgba(255,255,255,0.9);box-shadow:0 2px 10px rgba(0,0,0,0.55);transition:left .05s,top .05s;}
+/* Bar 4-skill ala game mobile semasa (MLBB/Wild Rift style): skill asas
+   besar kanan-bawah, 3 skill lain melengkung ke atas-kiri, ultimate
+   (slot terakhir) diberi gelang emas + glow. Kedudukan dikira SECARA
+   MATEMATIK (arc/lengkok drpd pusat skill utama, jejari cukup besar)
+   supaya jarak antara setiap bulatan sentiasa >12px — TAK bertindih
+   & TAK rapat sesak (bug asal: nombor right/bottom lama overlap). */
+#soloSkillBar{position:fixed;right:14px;bottom:calc(18px + env(safe-area-inset-bottom));width:210px;height:210px;z-index:12;pointer-events:none;}
+.solo-skill{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;background:radial-gradient(circle at 35% 35%,rgba(70,70,110,0.95),rgba(15,15,35,0.97));box-shadow:0 3px 14px rgba(0,0,0,0.6);-webkit-tap-highlight-color:transparent;overflow:hidden;transition:opacity .15s;}
+.solo-skill:active{transform:scale(0.92);}
+.solo-skill-ico{position:relative;z-index:2;filter:drop-shadow(1px 1px 1px #000);}
+.solo-skill .cdOverlay{position:absolute;left:0;right:0;top:0;height:0%;background:rgba(0,0,0,0.68);pointer-events:none;transition:height .08s linear;}
+.solo-skill .cdLabel{position:absolute;z-index:3;font-family:'Press Start 2P',monospace;color:#fff;text-shadow:1px 1px 0 #000;}
+/* Skill utama/basic attack — penjuru kanan-bawah, PALING besar */
+.solo-skill0{width:74px;height:74px;right:0;bottom:0;border:3px solid #ff5555;font-size:32px;}
+.solo-skill0 .cdLabel{font-size:11px;}
+/* Ultimate (gelang emas) — slot arc terdekat dgn skill utama, atas-kiri sikit */
+.solo-skill3{width:62px;height:62px;right:115px;bottom:26px;border:3px solid #ffd700;font-size:26px;box-shadow:0 0 16px rgba(255,215,0,0.65),0 3px 14px rgba(0,0,0,0.6);}
+.solo-skill3 .cdLabel{font-size:10px;}
+/* Skill 2 — pertengahan lengkok */
+.solo-skill1{width:56px;height:56px;right:81px;bottom:94px;border:3px solid #66ccff;font-size:24px;}
+.solo-skill1 .cdLabel{font-size:9px;}
+/* Skill 3 — puncak lengkok, paling atas-kiri */
+.solo-skill2{width:56px;height:56px;right:10px;bottom:120px;border:3px solid #66ff99;font-size:24px;}
+.solo-skill2 .cdLabel{font-size:9px;}
+#soloExitBtn{position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;background:#3a0a1a;color:#ff8899;border:2px solid #ff3355;padding:7px 12px;font-family:'Press Start 2P',monospace;font-size:clamp(5px,1.1vw,7px);cursor:pointer;border-radius:4px;z-index:12;}
+#soloEndOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:160;flex-direction:column;align-items:center;justify-content:center;}
+#soloEndOverlay.show{display:flex;}
+#soloEndBox{border:5px solid #7c4dff;background:#0a0018;padding:26px 30px;text-align:center;box-shadow:10px 10px 0 #7c4dff;max-width:90vw;}
+#soloEndBox h2{font-family:'Press Start 2P',monospace;font-size:clamp(12px,3vw,20px);margin-bottom:10px;}
+#soloEndBox p{color:#fff;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.6vw,10px);margin:6px 0;}
+#soloEndBox p.big{color:#00eaff;font-size:clamp(9px,2vw,13px);}
+#soloEndBox .obtn{margin:8px 6px 0;}
+/* ── Soalan Pukulan Maut (kill quiz) — Menara Solo ── */
+#soloQuizOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,10,0.86);z-index:170;align-items:center;justify-content:center;padding:16px;}
+#soloQuizOverlay.show{display:flex;}
+#soloQuizBox{border:5px solid #ffcc33;background:#150a00;padding:22px 22px;text-align:center;box-shadow:8px 8px 0 #ffcc33;max-width:92vw;width:420px;}
+#soloQuizTag{color:#ff8899;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.6vw,9px);margin-bottom:10px;letter-spacing:1px;}
+#soloQuizText{color:#fff;font-family:'Press Start 2P',monospace;font-size:clamp(8px,2vw,12px);white-space:pre-line;line-height:1.7;margin-bottom:16px;}
+#soloQuizOpts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+#soloQuizOpts button{font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.6vw,10px);padding:12px 6px;background:#241a05;border:3px solid #ffcc33;color:#ffe9a8;cursor:pointer;border-radius:4px;}
+#soloQuizOpts button:active{transform:scale(0.95);}
+#soloQuizFeedback{margin-top:12px;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.7vw,11px);min-height:16px;}
+
 /* ── Auth Screen (Roblox 3D Style) ── */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
 #loginScreen{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
@@ -1119,7 +1182,7 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 }
 
 /* Hero picker */
-.moba-hero-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+.moba-hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(78px,22vw),1fr));gap:8px;margin-bottom:14px;}
 .moba-hero-card{border:2px solid #333;border-radius:8px;padding:6px 4px;cursor:pointer;text-align:center;transition:all .15s;background:rgba(255,255,255,0.03);}
 .moba-hero-card:hover{border-color:#00eeff;background:rgba(0,238,255,0.08);}
 .moba-hero-card.selected{border-color:#ffd700;background:rgba(255,215,0,0.12);box-shadow:0 0 12px rgba(255,215,0,0.3);}
@@ -3011,6 +3074,8 @@ setTimeout(()=>{
       <div id="smapArenaMasterBtn" onclick="(function(){var _raw=smapActive;smapActive=false;if(typeof smapStopWorldPoller==='function')smapStopWorldPoller();if(sm3&&sm3.presenceClear)sm3.presenceClear();if(smapRAF)cancelAnimationFrame(smapRAF);smapKeys={};document.getElementById('schoolMapOverlay').classList.remove('show');document.getElementById('smapNpcDialog').style.display='none';var mc=document.getElementById('c'),wr=document.getElementById('smapCanvasWrap');if(mc&&mc.parentElement===wr){mc.style.position='';mc.style.inset='';mc.style.width='';mc.style.height='';document.body.insertBefore(mc,document.body.firstChild);renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();}setTimeout(arenaMasterOpen,200);})()" style="display:none;position:absolute;bottom:130px;left:16px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(229,37,33,0.9),rgba(100,0,0,0.95));border:3px solid #ffd700;color:#ffd700;font-size:16px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.3;z-index:10;box-shadow:0 2px 18px rgba(229,37,33,0.7);">⚔️<br><span style="font-size:6px;color:#fff;">MASUK</span></div>
       <!-- Math Tower button (shows when near portal) -->
       <div id="smapMathTowerBtn" onclick="(function(){smapActive=false;if(typeof smapStopWorldPoller==='function')smapStopWorldPoller();if(sm3&&sm3.presenceClear)sm3.presenceClear();if(smapRAF)cancelAnimationFrame(smapRAF);smapKeys={};document.getElementById('schoolMapOverlay').classList.remove('show');document.getElementById('smapNpcDialog').style.display='none';var mc=document.getElementById('c'),wr=document.getElementById('smapCanvasWrap');if(mc&&mc.parentElement===wr){mc.style.position='';mc.style.inset='';mc.style.width='';mc.style.height='';document.body.insertBefore(mc,document.body.firstChild);renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();}setTimeout(menuGoTower,200);})()" style="display:none;position:absolute;bottom:220px;left:16px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(0,30,120,0.95),rgba(80,0,180,0.95));border:3px solid #00eeff;color:#ffd700;font-size:20px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:Press Start 2P,monospace;text-align:center;line-height:1.3;z-index:10;box-shadow:0 2px 22px rgba(0,200,255,0.7);">🏰<br><span style="font-size:6px;color:#00eeff;">MASUK</span></div>
+      <!-- Solo Leveling Tower button (shows when near gate at X:260 Z:1) -->
+      <div id="smapSoloTowerBtn" onclick="(function(){smapActive=false;if(typeof smapStopWorldPoller==='function')smapStopWorldPoller();if(sm3&&sm3.presenceClear)sm3.presenceClear();if(smapRAF)cancelAnimationFrame(smapRAF);smapKeys={};document.getElementById('schoolMapOverlay').classList.remove('show');document.getElementById('smapNpcDialog').style.display='none';var mc=document.getElementById('c'),wr=document.getElementById('smapCanvasWrap');if(mc&&mc.parentElement===wr){mc.style.position='';mc.style.inset='';mc.style.width='';mc.style.height='';document.body.insertBefore(mc,document.body.firstChild);renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();}setTimeout(menuGoSoloTower,200);})()" style="display:none;position:absolute;bottom:310px;left:16px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(10,5,30,0.95),rgba(60,0,90,0.95));border:3px solid #7c4dff;color:#c8a8ff;font-size:20px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:Press Start 2P,monospace;text-align:center;line-height:1.3;z-index:10;box-shadow:0 2px 22px rgba(124,77,255,0.8);">🌀<br><span style="font-size:5px;color:#c8a8ff;">GERBANG</span></div>
 
       <!-- 🐾 PET SYSTEM: Butang tangkap & beg pet -->
       <div id="smapPetCatchBtn" onclick="petTryCatch()" style="display:none;position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));left:calc(304px + env(safe-area-inset-left));width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(0,200,120,0.85),rgba(0,100,60,0.95));border:3px solid #fff;color:#fff;font-size:18px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.2;z-index:15;box-shadow:0 2px 14px rgba(0,230,118,0.6);-webkit-tap-highlight-color:transparent;">🎯<br><span style="font-size:6px;">TANGKAP</span></div>
@@ -3821,7 +3886,31 @@ function playSound(type){
       veh_mount:   {t:'sawtooth',f:[80,320],  g:[0.20,0.001],d:0.35},
       veh_dismount:{t:'square',  f:[300,90],  g:[0.14,0.001],d:0.18},
       veh_honk:    {t:'square',  f:[520,440], g:[0.18,0.001],d:0.22},
+      // Solo Menara — kesan skill/impak gempak
+      solo_fire:    {t:'sawtooth',f:[220,900], g:[0.20,0.001],d:0.22},
+      solo_bolt:    {t:'square',  f:[1600,90], g:[0.22,0.001],d:0.16},
+      solo_slash:   {t:'triangle',f:[1400,260],g:[0.20,0.001],d:0.12},
+      solo_heal:    {t:'sine',    f:[440,1046],g:[0.16,0.001],d:0.35},
+      solo_buff:    {t:'square',  f:[330,880], g:[0.18,0.001],d:0.30},
+      solo_shield:  {t:'sine',    f:[220,660], g:[0.18,0.001],d:0.30},
+      solo_impact:  {t:'sawtooth',f:[500,60],  g:[0.24,0.001],d:0.16},
+      solo_crit:    {t:'square',  f:[900,120], g:[0.26,0.001],d:0.20},
+      solo_charge:  {t:'sine',    f:[120,700], g:[0.14,0.02], d:0.30},
+      solo_telegraph:{t:'square', f:[220,340], g:[0.10,0.001],d:0.18},
     };
+    if(type==='solo_boom'){
+      const sz=Math.floor(ctx.sampleRate*0.45);
+      const buf=ctx.createBuffer(1,sz,ctx.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<sz;i++)d[i]=(Math.random()*2-1)*(1-i/sz);
+      const src=ctx.createBufferSource();src.buffer=buf;
+      const flt=ctx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=900;
+      const g=ctx.createGain();
+      g.gain.setValueAtTime(0.55,now);
+      g.gain.exponentialRampToValueAtTime(0.001,now+0.45);
+      src.connect(flt);flt.connect(g);g.connect(ctx.destination);
+      src.start(now);return;
+    }
     const c=cfg[type];if(!c)return;
     osc.type=c.t;
     osc.frequency.setValueAtTime(c.f[0],now);
@@ -6823,6 +6912,15 @@ function isAdminUser(username){
   let cheatTimeout = null;
 
   document.addEventListener('keydown', function(e){
+    // JANGAN proses kekunci bila fokus sedang di dlm input/textarea/borang
+    // boleh-edit (cth: taip nama, username, chat, jawapan) — sebelum ini
+    // cheat code boleh teraktif SENDIRI secara tidak sengaja kerana huruf
+    // "MATHERO" (nama permainan ini sendiri!) mudah tertaip semasa
+    // mengisi borang biasa. Cheat hanya patut dikesan semasa gameplay.
+    const tgt = e.target;
+    const tag = (tgt && tgt.tagName) || '';
+    const isEditableField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (tgt && tgt.isContentEditable);
+    if(isEditableField) { cheatBuffer = ''; return; }
     // Only printable chars
     if(e.key.length === 1){
       cheatBuffer += e.key.toUpperCase();
@@ -8528,6 +8626,2012 @@ function menuGoTower(){
   initLevel();
   setTimeout(()=>startBGM(130,0.3),500);
 }
+
+// ══════════════════════════════════════════════════════
+//  MENARA SOLO LEVELING — 50 TINGKAT (Open-World Action RPG)
+//  Setiap tingkat = dunia 3D terbuka bertema berbeza, lawan monster
+//  secara real-time. Menara Solo TIADA KAITAN dgn Menara Matematik
+//  (mod kuiz 10-menara berasingan) — ia guna sistem/progress/HUD
+//  sendiri sepenuhnya. Satu-satunya perkongsian ialah BANK SOALAN
+//  (genQ_T1..genQ_T5) sekadar sumber soalan, dipetik ikut tingkat:
+//  tingkat 1–10 = Tingkatan 1 (bab 1–10), 11–20 = Tingkatan 2 (bab
+//  1–10), ...seterusnya sehingga tingkat 41–50 = Tingkatan 5 (bab
+//  1–10). Membunuh monster memerlukan PUKULAN MAUT (killing blow)
+//  dijawab betul dahulu — lihat soloShowKillQuiz().
+// ══════════════════════════════════════════════════════
+const SOLO_KEY='soloTower_progress_v1';
+const SOLO_MAX_FLOOR=50;
+let soloTower={floor:1,hp:6,hpMax:6,best:0,running:false,invuln:0,quizActive:false};
+let soloScene=null,soloCamera=null,soloRenderer=null,soloClock=null,soloRAF=null;
+let soloPlayer=null,soloEnemies=[],soloPortalMesh=null,soloGround=null;
+let soloKeysDown={};
+let soloAttackCooldown=0;
+let soloJoy={active:false,dx:0,dz:0,touchId:null};
+let soloOccluders=[]; // objek hiasan yang boleh menghalang pandangan kamera
+let soloArenaR=26; // jejari arena semasa (dikemaskini di soloBuildFloor)
+let soloRaycaster=null; // dicipta lazy (perlukan THREE dimuat)
+let soloPlayerSkinId=null;      // skin GLB yang di-equip semasa sesi Solo Tower ini
+let soloCurrentSkillset=null;   // array 4 skill (rujuk SOLO_HERO_SKILLS)
+let soloSkillCooldowns=[0,0,0,0];
+
+// ── Biome bertema (kitar setiap 10 tingkat, 10 corak berbeza) ──
+const SOLO_BIOMES=[
+  {name:'🌳 HUTAN BAYANGAN',   sky:0x0d1f0d, fog:0x0d1f0d, ground:0x1a3a1a, prop:0x0a2a0a, glow:0x33ff66},
+  {name:'🏜️ GURUN GERBANG',    sky:0x2a1f0a, fog:0x2a1f0a, ground:0x4a3a1a, prop:0x3a2a10, glow:0xffaa33},
+  {name:'🌋 GUNUNG BERAPI',    sky:0x1f0505, fog:0x1f0505, ground:0x330a0a, prop:0x220505, glow:0xff5522},
+  {name:'❄️ PADANG SALJI',     sky:0x0a1a2a, fog:0x0a1a2a, ground:0xdfeeff, prop:0xaad0f0, glow:0x88ddff},
+  {name:'🏖️ PANTAI KUTUKAN',   sky:0x0a2030, fog:0x0a2030, ground:0xd8c060, prop:0x1a6088, glow:0x33ccff},
+  {name:'🌌 ANGKASA LEPAS',    sky:0x020016, fog:0x020016, ground:0x140a30, prop:0x2a1a50, glow:0xaa66ff},
+  {name:'🌊 DASAR LAUT',       sky:0x001a2a, fog:0x001a2a, ground:0x00304a, prop:0x004a66, glow:0x33ffee},
+  {name:'🏯 CANDI PURBA',      sky:0x1a1005, fog:0x1a1005, ground:0x3a2a10, prop:0x5a3a10, glow:0xffcc33},
+  {name:'🌑 DUNIA BAYANGAN',   sky:0x0a0008, fog:0x0a0008, ground:0x1a0018, prop:0x2a0028, glow:0xcc33ff},
+  {name:'🐉 ISTANA MONARKI',   sky:0x0a0000, fog:0x0a0000, ground:0x2a0000, prop:0x400000, glow:0xff2244},
+];
+function soloBiome(floor){ return SOLO_BIOMES[Math.floor((floor-1)/10)%SOLO_BIOMES.length]; }
+
+// ── Set SKILL (4 slot) untuk setiap skin FBX — icon+animasi (dari
+//    GLB_ACTIONS / skill/*.fbx) + kesan permainan (dmg/heal/buff/block).
+//    slot0 = serangan asas (cooldown pendek), slot3 = ultimate (cooldown
+//    panjang, biasanya AOE/buff besar). "_default" dipakai bila hero tiada
+//    skin GLB dipasang (rig kotak asal).
+const SOLO_HERO_SKILLS={
+  skin_wizard:[
+    {action:'magicAttack1',name:'Bola Api',      icon:'🔥',dmg:2,range:6,  cd:1.0},
+    {action:'magicAttack2',name:'Petir Arka',    icon:'⚡',dmg:3,range:6,  cd:3.0},
+    {action:'magicArea',   name:'Nova Sihir',    icon:'🌀',dmg:2,range:4.5,aoe:true,cd:6.0},
+    {action:'heal',        name:'Pulih Diri',    icon:'💚',heal:2,        cd:10.0},
+  ],
+  skin_knight:[
+    {action:'slash', name:'Tebasan Pedang', icon:'⚔️',dmg:2,range:2.4,cd:0.8},
+    {action:'block', name:'Perisai Waja',   icon:'🛡️',block:true,   cd:6.0},
+    {action:'buff',  name:'Seru Perang',    icon:'💪',buffAtk:1.6,  cd:9.0},
+    {action:'jump',  name:'Hentak Bumi',    icon:'💥',dmg:3,range:3.2,aoe:true,cd:7.0},
+  ],
+  skin_ninja:[
+    {action:'slash', name:'Sabit Bayang',  icon:'🗡️',dmg:2,range:2.2,cd:0.7},
+    {action:'jump',  name:'Lompat Bayang', icon:'🌫️',dmg:2,range:3,  cd:3.5},
+    {action:'block', name:'Elak Kilat',    icon:'💨',block:true,    cd:5.5},
+    {action:'buff',  name:'Mod Bayangan',  icon:'🥷',buffAtk:1.8,   cd:9.0},
+  ],
+  skin_robot:[
+    {action:'shooting',name:'Tembakan Laser',icon:'🔫',dmg:2,range:6.5,cd:0.9},
+    {action:'gunplay', name:'Tembakan Pantas',icon:'💢',dmg:3,range:6, cd:3.2},
+    {action:'bazuka',  name:'Roket Bazuka', icon:'💣',dmg:4,range:5,aoe:true,cd:7.0},
+    {action:'buff',    name:'Overclock',    icon:'⚙️',buffAtk:1.7, cd:9.0},
+  ],
+  skin_dragon:[
+    {action:'magicAttack1',name:'Nafas Naga',     icon:'🔥',dmg:3,range:6,cd:1.0},
+    {action:'magicAttack2',name:'Halilintar Naga',icon:'⚡',dmg:4,range:6,cd:3.5},
+    {action:'magicArea',   name:'Gempa Naga',     icon:'🌋',dmg:3,range:5,aoe:true,cd:7.0},
+    {action:'buff',        name:'Amukan Naga',    icon:'🐉',buffAtk:2.0, cd:10.0},
+  ],
+  skin_pirate:[
+    {action:'shooting',  name:'Tembakan Pistol', icon:'🔫',dmg:2,range:6,  cd:0.9},
+    {action:'slash',     name:'Cutlass',         icon:'🗡️',dmg:2,range:2.4,cd:1.0},
+    {action:'archerShot',name:'Panahan Laut',    icon:'🏹',dmg:3,range:6.5,cd:3.5},
+    {action:'buff',      name:'Seru Kelasi',     icon:'🏴‍☠️',buffAtk:1.6,cd:9.0},
+  ],
+  skin_angel:[
+    {action:'magicAttack1',name:'Sinar Cahaya',  icon:'✨',dmg:2,range:6,  cd:0.9},
+    {action:'heal',        name:'Rahmat Suci',   icon:'💚',heal:3,        cd:8.0},
+    {action:'magicArea',   name:'Nova Suci',     icon:'🌟',dmg:3,range:4.5,aoe:true,cd:7.0},
+    {action:'buff',        name:'Restu Malaikat',icon:'👼',buffAtk:1.7,   cd:9.5},
+  ],
+  skin_demon:[
+    {action:'slash',       name:'Cakar Neraka', icon:'😈',dmg:2,range:2.4,cd:0.8},
+    {action:'magicAttack2',name:'Bola Gelap',   icon:'🔮',dmg:3,range:6,  cd:3.2},
+    {action:'magicArea',   name:'Api Neraka',   icon:'🔥',dmg:3,range:4.5,aoe:true,cd:7.0},
+    {action:'buff',        name:'Amukan Iblis', icon:'👹',buffAtk:1.9,    cd:9.5},
+  ],
+  skin_samurai:[
+    {action:'slash', name:'Tebasan Katana',  icon:'⛩️',dmg:2,range:2.4,cd:0.8},
+    {action:'block', name:'Gaya Iaijutsu',   icon:'🥋',block:true,     cd:6.0},
+    {action:'jump',  name:'Lompatan Pedang', icon:'💨',dmg:3,range:3,   cd:5.0},
+    {action:'buff',  name:'Fokus Bushido',   icon:'🎯',buffAtk:1.8,     cd:9.0},
+  ],
+  skin_mech:[
+    {action:'bazuka',  name:'Peluru Berpandu',icon:'🚀',dmg:3,range:6,  cd:1.2},
+    {action:'gunplay', name:'Meriam Auto',    icon:'🔫',dmg:2,range:6.5,cd:0.9},
+    {action:'shooting',name:'Laser Fokus',    icon:'🔆',dmg:3,range:6,  cd:3.5},
+    {action:'buff',    name:'Mod Overdrive',  icon:'🦾',buffAtk:1.8,    cd:9.5},
+  ],
+  _default:[ // tiada skin GLB dipasang — hero rig kotak asal
+    {action:'slash',name:'Serangan',    icon:'⚔️',dmg:1,range:3.2,cd:0.35},
+    {action:'jump', name:'Lompat Serang',icon:'💥',dmg:2,range:3.6,cd:3.0},
+    {action:'buff', name:'Semangat',    icon:'💪',buffAtk:1.5,    cd:8.0},
+    {action:'heal', name:'Rehat Sat',   icon:'💚',heal:1,        cd:10.0},
+  ],
+};
+function soloGetSkillSet(skinId){ return SOLO_HERO_SKILLS[skinId] || SOLO_HERO_SKILLS._default; }
+
+// ── Senjata Solo Menara ikut kelas/skin hero — dipasang pada soloPlayer
+//    (group) supaya kelihatan pada rig kapsul fallback DAN di sebelah
+//    model GLB. Bentuk & warna setiap senjata selaras dgn flavor skill
+//    kelas tsb (contoh: skin_wizard=tongkat sihir biru, skin_knight=
+//    pedang+perisai, skin_ninja=sepasang kunai, dll).
+function _soloBlade(len,wid,color,emis){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(wid,len,0.06),new THREE.MeshLambertMaterial({color:color,emissive:emis||color,emissiveIntensity:0.5}));
+  m.position.y=len/2; return m;
+}
+function _soloHilt(color){
+  return new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.28,8),new THREE.MeshLambertMaterial({color:color||0x332211}));
+}
+const SOLO_WEAPON_BUILDERS={
+  skin_wizard:function(){
+    const g=new THREE.Group();
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,1.15,8),new THREE.MeshLambertMaterial({color:0x5a3a1a}));
+    pole.position.y=0.55; g.add(pole);
+    const orb=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,10),new THREE.MeshLambertMaterial({color:0x66eaff,emissive:0x33aaff,emissiveIntensity:0.9}));
+    orb.position.y=1.18; g.add(orb);
+    g.add(new THREE.PointLight(0x66eaff,0.8,3));
+    return g;
+  },
+  skin_knight:function(){
+    const g=new THREE.Group();
+    g.add(_soloHilt(0x333333));
+    g.add(_soloBlade(0.85,0.09,0xccccdd,0x8899cc));
+    const shield=new THREE.Mesh(new THREE.CircleGeometry(0.24,6),new THREE.MeshLambertMaterial({color:0x2244aa,emissive:0x112255,emissiveIntensity:0.4,side:THREE.DoubleSide}));
+    shield.position.set(-0.5,0.1,0); shield.rotation.y=Math.PI/2; g.add(shield);
+    return g;
+  },
+  skin_ninja:function(){
+    const g=new THREE.Group();
+    [-0.12,0.12].forEach(function(ox){
+      const k=new THREE.Group();
+      k.add(_soloHilt(0x222222));
+      k.add(_soloBlade(0.4,0.05,0xdddddd,0x888888));
+      k.position.set(ox,0,0.05);
+      g.add(k);
+    });
+    return g;
+  },
+  skin_robot:function(){
+    const g=new THREE.Group();
+    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,0.6,8),new THREE.MeshLambertMaterial({color:0x556677,emissive:0x2288ff,emissiveIntensity:0.5}));
+    barrel.rotation.z=Math.PI/2; barrel.position.set(0.3,0.3,0); g.add(barrel);
+    const core=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.22,0.22),new THREE.MeshLambertMaterial({color:0x334455}));
+    core.position.set(0,0.3,0); g.add(core);
+    g.add(new THREE.PointLight(0x2288ff,0.7,3));
+    return g;
+  },
+  skin_dragon:function(){
+    const g=new THREE.Group();
+    for(let i=0;i<3;i++){
+      const claw=new THREE.Mesh(new THREE.ConeGeometry(0.045,0.32,5),new THREE.MeshLambertMaterial({color:0xff5522,emissive:0x992200,emissiveIntensity:0.6}));
+      claw.position.set(-0.08+i*0.08,0.16,0.1); claw.rotation.x=Math.PI*0.15;
+      g.add(claw);
+    }
+    return g;
+  },
+  skin_pirate:function(){
+    const g=new THREE.Group();
+    g.add(_soloHilt(0x442211));
+    const cutlass=_soloBlade(0.68,0.08,0xddccaa,0xaa8844); cutlass.rotation.z=-0.25; g.add(cutlass);
+    const pistol=new THREE.Mesh(new THREE.BoxGeometry(0.09,0.14,0.32),new THREE.MeshLambertMaterial({color:0x5a3a1a}));
+    pistol.position.set(-0.35,0.05,0.05); g.add(pistol);
+    return g;
+  },
+  skin_angel:function(){
+    const g=new THREE.Group();
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.1,8),new THREE.MeshLambertMaterial({color:0xddddaa,emissive:0xffee99,emissiveIntensity:0.3}));
+    pole.position.y=0.55; g.add(pole);
+    const cross=new THREE.Mesh(new THREE.BoxGeometry(0.28,0.06,0.06),new THREE.MeshLambertMaterial({color:0xffeeaa,emissive:0xffffcc,emissiveIntensity:0.8}));
+    cross.position.y=1.05; g.add(cross);
+    g.add(new THREE.PointLight(0xffeeaa,0.8,3));
+    return g;
+  },
+  skin_demon:function(){
+    const g=new THREE.Group();
+    g.add(_soloHilt(0x1a0a0a));
+    g.add(_soloBlade(0.8,0.11,0x551133,0xaa0033));
+    return g;
+  },
+  skin_samurai:function(){
+    const g=new THREE.Group();
+    g.add(_soloHilt(0x1a1a1a));
+    g.add(_soloBlade(0.9,0.07,0xf0f0f5,0xaaccff));
+    return g;
+  },
+  skin_mech:function(){
+    const g=new THREE.Group();
+    [-0.14,0.14].forEach(function(oz){
+      const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.5,8),new THREE.MeshLambertMaterial({color:0x445566,emissive:0xff6622,emissiveIntensity:0.5}));
+      barrel.rotation.z=Math.PI/2; barrel.position.set(0.28,0.28,oz); g.add(barrel);
+    });
+    g.add(new THREE.PointLight(0xff6622,0.7,3));
+    return g;
+  },
+  _default:function(){
+    const g=new THREE.Group();
+    g.add(_soloHilt(0x334455));
+    g.add(_soloBlade(0.62,0.08,0x00eaff,0x0088aa));
+    return g;
+  },
+};
+function soloBuildWeapon(skinId){
+  const fn=SOLO_WEAPON_BUILDERS[skinId]||SOLO_WEAPON_BUILDERS._default;
+  return fn();
+}
+// Cari tulang (Bone) tangan pada rig FBX/GLB semasa (idle/walk) supaya
+// senjata boleh melekat terus padanya — bukan terapung tetap pada group
+// pemain. Ikut penamaan lazim aset Mixamo (contoh: "mixamorigRightHand",
+// "Hand_R", "RightHand"). Skor mudah: utamakan nama yang jelas ada
+// "hand" + petanda tangan KANAN; kalau tiada tulang kanan jumpa, ambil
+// mana-mana tulang "hand" yang ada (lebih baik drpd tiada langsung).
+function soloFindHandBone(model){
+  if(!model) return null;
+  let best=null,bestScore=-1;
+  model.traverse(function(o){
+    if(!o.isBone) return;
+    const n=(o.name||'').toLowerCase();
+    if(n.indexOf('hand')===-1) return;
+    let score=1;
+    if(n.indexOf('right')!==-1 || /(^|[^a-z])r([^a-z]|$)/.test(n)) score+=3;
+    if(n.indexOf('left')!==-1) score-=2;
+    if(score>bestScore){ bestScore=score; best=o; }
+  });
+  return best;
+}
+// Lekat/kekalkan senjata pemain pada tulang tangan rig AKTIF (idle atau
+// walk — mana yang ditunjuk sekarang, lihat glbSetMoving). Dipanggil
+// setiap frame dari soloLoop tapi murah: hanya kerja sebenar (cari
+// tulang, tukar parent) berlaku bila rig aktif BERTUKAR (idle↔walk atau
+// skin baru dimuat) — selebihnya cuma satu perbandingan lalu keluar.
+// Pampasan skala (getWorldScale) elak senjata jadi gergasi/kecil akibat
+// unit skeleton FBX (selalunya cm) berbeza drpd unit dunia Solo Menara.
+function soloSyncWeaponBone(){
+  const gp=soloPlayer;
+  if(!gp||!gp._weaponMesh) return;
+  const wpn=gp._weaponMesh;
+  if(!gp._glbSkinId){
+    if(wpn._boundModel!==null){
+      wpn.scale.setScalar(1);
+      wpn.position.set(0.5,0.85,0.22);
+      wpn.rotation.set(0,0,-0.3);
+      gp.add(wpn);
+      wpn._boundModel=null;
+    }
+    return;
+  }
+  const activeModel=(gp._glbMoving && gp._glbWalkModel) ? gp._glbWalkModel : gp._glbIdleModel;
+  if(!activeModel || wpn._boundModel===activeModel) return;
+  const bone=soloFindHandBone(activeModel);
+  if(bone){
+    activeModel.updateMatrixWorld(true);
+    const ws=new THREE.Vector3(); bone.getWorldScale(ws);
+    bone.add(wpn);
+    wpn.scale.set(1/(ws.x||1),1/(ws.y||1),1/(ws.z||1));
+    wpn.position.set(0.04,0.02,0.02);
+    wpn.rotation.set(0,0,0);
+  } else {
+    gp.add(wpn);
+    wpn.scale.setScalar(1);
+    wpn.position.set(0.5,0.85,0.22);
+    wpn.rotation.set(0,0,-0.3);
+  }
+  wpn._boundModel=activeModel;
+}
+// Warna kesan visual (FX) ikut jenis aksi skill — dipakai bila tiada
+// warna eksplisit lain untuk projektil/burst.
+function soloSkillFXColor(action){
+  const map={
+    magicAttack1:0xff6622, magicAttack2:0x66eaff, magicArea:0xaa66ff,
+    slash:0xffffff, jump:0xffaa33, shooting:0xffee33, gunplay:0xffcc33,
+    bazuka:0xff5522, archerShot:0x33ffaa
+  };
+  return map[action]||0x00eaff;
+}
+// Bunyi yang sepadan dgn jenis skill — lebih "gempak" & pelbagai drpd
+// satu bunyi generik utk semua skill.
+function soloSkillFXSound(sk){
+  if(!sk) return 'solo_impact';
+  if(sk.heal) return 'solo_heal';
+  if(sk.block) return 'solo_shield';
+  if(sk.buffAtk) return 'solo_buff';
+  const map={
+    magicAttack1:'solo_fire', magicAttack2:'solo_bolt', magicArea:'solo_boom',
+    slash:'solo_slash', jump:'solo_boom', shooting:'solo_bolt', gunplay:'solo_bolt',
+    bazuka:'solo_boom', archerShot:'solo_slash'
+  };
+  return map[sk.action]||'solo_impact';
+}
+// Kamera "shake" ringkas — impak rasa lebih gempak gaya game moden.
+// Dipanggil oleh kesan skill/serangan; diproses setiap frame dlm soloLoop.
+let soloShake={t:0,dur:0,mag:0};
+function soloCameraShake(mag,dur){
+  if(mag>soloShake.mag*(1-soloShake.t/(soloShake.dur||1))){ soloShake.mag=mag; soloShake.dur=dur; soloShake.t=0; }
+}
+// Ledakan zarah (particle burst) additive — utk kesan impak/letupan.
+function soloSpawnImpactBurst(pos,color,count,spread){
+  if(!soloScene) return;
+  const scn=soloScene;
+  const n=count||10;
+  for(let i=0;i<n;i++){
+    const p=new THREE.Mesh(new THREE.SphereGeometry(0.045+Math.random()*0.06,5,5),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}));
+    const ang=Math.random()*Math.PI*2;
+    const spd=(spread||2.4)*(0.5+Math.random()*0.8);
+    p.position.set(pos.x,pos.y||1,pos.z);
+    scn.add(p);
+    const vx=Math.cos(ang)*spd, vz=Math.sin(ang)*spd, vy=1.4+Math.random()*1.4;
+    const start=performance.now();
+    (function tick(){
+      const t=(performance.now()-start)/450;
+      if(t>=1||!p.parent){ if(p.parent) scn.remove(p); return; }
+      p.position.x+=vx*0.016; p.position.z+=vz*0.016; p.position.y+=(vy-t*7)*0.016;
+      p.material.opacity=1-t; p.scale.setScalar(1-t*0.55);
+      requestAnimationFrame(tick);
+    })();
+  }
+  const flash=new THREE.PointLight(color,3.2,4.5);
+  flash.position.set(pos.x,pos.y||1,pos.z);
+  scn.add(flash);
+  const fs=performance.now();
+  (function ftick(){
+    const t=(performance.now()-fs)/220;
+    if(t>=1||!flash.parent){ if(flash.parent) scn.remove(flash); return; }
+    flash.intensity=3.2*(1-t);
+    requestAnimationFrame(ftick);
+  })();
+}
+// Bolt kilat berjenjang (zigzag) — utk skill elektrik (magicAttack2):
+// sampai serta-merta ke sasaran (bukan projektil perlahan) supaya rasa
+// macam kilat sebenar.
+function soloSpawnLightningBolt(from,to,color){
+  if(!soloScene) return;
+  const scn=soloScene;
+  const segs=6;
+  const pts=[];
+  for(let i=0;i<=segs;i++){
+    const t=i/segs;
+    const bx=from.x+(to.x-from.x)*t, bz=from.z+(to.z-from.z)*t;
+    const jitter=(i>0&&i<segs)?(Math.random()-0.5)*0.55:0;
+    pts.push(new THREE.Vector3(bx+jitter,1.1+Math.random()*0.35,bz+jitter));
+  }
+  const group=new THREE.Group();
+  for(let i=0;i<segs;i++){
+    const a=pts[i], b=pts[i+1];
+    const dir=new THREE.Vector3().subVectors(b,a);
+    const len=Math.max(0.05,dir.length());
+    const seg=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,len,5),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+    seg.position.copy(a).addScaledVector(dir,0.5);
+    seg.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+    group.add(seg);
+  }
+  scn.add(group);
+  const light=new THREE.PointLight(color,3.5,6.5);
+  light.position.set((from.x+to.x)/2,1.4,(from.z+to.z)/2);
+  scn.add(light);
+  const start=performance.now();
+  (function tick(){
+    const t=(performance.now()-start)/200;
+    if(t>=1||!group.parent){ scn.remove(group); if(light.parent) scn.remove(light); return; }
+    group.children.forEach(function(m){ m.material.opacity=0.95*(1-t); });
+    light.intensity=3.5*(1-t);
+    requestAnimationFrame(tick);
+  })();
+}
+// Kesan visual skill (projektil/burst/aura/kilauan sembuh) — versi
+// gempak: zarah, cahaya dinamik, jejak, dan kamera shake pd impak.
+// Rujukan scene disimpan semasa dipanggil (bukan guna global soloScene
+// lambat) supaya selamat walau tingkat bertukar sebelum animasi tamat.
+function soloSpawnSkillFX(sk,casterPos,targetPositions,targetEnemy){
+  const scn=soloScene;
+  if(!scn||!casterPos) return;
+  const color=soloSkillFXColor(sk.action);
+  if(sk.heal){
+    for(let i=0;i<10;i++){
+      const p=new THREE.Mesh(new THREE.SphereGeometry(0.06,6,6),new THREE.MeshBasicMaterial({color:0x33ff88,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+      const ang=Math.random()*Math.PI*2, r=0.3+Math.random()*0.5;
+      p.position.set(casterPos.x+Math.cos(ang)*r,0.3,casterPos.z+Math.sin(ang)*r);
+      scn.add(p);
+      const start=performance.now();
+      (function tick(){
+        const t=(performance.now()-start)/750;
+        if(t>=1||!p.parent){ scn.remove(p); return; }
+        p.position.y+=0.028; p.material.opacity=0.95*(1-t);
+        requestAnimationFrame(tick);
+      })();
+    }
+    const glowRing=new THREE.Mesh(new THREE.RingGeometry(0.3,0.5,24),new THREE.MeshBasicMaterial({color:0x33ff88,transparent:true,opacity:0.8,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
+    glowRing.rotation.x=-Math.PI/2; glowRing.position.set(casterPos.x,0.1,casterPos.z);
+    scn.add(glowRing);
+    const gs=performance.now();
+    (function gtick(){
+      const t=(performance.now()-gs)/650;
+      if(t>=1||!glowRing.parent){ scn.remove(glowRing); return; }
+      const s=1+t*2.2; glowRing.scale.set(s,s,s); glowRing.material.opacity=0.8*(1-t);
+      requestAnimationFrame(gtick);
+    })();
+    return;
+  }
+  if(sk.block){
+    const shield=new THREE.Mesh(new THREE.CircleGeometry(0.78,24),new THREE.MeshBasicMaterial({color:0x66ccff,transparent:true,opacity:0.55,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
+    shield.position.set(casterPos.x,1.0,casterPos.z+0.4);
+    scn.add(shield);
+    const rune=new THREE.Mesh(new THREE.RingGeometry(0.6,0.7,6),new THREE.MeshBasicMaterial({color:0xbfe9ff,transparent:true,opacity:0.9,side:THREE.DoubleSide}));
+    rune.position.copy(shield.position);
+    scn.add(rune);
+    const light=new THREE.PointLight(0x66ccff,2.2,4);
+    light.position.copy(shield.position);
+    scn.add(light);
+    const start=performance.now();
+    (function tick(){
+      const t=(performance.now()-start)/950;
+      if(t>=1||!shield.parent){ scn.remove(shield); if(rune.parent) scn.remove(rune); if(light.parent) scn.remove(light); return; }
+      shield.material.opacity=0.55*(1-t);
+      rune.rotation.z+=0.08; rune.material.opacity=0.9*(1-t);
+      light.intensity=2.2*(1-t);
+      requestAnimationFrame(tick);
+    })();
+    return;
+  }
+  if(sk.buffAtk){
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(0.6,0.06,8,20),new THREE.MeshBasicMaterial({color:0xffcc33,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+    ring.rotation.x=Math.PI/2; ring.position.set(casterPos.x,0.1,casterPos.z);
+    scn.add(ring);
+    soloSpawnImpactBurst({x:casterPos.x,y:0.6,z:casterPos.z},0xffcc33,10,1.6);
+    soloCameraShake(0.06,0.15);
+    const start=performance.now();
+    (function tick(){
+      const t=(performance.now()-start)/800;
+      if(t>=1||!ring.parent){ scn.remove(ring); return; }
+      ring.position.y=0.1+t*1.7; ring.scale.setScalar(1+t*0.5); ring.material.opacity=0.95*(1-t);
+      requestAnimationFrame(tick);
+    })();
+    return;
+  }
+  if(sk.aoe){
+    const dmgBig=(sk.dmg||2)>=3;
+    for(let ringIdx=0;ringIdx<2;ringIdx++){
+      const burst=new THREE.Mesh(new THREE.RingGeometry(0.1,0.32,28),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.9,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));
+      burst.rotation.x=-Math.PI/2; burst.position.set(casterPos.x,0.15,casterPos.z);
+      scn.add(burst);
+      const delay=ringIdx*90;
+      const start=performance.now()+delay;
+      (function tick(b,st){
+        const t=(performance.now()-st)/520;
+        if(t<0){ requestAnimationFrame(function(){tick(b,st);}); return; }
+        if(t>=1||!b.parent){ if(b.parent) scn.remove(b); return; }
+        const s=1+t*(sk.range||4);
+        b.scale.set(s,s,s); b.material.opacity=0.9*(1-t);
+        requestAnimationFrame(function(){tick(b,st);});
+      })(burst,start);
+    }
+    soloSpawnImpactBurst({x:casterPos.x,y:0.5,z:casterPos.z},color,dmgBig?18:12,3.2);
+    soloCameraShake(dmgBig?0.22:0.14,0.3);
+    return;
+  }
+  // ── Serangan sasaran-tunggal ──
+  const tp=targetPositions&&targetPositions[0];
+  if(!tp) return;
+  // Kilat elektrik: sampai serta-merta (zigzag), bukan projektil perlahan.
+  if(sk.action==='magicAttack2'){
+    soloSpawnLightningBolt({x:casterPos.x,z:casterPos.z},{x:tp.x,z:tp.z},color);
+    soloSpawnImpactBurst({x:tp.x,y:1.1,z:tp.z},color,12,2.4);
+    soloCameraShake(0.12,0.14);
+    return;
+  }
+  // Bina rupa kesan serangan ikut JENIS skill sebenar (bukan bebola
+  // generik utk semua) — cth "slash" (tebasan pedang) dpt bentuk bulan
+  // sabit berputar, "archerShot" dpt anak panah, "gunplay"/"shooting"
+  // dpt peluru, "bazuka" dpt roket berasap — semuanya bergerak dari
+  // hero ke arah musuh & memberi impak yang jelas bila terkena.
+  const isSlash=(sk.action==='slash');
+  const boltGrp=new THREE.Group();
+  let spinFn=null;
+  if(isSlash){
+    // Tebasan pedang — bulan sabit bercahaya yg berputar pantas semasa
+    // terbang ke arah musuh (bukan bebola sihir).
+    const arc=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.075,8,16,Math.PI*1.3),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+    boltGrp.add(arc);
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.02,6,16,Math.PI*1.3),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.9}));
+    boltGrp.add(rim);
+    spinFn=function(dtm){ arc.rotation.z+=dtm*26; rim.rotation.z=arc.rotation.z; };
+  } else if(sk.action==='archerShot'){
+    // Anak panah — batang + mata + bulu ekor.
+    const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.03,0.6,6),new THREE.MeshBasicMaterial({color:0xc9a86a}));
+    shaft.rotation.x=Math.PI/2; boltGrp.add(shaft);
+    const head=new THREE.Mesh(new THREE.ConeGeometry(0.055,0.16,6),new THREE.MeshBasicMaterial({color:0xeeeeee}));
+    head.position.z=0.37; head.rotation.x=Math.PI/2; boltGrp.add(head);
+    const fletch=new THREE.Mesh(new THREE.ConeGeometry(0.08,0.14,4),new THREE.MeshBasicMaterial({color:color}));
+    fletch.position.z=-0.32; fletch.rotation.x=-Math.PI/2; boltGrp.add(fletch);
+  } else if(sk.action==='gunplay'||sk.action==='shooting'){
+    // Peluru — badan tirus pantas + mata bernyala.
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.05,0.42,6),new THREE.MeshBasicMaterial({color:0xffe9a8}));
+    body.rotation.x=Math.PI/2; boltGrp.add(body);
+    const tip=new THREE.Mesh(new THREE.ConeGeometry(0.05,0.1,6),new THREE.MeshBasicMaterial({color:color}));
+    tip.position.z=0.26; tip.rotation.x=Math.PI/2; boltGrp.add(tip);
+  } else if(sk.action==='bazuka'){
+    // Roket — badan besar + kepala tajam + gas ekor.
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.13,0.62,8),new THREE.MeshBasicMaterial({color:0x3a3a3a}));
+    body.rotation.x=Math.PI/2; boltGrp.add(body);
+    const nose=new THREE.Mesh(new THREE.ConeGeometry(0.13,0.24,8),new THREE.MeshBasicMaterial({color:color}));
+    nose.position.z=0.43; nose.rotation.x=Math.PI/2; boltGrp.add(nose);
+  } else {
+    // Lalai (sihir/api) — teras terang + glow berdenyut.
+    const core=new THREE.Mesh(new THREE.SphereGeometry(0.12,10,10),new THREE.MeshBasicMaterial({color:0xffffff}));
+    boltGrp.add(core);
+    const glow=new THREE.Mesh(new THREE.SphereGeometry(0.24,10,10),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.55,blending:THREE.AdditiveBlending,depthWrite:false}));
+    boltGrp.add(glow);
+    spinFn=function(dtm,now){ glow.scale.setScalar(1+Math.sin(now*0.03)*0.15); };
+  }
+  boltGrp.position.set(casterPos.x,1.0,casterPos.z);
+  scn.add(boltGrp);
+  const boltLight=new THREE.PointLight(color,2.2,4.5);
+  boltGrp.add(boltLight);
+  const from={x:casterPos.x,z:casterPos.z};
+  const totalDist=Math.max(0.5,Math.hypot(tp.x-from.x,tp.z-from.z));
+  // Tebasan pedang jauh lebih pantas (macam tebasan sebenar) drpd
+  // projektil sihir/peluru/anak panah.
+  const travelSec=isSlash?0.11:0.20;
+  const boltSpeed=totalDist/travelSec;
+  const initialAngle=Math.atan2(tp.x-from.x,tp.z-from.z);
+  const maxHomingDeviation=THREE.MathUtils.degToRad(15);
+  let dirAngle=initialAngle;
+  boltGrp.rotation.y=dirAngle; // hala model (anak panah/peluru/roket/tebasan) ke arah musuh
+  const start=performance.now();
+  let last=start, lastTrail=start;
+  (function tick(){
+    const now=performance.now();
+    const dtm=Math.min(0.05,(now-last)/1000); last=now;
+    const t=(now-start)/(travelSec*1000);
+    if(t>=1.4||!boltGrp.parent){
+      if(boltGrp.parent){
+        soloSpawnImpactBurst({x:boltGrp.position.x,y:boltGrp.position.y,z:boltGrp.position.z},isSlash?0xffffff:color,isSlash?14:10,isSlash?2.6:2.0);
+        soloCameraShake((sk.dmg||1)>=3?0.14:0.08,0.12);
+        playSound('solo_impact');
+        scn.remove(boltGrp);
+      }
+      return;
+    }
+    if(targetEnemy && targetEnemy.mesh && targetEnemy.hp>0){
+      const desiredAngle=Math.atan2(targetEnemy.mesh.position.x-boltGrp.position.x,targetEnemy.mesh.position.z-boltGrp.position.z);
+      let dev=desiredAngle-initialAngle;
+      while(dev>Math.PI) dev-=Math.PI*2;
+      while(dev<-Math.PI) dev+=Math.PI*2;
+      dev=Math.max(-maxHomingDeviation,Math.min(maxHomingDeviation,dev));
+      dirAngle=initialAngle+dev;
+    }
+    boltGrp.position.x+=Math.sin(dirAngle)*boltSpeed*dtm;
+    boltGrp.position.z+=Math.cos(dirAngle)*boltSpeed*dtm;
+    boltGrp.position.y=1.0;
+    boltGrp.rotation.y=dirAngle;
+    if(spinFn) spinFn(dtm,now);
+    // jejak zarah pudar setiap ~28ms sepanjang laluan (kecuali tebasan
+    // pedang — ia dah berputar sendiri, jejak akan nampak berselerak).
+    if(!isSlash && now-lastTrail>28){
+      lastTrail=now;
+      const tp2=new THREE.Mesh(new THREE.SphereGeometry(0.07,5,5),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false}));
+      tp2.position.copy(boltGrp.position);
+      scn.add(tp2);
+      const ts=performance.now();
+      (function ttick(){
+        const tt=(performance.now()-ts)/260;
+        if(tt>=1||!tp2.parent){ if(tp2.parent) scn.remove(tp2); return; }
+        tp2.material.opacity=0.7*(1-tt); tp2.scale.setScalar(1-tt*0.6);
+        requestAnimationFrame(ttick);
+      })();
+    }
+    requestAnimationFrame(tick);
+  })();
+}
+// Baca skin GLB yang sedang di-equip pemain (shop equip system sedia ada).
+function soloEquippedSkin(){
+  try{
+    if(typeof shopLoadData!=='function' || typeof shopGetUsername!=='function') return null;
+    const d=shopLoadData(shopGetUsername());
+    const id=d && d.equipped && d.equipped['glb_skin'];
+    return (id && typeof GLB_SKINS!=='undefined' && GLB_SKINS[id]) ? id : null;
+  }catch(e){ return null; }
+}
+// Jarak 2D (X/Z sahaja) — elak isu jarak "melambung" akibat beza tinggi-Y
+// antara pemain (rig GLB pelbagai tinggi) dgn musuh/portal.
+function soloDist2D(a,b){ const dx=a.x-b.x, dz=a.z-b.z; return Math.hypot(dx,dz); }
+// Pilih sasaran skill terbaik: gabungan jarak paling hampir DAN paling
+// hampir dgn arah kamera semasa (supaya lock-on terasa semula jadi,
+// bukan sekadar musuh paling dekat di belakang hero).
+function soloFindSkillTarget(){
+  if(!soloEnemies.length||!soloPlayer||!soloCamera) return null;
+  const camDir=new THREE.Vector3();
+  soloCamera.getWorldDirection(camDir);
+  const camAngle=Math.atan2(camDir.x,camDir.z);
+  let best=null,bestScore=Infinity;
+  soloEnemies.forEach(function(en){
+    const dx=en.mesh.position.x-soloPlayer.position.x, dz=en.mesh.position.z-soloPlayer.position.z;
+    const dist=Math.hypot(dx,dz);
+    if(dist<0.05) return;
+    const toEnemyAngle=Math.atan2(dx,dz);
+    let diff=toEnemyAngle-camAngle;
+    while(diff>Math.PI) diff-=Math.PI*2;
+    while(diff<-Math.PI) diff+=Math.PI*2;
+    const score=dist*0.65+Math.abs(diff)*3.2;
+    if(score<bestScore){ bestScore=score; best=en; }
+  });
+  return best;
+}
+// Teks terapung ringkas (guna kelas .ftxt sedia ada) utk kesan skill.
+function soloFloatText(txt,color){
+  const el=document.createElement('div');
+  el.className='ftxt'; el.textContent=txt; el.style.color=color||'#fff';
+  el.style.left='50%'; el.style.top='42%'; el.style.transform='translate(-50%,-50%)';
+  document.body.appendChild(el);
+  let y=0;
+  const iv=setInterval(function(){
+    y-=2.4; el.style.transform='translate(-50%, calc(-50% + '+y+'px))'; el.style.opacity=Math.max(0,1-(-y/60));
+    if(y<-60){ clearInterval(iv); el.remove(); }
+  },16);
+}
+
+function soloTowerLoad(){
+  try{ const d=JSON.parse(localStorage.getItem(SOLO_KEY)||'{}'); return d.best||0; }catch(e){ return 0; }
+}
+function soloTowerSaveBest(f){
+  try{ const cur=soloTowerLoad(); if(f>cur) localStorage.setItem(SOLO_KEY,JSON.stringify({best:f})); }catch(e){}
+}
+function soloTowerRank(floor){
+  if(floor<=10) return {name:'E-RANK',color:'#8899aa'};
+  if(floor<=20) return {name:'D-RANK',color:'#4caf50'};
+  if(floor<=30) return {name:'C-RANK',color:'#2196f3'};
+  if(floor<=40) return {name:'B-RANK',color:'#9c27b0'};
+  if(floor<=49) return {name:'A-RANK',color:'#ff9800'};
+  return {name:'MONARCH',color:'#00eaff'};
+}
+function soloTowerMonsterName(floor){
+  const names=['Rat Bayangan','Goblin Gerbang','Serigala Kabus','Labah-labah Gelap','Ksatria Tulang','Iblis Kecil','Naga Muda','Roh Terkutuk','Penunggu Menara','Beast Berlapis Besi'];
+  return names[(floor-1)%names.length];
+}
+// ── Soalan Pukulan Maut — Menara Solo (BERASINGAN drpd Menara Matematik) ──
+// Tingkat 1-10 → Tingkatan 1 (bab 1-10, tingkat N = bab N)
+// Tingkat 11-20 → Tingkatan 2 (bab 1-10, tingkat N = bab N-10)
+// Tingkat 21-30 → Tingkatan 3, 31-40 → Tingkatan 4, 41-50 → Tingkatan 5
+// Guna semula bank soalan genQ_T1..genQ_T5 (sumber soalan sahaja — logik/
+// progress Menara Solo kekal berasingan sepenuhnya drpd Menara Matematik).
+function soloFloorTingkatan(floor){ return Math.min(5,Math.max(1,Math.ceil(floor/10))); }
+function soloFloorBab(floor){ const b=floor%10; return b===0?10:b; }
+function soloGenQuestionForFloor(floor){
+  const bab=soloFloorBab(floor);
+  const t=soloFloorTingkatan(floor);
+  if(t===1) return genQ_T1(bab);
+  if(t===2) return genQ_T2(bab);
+  if(t===3) return genQ_T3(bab);
+  if(t===4) return genQ_T4(bab);
+  return genQ_T5(bab);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── BOSS MENARA — "VOIDMAW, PEMAKAN CAHAYA" ─────────────────────────────
+// Monster asli dibina 100% guna geometri Three.js terbina-dalam (Lathe/
+// Extrude/Shape/Buffer + primitif sebagai blok binaan sahaja — TIADA
+// GLB/FBX/OBJ). Dipanggil sekali setiap gerbang bos (setiap tingkat
+// kelipatan 10). Hierarki bersih (dada/pinggang/kepala/lengan/kaki/ekor
+// sebagai sub-Group berasingan) supaya senang dianimasi kelak.
+// Skala unit: tinggi ~2.4 pada scl=1, kaki di y=0 (root pemain letak
+// group terus di atas lantai — position.y=0).
+// ══════════════════════════════════════════════════════════════════════
+function _bossLatheMesh(profile,mat,segs){
+  const pts=profile.map(function(p){ return new THREE.Vector2(p[0],p[1]); });
+  return new THREE.Mesh(new THREE.LatheGeometry(pts,segs||10),mat);
+}
+// Plat perisai bergaya — bentuk perisai/pentagon lengkung dilanjur nipis.
+function _bossArmorPlate(w,h,mat){
+  const s=new THREE.Shape();
+  s.moveTo(0,h*0.5);
+  s.quadraticCurveTo(w*0.5,h*0.42,w*0.46,-h*0.1);
+  s.quadraticCurveTo(w*0.4,-h*0.5,0,-h*0.62);
+  s.quadraticCurveTo(-w*0.4,-h*0.5,-w*0.46,-h*0.1);
+  s.quadraticCurveTo(-w*0.5,h*0.42,0,h*0.5);
+  const geo=new THREE.ExtrudeGeometry(s,{depth:w*0.14,bevelEnabled:true,bevelThickness:w*0.04,bevelSize:w*0.03,bevelSegments:2,curveSegments:8});
+  geo.translate(0,0,-w*0.07);
+  return new THREE.Mesh(geo,mat);
+}
+// Tanduk melengkung — profil lathe jejari mengecil + condong via susunan
+// kumpulan bertingkat supaya nampak organik, bukan kon lurus semata.
+function _bossHorn(len,baseR,mat,curve){
+  const segs=6;
+  const g=new THREE.Group();
+  let parent=g;
+  for(let i=0;i<segs;i++){
+    const t0=i/segs,t1=(i+1)/segs;
+    const r0=baseR*(1-t0*0.85)+0.006,r1=baseR*(1-t1*0.85)+0.003;
+    const segLen=len/segs;
+    const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r1,r0,segLen,6),mat);
+    mesh.position.y=segLen/2;
+    const holder=new THREE.Group();
+    holder.add(mesh);
+    holder.position.y=i===0?0:segLen;
+    holder.rotation.z=curve||0.16;
+    parent.add(holder);
+    parent=holder;
+  }
+  return g;
+}
+// Cakar besar — tapak tangan (lathe) + kipas kuku (kon hitam).
+function _bossClawHand(scl,clawMat,skinMat){
+  const hand=new THREE.Group();
+  const palm=_bossLatheMesh([[0.02,0],[0.16,0.05],[0.19,0.22],[0.12,0.34],[0.02,0.36]],skinMat,8);
+  palm.scale.set(1,1,0.7);
+  hand.add(palm);
+  const fingerCount=4;
+  for(let i=0;i<fingerCount;i++){
+    const a=(i/(fingerCount-1)-0.5)*1.3;
+    const claw=new THREE.Mesh(new THREE.ConeGeometry(0.045,0.34,5),clawMat);
+    claw.position.set(Math.sin(a)*0.16,0.38+Math.cos(a)*0.05,Math.cos(a)*0.05);
+    claw.rotation.z=-a*0.9; claw.rotation.x=-0.25;
+    hand.add(claw);
+  }
+  const thumb=new THREE.Mesh(new THREE.ConeGeometry(0.05,0.26,5),clawMat);
+  thumb.position.set(-0.2,0.08,0.05); thumb.rotation.z=1.3;
+  hand.add(thumb);
+  hand.scale.setScalar(scl);
+  return hand;
+}
+function soloBuildBossMonster(scl){
+  const root=new THREE.Group();
+  root.scale.setScalar(scl||1);
+
+  const skinMat=new THREE.MeshLambertMaterial({color:0x1c1420,emissive:0x220a2e,emissiveIntensity:0.35});
+  const armorMat=new THREE.MeshLambertMaterial({color:0x2a1c38,emissive:0x3a0a4a,emissiveIntensity:0.4});
+  const clawMat=new THREE.MeshLambertMaterial({color:0x090608,emissive:0x000000});
+  const hornMat=new THREE.MeshLambertMaterial({color:0x120a18,emissive:0x1a0522,emissiveIntensity:0.25});
+  const crystalMat=new THREE.MeshLambertMaterial({color:0x66eaff,emissive:0x33d0ff,emissiveIntensity:1.1,transparent:true,opacity:0.92});
+  const eyeMat=new THREE.MeshBasicMaterial({color:0xff8811});
+  const energyMat=new THREE.MeshBasicMaterial({color:0xaa44ff,transparent:true,opacity:0.55,blending:THREE.AdditiveBlending,depthWrite:false});
+
+  // ── outline murah: klon geometri diskala besar sikit, BackSide, hitam ──
+  function withOutline(mesh,amt){
+    const out=new THREE.Mesh(mesh.geometry,new THREE.MeshBasicMaterial({color:0x000000,side:THREE.BackSide}));
+    out.scale.setScalar(1+(amt||0.06));
+    mesh.add(out);
+    return mesh;
+  }
+
+  // ── KAKI (paha + betis meruncing, tapak besar berkuku) ──
+  const legs=new THREE.Group();
+  [-0.3,0.3].forEach(function(sx){
+    const leg=new THREE.Group();
+    const thigh=_bossLatheMesh([[0.24,0],[0.30,0.05],[0.26,0.32],[0.18,0.46]],skinMat,8);
+    thigh.position.y=0.02; leg.add(thigh);
+    const shin=_bossLatheMesh([[0.16,0],[0.19,0.06],[0.13,0.34],[0.09,0.42]],skinMat,8);
+    shin.position.y=0.46; leg.add(shin);
+    const foot=new THREE.Mesh(new THREE.BoxGeometry(0.24,0.14,0.4),armorMat);
+    foot.position.set(0,0.06,0.1); leg.add(foot);
+    for(let i=0;i<3;i++){
+      const c=new THREE.Mesh(new THREE.ConeGeometry(0.035,0.2,5),clawMat);
+      c.position.set(-0.08+i*0.08,0.02,0.32); c.rotation.x=1.35;
+      leg.add(c);
+    }
+    const kneePlate=_bossArmorPlate(0.22,0.24,armorMat);
+    kneePlate.position.set(0,0.42,0.14); kneePlate.rotation.x=-0.3;
+    leg.add(withOutline(kneePlate,0.05));
+    leg.position.set(sx,0,0);
+    legs.add(leg);
+  });
+  root.add(legs);
+
+  // ── PINGGANG / DADA (lathe — dada besar, pinggang kecil, bahu lebar) ──
+  const torsoProfile=[
+    [0.30,0.00],[0.36,0.10],[0.22,0.30],[0.28,0.46],
+    [0.50,0.68],[0.44,0.86],[0.20,0.96]
+  ];
+  const torso=_bossLatheMesh(torsoProfile,skinMat,12);
+  torso.position.y=0.92;
+  root.add(withOutline(torso,0.05));
+
+  const chestPlate=_bossArmorPlate(0.56,0.58,armorMat);
+  chestPlate.position.set(0,1.42,0.22); chestPlate.rotation.x=-0.12;
+  root.add(withOutline(chestPlate,0.04));
+
+  // kristal tenaga tertanam di dada — sumber kuasa boss
+  const coreCrystal=new THREE.Mesh(new THREE.OctahedronGeometry(0.14,0),crystalMat);
+  coreCrystal.position.set(0,1.42,0.34);
+  root.add(coreCrystal);
+  const coreLight=new THREE.PointLight(0x66eaff,1.4,4);
+  coreLight.position.copy(coreCrystal.position);
+  root.add(coreLight);
+
+  // pauldron bahu (kiri/kanan)
+  const shoulders=[];
+  [-0.5,0.5].forEach(function(sx){
+    const p=_bossArmorPlate(0.34,0.4,armorMat);
+    p.position.set(sx,1.72,0.02);
+    p.rotation.z=sx<0?0.35:-0.35;
+    root.add(withOutline(p,0.05));
+    // duri di atas pauldron
+    const spike=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.26,5),hornMat);
+    spike.position.set(sx*1.05,1.98,0.0); spike.rotation.z=sx<0?0.3:-0.3;
+    root.add(spike);
+    shoulders.push(sx);
+  });
+
+  // ── LENGAN — panjang, berotot, tangan besar berkuku (menggantung) ──
+  const arms=new THREE.Group();
+  [-0.56,0.56].forEach(function(sx){
+    const arm=new THREE.Group();
+    const upper=_bossLatheMesh([[0.13,0],[0.16,0.05],[0.135,0.32],[0.10,0.4]],skinMat,8);
+    upper.rotation.z=sx<0?0.18:-0.18;
+    arm.add(upper);
+    const fore=_bossLatheMesh([[0.10,0],[0.115,0.05],[0.09,0.3],[0.075,0.38]],skinMat,8);
+    fore.position.set(sx<0?-0.05:0.05,0.4,0.02);
+    fore.rotation.z=sx<0?0.08:-0.08;
+    arm.add(fore);
+    const hand=_bossClawHand(1.15,clawMat,armorMat);
+    hand.position.set(sx<0?-0.08:0.08,0.78,0.04);
+    hand.rotation.x=-0.15;
+    arm.add(hand);
+    // gelang tenaga di pergelangan — kesan magis ungu
+    const cuff=new THREE.Mesh(new THREE.TorusGeometry(0.1,0.02,6,12),energyMat);
+    cuff.position.set(0,0.74,0.02); cuff.rotation.x=Math.PI/2;
+    arm.add(cuff);
+    arm.position.set(sx,1.66,0.02);
+    arms.add(arm);
+  });
+  root.add(arms);
+
+  // ── KEPALA — tengkorak angular, rahang, tanduk besar+kecil, mata jingga ──
+  const head=new THREE.Group();
+  const skull=new THREE.Mesh(new THREE.DodecahedronGeometry(0.26,0),skinMat);
+  skull.scale.set(1.05,0.92,1.2);
+  head.add(withOutline(skull,0.06));
+  const jaw=_bossArmorPlate(0.24,0.22,skinMat);
+  jaw.position.set(0,-0.2,0.14); jaw.rotation.x=0.5;
+  head.add(jaw);
+  // tanduk besar (kiri/kanan, melengkung ke belakang) + tanduk kecil dahi
+  [-1,1].forEach(function(dir){
+    const horn=_bossHorn(0.62,0.075,hornMat,0.22);
+    horn.position.set(dir*0.16,0.14,-0.12);
+    horn.rotation.set(-0.35,0,dir*0.5);
+    head.add(horn);
+    const brow=new THREE.Mesh(new THREE.ConeGeometry(0.03,0.14,5),hornMat);
+    brow.position.set(dir*0.13,0.24,0.16); brow.rotation.x=-1.0; brow.rotation.z=dir*0.3;
+    head.add(brow);
+  });
+  // mata bersinar jingga + cahaya titik
+  [-1,1].forEach(function(dir){
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(0.045,8,8),eyeMat);
+    eye.position.set(dir*0.12,0.02,0.22);
+    head.add(eye);
+  });
+  const eyeGlow=new THREE.PointLight(0xff8811,1.1,3);
+  eyeGlow.position.set(0,0.02,0.3);
+  head.add(eyeGlow);
+  head.position.set(0,2.02,0.06);
+  root.add(head);
+
+  // ── EKOR — rantaian segmen meruncing melengkung, hujung berduri ──
+  const tailSegs=7;
+  let tailParent=root; let tailBase={x:0,y:0.95,z:-0.34};
+  const tailRefs=[];
+  for(let i=0;i<tailSegs;i++){
+    const t=i/tailSegs;
+    const r0=0.14*(1-t*0.85), r1=0.14*(1-(t+1/tailSegs)*0.85);
+    const segLen=0.26;
+    const seg=new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.02,r1),Math.max(0.03,r0),segLen,7),skinMat);
+    seg.position.y=segLen/2;
+    const holder=new THREE.Group();
+    holder.add(seg);
+    if(i===0){ holder.position.set(tailBase.x,tailBase.y,tailBase.z); holder.rotation.x=1.9; }
+    else { holder.position.y=segLen; holder.rotation.x=0.16; }
+    tailParent.add(holder);
+    tailParent=holder;
+    tailRefs.push(holder);
+  }
+  const tailSpike=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.3,6),hornMat);
+  tailSpike.position.y=0.3; tailSpike.rotation.x=Math.PI;
+  tailParent.add(tailSpike);
+
+  // ── KEPINGAN BATU TERAPUNG + kristal orbit (dekorasi magis di sekeliling) ──
+  const floaters=[];
+  for(let i=0;i<5;i++){
+    const isCrystal=i%2===0;
+    const geo=isCrystal?new THREE.OctahedronGeometry(0.08+Math.random()*0.05,0):new THREE.DodecahedronGeometry(0.09+Math.random()*0.06,0);
+    const m=new THREE.Mesh(geo,isCrystal?crystalMat:armorMat);
+    const ang=(i/5)*Math.PI*2;
+    const rad=0.85+Math.random()*0.25;
+    m.userData._orbit={ang:ang,rad:rad,ySpeed:0.6+Math.random()*0.5,yBase:1.1+Math.random()*0.9,spinSpeed:0.8+Math.random()*0.8};
+    m.position.set(Math.cos(ang)*rad,m.userData._orbit.yBase,Math.sin(ang)*rad);
+    root.add(m);
+    floaters.push(m);
+  }
+
+  // ── cincin tenaga ungu berpusar di kaki (Points — murah, 1 draw call) ──
+  const ringN=36;
+  const ringPos=new Float32Array(ringN*3);
+  for(let i=0;i<ringN;i++){
+    const a=(i/ringN)*Math.PI*2, r=0.7+Math.sin(a*3)*0.06;
+    ringPos[i*3]=Math.cos(a)*r; ringPos[i*3+1]=0.04+Math.sin(a*5)*0.03; ringPos[i*3+2]=Math.sin(a)*r;
+  }
+  const ringGeo=new THREE.BufferGeometry();
+  ringGeo.setAttribute('position',new THREE.BufferAttribute(ringPos,3));
+  const ringPts=new THREE.Points(ringGeo,new THREE.PointsMaterial({color:0xaa44ff,size:0.06,transparent:true,opacity:0.85,blending:THREE.AdditiveBlending,depthWrite:false}));
+  root.add(ringPts);
+
+  root._isBoss=true;
+  root._floaters=floaters;
+  root._tailRefs=tailRefs;
+  root._ringPts=ringPts;
+  root._coreCrystal=coreCrystal;
+  root._eyeGlow=eyeGlow;
+  root._t=0;
+  root._walkPhase=0;
+  const _bossLegs=legs.children, _bossArms=arms.children, _bossTorsoY=torso.position.y;
+  // Dikemaskini setiap frame dari soloLoop — kristal terapung naik-turun &
+  // berputar, ekor bergoyang lembut, cincin tenaga berpusar, mata berdenyut,
+  // DAN kini kaki/lengan turut berayun ikut pergerakan sebenar (moveAmt)
+  // + badan naik-turun ringan supaya boss nampak benar2 "hidup"/rigged,
+  // bukan sekadar hiasan terapung yang bergerak sendirian.
+  root._animUpdate=function(dt,moveAmt){
+    moveAmt=moveAmt||0;
+    root._t+=dt;
+    root._walkPhase+=dt*(2.2+moveAmt*3.2);
+    floaters.forEach(function(f){
+      const o=f.userData._orbit;
+      o.ang+=dt*0.35;
+      f.position.x=Math.cos(o.ang)*o.rad;
+      f.position.z=Math.sin(o.ang)*o.rad;
+      f.position.y=o.yBase+Math.sin(root._t*o.ySpeed)*0.12;
+      f.rotation.y+=dt*o.spinSpeed; f.rotation.x+=dt*o.spinSpeed*0.6;
+    });
+    tailRefs.forEach(function(seg,i){
+      seg.rotation.y=Math.sin(root._t*1.4+i*0.5)*0.22;
+    });
+    ringPts.rotation.y+=dt*0.5;
+    const pulse=0.9+Math.sin(root._t*3.2)*0.35;
+    eyeGlow.intensity=1.1*pulse;
+    coreCrystal.scale.setScalar(1+Math.sin(root._t*2.6)*0.08);
+    coreLight.intensity=1.4*(0.85+Math.sin(root._t*2.6)*0.25);
+    // Kaki melangkah (silih berganti) + lengan berayun lawan-arah,
+    // intensiti ikut moveAmt; bila diam — ayunan lembut sahaja (nafas).
+    _bossLegs.forEach(function(leg,i){
+      const ph=root._walkPhase+i*Math.PI;
+      leg.rotation.x = moveAmt>0.05 ? Math.sin(ph)*0.32*moveAmt : Math.sin(root._t*1.2+i*1.4)*0.03;
+    });
+    _bossArms.forEach(function(arm,i){
+      const ph=root._walkPhase+i*Math.PI;
+      arm.rotation.x = moveAmt>0.05 ? -Math.sin(ph)*0.26*moveAmt : Math.sin(root._t*1.1+i*1.1)*0.05;
+    });
+    torso.position.y=_bossTorsoY+Math.abs(Math.sin(root._walkPhase))*0.03*moveAmt+Math.sin(root._t*1.6)*0.01;
+  };
+  return root;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ── MONSTER TINGKAT BIASA — "SHADEFANG" ─────────────────────────────────
+// Rakan seiring bos: setiap tingkat (bukan sahaja gerbang bos) kini juga
+// guna monster asli 100% Three.js (Lathe untuk badan memanjang berjongkok
+// + primitif sebagai blok binaan — tanduk, duri, ekor, cakar). Warna
+// ditentukan oleh biome semasa (soloBiome) supaya rupa berubah setiap 10
+// tingkat walau bentuk asas sama. Sengaja ringan (poligon rendah, tiada
+// ExtrudeGeometry berat) kerana sehingga 6 ekor boleh wujud serentak.
+// ══════════════════════════════════════════════════════════════════════
+function soloBuildMinionMonster(scl,bio){
+  const root=new THREE.Group();
+  root.scale.setScalar(scl||1);
+  const skinColor=(bio&&bio.prop!==undefined)?bio.prop:0x3a1a4a;
+  const glowColor=(bio&&bio.glow!==undefined)?bio.glow:0x9922cc;
+  const skinMat=new THREE.MeshLambertMaterial({color:skinColor,emissive:glowColor,emissiveIntensity:0.28});
+  const hornMat=new THREE.MeshLambertMaterial({color:0x0a0a0c});
+  const eyeMat=new THREE.MeshBasicMaterial({color:glowColor});
+
+  // badan — Lathe diputar mendatar supaya jadi rangka memanjang berjongkok
+  // (bukan torso menegak macam manusia) — nampak seperti raksasa berkaki 4.
+  const body=_bossLatheMesh([[0.05,0],[0.15,0.16],[0.17,0.42],[0.13,0.66],[0.06,0.86]],skinMat,8);
+  body.rotation.z=Math.PI/2;
+  body.position.set(-0.1,0.42,0);
+  root.add(body);
+
+  // kepala — hujung depan badan: rahang, tanduk kecil, mata bersinar
+  const head=new THREE.Group();
+  const skull=new THREE.Mesh(new THREE.ConeGeometry(0.14,0.32,6),skinMat);
+  skull.rotation.z=-Math.PI/2; head.add(skull);
+  const jaw=new THREE.Mesh(new THREE.ConeGeometry(0.08,0.18,5),skinMat);
+  jaw.rotation.z=-Math.PI/2; jaw.position.set(-0.05,-0.06,0); head.add(jaw);
+  [-1,1].forEach(function(dir){
+    const horn=new THREE.Mesh(new THREE.ConeGeometry(0.03,0.22,5),hornMat);
+    horn.position.set(0.06,0.08,dir*0.06); horn.rotation.z=-0.6; horn.rotation.x=dir*0.3;
+    head.add(horn);
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(0.025,6,6),eyeMat);
+    eye.position.set(0.13,0.02,dir*0.07);
+    head.add(eye);
+  });
+  head.position.set(0.42,0.58,0);
+  root.add(head);
+  const headLight=new THREE.PointLight(glowColor,0.6,2.5);
+  headLight.position.set(0.5,0.6,0);
+  root.add(headLight);
+
+  // duri sepanjang tulang belakang
+  for(let i=0;i<4;i++){
+    const t=i/3;
+    const spike=new THREE.Mesh(new THREE.ConeGeometry(0.035,0.16,5),hornMat);
+    spike.position.set(0.3-t*0.55,0.62-t*0.1,0);
+    spike.rotation.z=-0.5+t*0.3;
+    root.add(spike);
+  }
+
+  // 4 kaki pendek berkuku (kambing/serigala bayang)
+  const legRefs=[];
+  [[0.28,0.14],[0.28,-0.14],[-0.22,0.13],[-0.22,-0.13]].forEach(function(p){
+    const legGrp=new THREE.Group();
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.06,0.4,6),skinMat);
+    leg.position.y=-0.2; legGrp.add(leg);
+    const claw=new THREE.Mesh(new THREE.ConeGeometry(0.04,0.14,5),hornMat);
+    claw.position.set(0,-0.42,0.05); claw.rotation.x=1.4;
+    legGrp.add(claw);
+    legGrp.position.set(p[0],0.42,p[1]);
+    root.add(legGrp);
+    legRefs.push(legGrp);
+  });
+
+  // ekor — rantaian pendek meruncing, hujung bebas
+  let tailParent=root;
+  const tailRefs=[];
+  for(let i=0;i<4;i++){
+    const segLen=0.18;
+    const r0=0.05*(1-i/5),r1=0.05*(1-(i+1)/5);
+    const seg=new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.012,r1),Math.max(0.02,r0),segLen,6),skinMat);
+    seg.rotation.z=Math.PI/2; seg.position.x=segLen/2;
+    const holder=new THREE.Group();
+    holder.add(seg);
+    if(i===0){ holder.position.set(-0.5,0.46,0); holder.rotation.y=0.1; }
+    else { holder.position.x=segLen; holder.rotation.y=0.14; }
+    tailParent.add(holder);
+    tailParent=holder;
+    tailRefs.push(holder);
+  }
+
+  root._isBoss=false;
+  root._t=0;
+  root._walkPhase=0;
+  // Animasi ikut pergerakan sebenar (moveAmt 0..1 drpd soloLoop): bila
+  // diam — nafas lembut sahaja; bila berjalan/berlari — kaki berayun
+  // penuh macam kitaran jalan sebenar (bukan sentiasa menggeletar sama
+  // ada bergerak atau tidak), ekor turut lebih aktif ikut kelajuan.
+  root._animUpdate=function(dt,moveAmt){
+    moveAmt=moveAmt||0;
+    root._t+=dt;
+    root._walkPhase+=dt*(4+moveAmt*7);
+    tailRefs.forEach(function(seg,i){ seg.rotation.z=Math.sin(root._t*(2+moveAmt*2)+i*0.6)*(0.15+moveAmt*0.25); });
+    body.position.y=0.42+Math.sin(root._t*4)*0.012+Math.abs(Math.sin(root._walkPhase))*0.02*moveAmt;
+    legRefs.forEach(function(l,i){
+      const legPhase=root._walkPhase+i*(Math.PI/2)*(i%2===0?1:-1);
+      const idleSway=Math.sin(root._t*2+i*1.5)*0.04;
+      l.rotation.x=moveAmt>0.05 ? Math.sin(legPhase)*0.55*moveAmt : idleSway;
+    });
+    head.rotation.z=Math.sin(root._t*3)*0.03;
+  };
+  return root;
+}
+
+// ── Setup renderer/scene sekali sahaja ──
+function soloEnsureEngine(){
+  if(soloRenderer) return;
+  const cv=document.getElementById('soloCanvas');
+  soloRenderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+  soloRenderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  soloRenderer.setSize(window.innerWidth,window.innerHeight);
+  soloCamera=new THREE.PerspectiveCamera(62,window.innerWidth/window.innerHeight,0.1,300);
+  soloClock=new THREE.Clock();
+  window.addEventListener('resize',()=>{
+    if(!soloRenderer) return;
+    soloRenderer.setSize(window.innerWidth,window.innerHeight);
+    soloCamera.aspect=window.innerWidth/window.innerHeight;
+    soloCamera.updateProjectionMatrix();
+  });
+  // keyboard
+  document.addEventListener('keydown',e=>{ if(soloTower.running) soloKeysDown[e.key.toLowerCase()]=true; if(soloTower.running&&e.key===' ') soloUseSkill(0); if(soloTower.running&&(e.key==='1'||e.key==='2'||e.key==='3'||e.key==='4')) soloUseSkill(Number(e.key)-1); });
+  document.addEventListener('keyup',e=>{ soloKeysDown[e.key.toLowerCase()]=false; });
+}
+
+function soloClearWorld(){
+  if(!soloScene) return;
+  while(soloScene.children.length) soloScene.remove(soloScene.children[0]);
+  soloEnemies=[]; soloPortalMesh=null; soloOccluders=[];
+}
+
+// ── Bina dunia terbuka untuk 1 tingkat ──
+function soloBuildFloor(floor){
+ try{
+  const bio=soloBiome(floor);
+  soloScene=new THREE.Scene();
+  soloScene.background=new THREE.Color(bio.sky);
+  soloScene.fog=new THREE.Fog(bio.fog,20,90);
+
+  const amb=new THREE.AmbientLight(0xffffff,0.65); soloScene.add(amb);
+  const sun=new THREE.DirectionalLight(0xffffff,0.9); sun.position.set(20,30,10); soloScene.add(sun);
+
+  soloOccluders=[];
+  const ARENA_R=34; // dibesarkan sikit drpd 26 supaya ruang dungeon terasa lebih luas
+  soloArenaR=ARENA_R;
+  // Lantai berlapis (bukan sekadar bulatan rata): cincin luar batu gelap
+  // + platform utama sedikit terangkat + gelang pinggir bercahaya +
+  // corak cincin konsentrik & rune tengah, supaya nampak seni bina
+  // dungeon sebenar.
+  const outerRing=new THREE.Mesh(new THREE.RingGeometry(ARENA_R*0.7,ARENA_R,48),new THREE.MeshLambertMaterial({color:0x1a1a22}));
+  outerRing.rotation.x=-Math.PI/2; outerRing.position.y=-0.02; soloScene.add(outerRing);
+  soloGround=new THREE.Mesh(new THREE.CylinderGeometry(ARENA_R*0.72,ARENA_R*0.76,0.22,48),new THREE.MeshLambertMaterial({color:bio.ground}));
+  soloGround.position.y=0.1; soloScene.add(soloGround);
+  const edgeGlow=new THREE.Mesh(new THREE.TorusGeometry(ARENA_R*0.74,0.13,8,48),new THREE.MeshBasicMaterial({color:bio.glow,transparent:true,opacity:0.65}));
+  edgeGlow.rotation.x=Math.PI/2; edgeGlow.position.y=0.22; soloScene.add(edgeGlow);
+  for(let ci=1;ci<=3;ci++){
+    const cr=ARENA_R*0.72*(ci/4);
+    const crack=new THREE.Mesh(new THREE.RingGeometry(cr-0.05,cr+0.05,48),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.16,side:THREE.DoubleSide}));
+    crack.rotation.x=-Math.PI/2; crack.position.y=0.21; soloScene.add(crack);
+  }
+  const runeRing=new THREE.Mesh(new THREE.RingGeometry(2.1,2.5,6),new THREE.MeshBasicMaterial({color:bio.glow,transparent:true,opacity:0.5,side:THREE.DoubleSide}));
+  runeRing.rotation.x=-Math.PI/2; runeRing.position.y=0.22; soloScene.add(runeRing);
+
+  // sempadan dunia (dinding kabus rendah)
+  const wallMat=new THREE.MeshBasicMaterial({color:bio.glow,transparent:true,opacity:0.18,side:THREE.DoubleSide});
+  const wall=new THREE.Mesh(new THREE.CylinderGeometry(ARENA_R,ARENA_R,6,40,1,true),wallMat);
+  wall.position.y=3; soloScene.add(wall);
+
+  // Tiang batu di sekeliling arena (seni bina menara) + beberapa torch
+  // bercahaya utk suasana dungeon yang lebih berkualiti.
+  const pillarCount=10;
+  for(let pi=0;pi<pillarCount;pi++){
+    const pAng=(pi/pillarCount)*Math.PI*2;
+    const pr=ARENA_R*0.9;
+    const px=Math.cos(pAng)*pr, pz=Math.sin(pAng)*pr;
+    const pillar=new THREE.Group();
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.7,4.6,10),new THREE.MeshLambertMaterial({color:0x33323c}));
+    trunk.position.y=2.3; pillar.add(trunk);
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(0.95,0.75,0.5,10),new THREE.MeshLambertMaterial({color:0x3c3b46}));
+    cap.position.y=4.85; pillar.add(cap);
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(0.85,0.95,0.4,10),new THREE.MeshLambertMaterial({color:0x2b2a33}));
+    base.position.y=0.2; pillar.add(base);
+    const orb=new THREE.Mesh(new THREE.SphereGeometry(0.22,10,10),new THREE.MeshBasicMaterial({color:bio.glow}));
+    orb.position.y=5.25; pillar.add(orb);
+    pillar.position.set(px,0,pz);
+    soloScene.add(pillar);
+    soloOccluders.push(trunk); // batang tiang boleh halang pandangan kamera
+    if(pi%3===0){
+      const torch=new THREE.PointLight(bio.glow,1.1,9);
+      torch.position.set(px,5.25,pz);
+      soloScene.add(torch);
+    }
+  }
+
+  // props hiasan bertaburan (batu/pokok simbolik ikut biome)
+  for(let i=0;i<16;i++){
+    const ang=Math.random()*Math.PI*2, r=8+Math.random()*(ARENA_R-10);
+    const px=Math.cos(ang)*r, pz=Math.sin(ang)*r;
+    const propH=0.8+Math.random()*2.2;
+    const prop=new THREE.Mesh(new THREE.ConeGeometry(0.6+Math.random()*0.6,propH,6),new THREE.MeshLambertMaterial({color:bio.prop}));
+    prop.position.set(px,propH/2,pz); soloScene.add(prop);
+    soloOccluders.push(prop); // objek hiasan boleh halang pandangan kamera ke hero/monster
+  }
+
+  // pemain — Group supaya boleh terima skin GLB (glbApplySkin) di atas
+  // rig kapsul asal (fallback bila tiada skin di-equip / gagal load).
+  // DIKONGSI/KEKAL antara tingkat (bukan dicipta semula setiap naik
+  // tingkat) — kalau tak, skin GLB akan dimuat & disediakan berulang kali
+  // dan mixer lama akan "bocor" (terus dikemaskini walau dah tak dipakai).
+  if(!soloPlayer){
+    const pGeo=(typeof THREE.CapsuleGeometry==='function')?new THREE.CapsuleGeometry(0.5,1.1,4,8):new THREE.CylinderGeometry(0.5,0.5,2,10);
+    soloPlayer=new THREE.Group();
+    const fallbackMesh=new THREE.Mesh(pGeo,new THREE.MeshLambertMaterial({color:0x00eaff,emissive:0x0055aa,emissiveIntensity:0.5}));
+    fallbackMesh.position.set(0,1.1,0);
+    soloPlayer.add(fallbackMesh);
+    soloPlayer._fallbackMesh=fallbackMesh;
+    const pLight=new THREE.PointLight(0x00eaff,1.2,10); pLight.position.set(0,2,0); soloPlayer.add(pLight);
+    // Senjata ikut kelas — dilekat pada group pemain (kelihatan sama ada
+    // rig kapsul fallback atau model GLB dipakai), diposisi macam dipegang
+    // di tangan kanan sedikit ke depan.
+    const weaponGrp=soloBuildWeapon(soloPlayerSkinId);
+    weaponGrp.position.set(0.5,0.85,0.22);
+    weaponGrp.rotation.set(0,0,-0.3);
+    soloPlayer.add(weaponGrp);
+    soloPlayer._weaponMesh=weaponGrp;
+    weaponGrp._boundModel=null; // belum melekat pada tulang — soloSyncWeaponBone uruskan setiap frame
+    if(soloPlayerSkinId && typeof glbApplySkin==='function'){
+      glbApplySkin(soloPlayer, soloPlayerSkinId, function(){
+        // Skin GLB siap dimuat — sorok rig kapsul fallback supaya tak
+        // bertindih dgn model GLB.
+        if(soloPlayer && soloPlayer._fallbackMesh) soloPlayer._fallbackMesh.visible=false;
+      });
+    }
+  }
+  soloPlayer.position.set(0,0,0);
+  soloPlayer.rotation.set(0,0,0);
+  soloScene.add(soloPlayer);
+
+  // monster
+  const boss=(floor%10===0);
+  // Lebih ramai monster tingkat biasa (drpd 2–6 kepada 4–10) supaya
+  // menara terasa lebih hidup & mencabar.
+  const count=boss?1:Math.min(4+Math.floor(floor/6),10);
+  // Monster tingkat biasa kini sekurang-kurangnya sebesar hero (skala
+  // dinaikkan drpd 1.0–1.6 kepada 2.6–3.3) — bos juga sedikit lebih
+  // besar drpd sebelum ini. HP turut dinaikkan supaya monster tidak
+  // tumpas dalam sekelip mata.
+  const baseHp=boss?(6+Math.floor(floor/6)):(3+Math.floor(floor/10));
+  for(let i=0;i<count;i++){
+    const ang=(i/count)*Math.PI*2+Math.random()*0.6;
+    const r=18+Math.random()*11;
+    const ex=Math.cos(ang)*r, ez=Math.sin(ang)*r;
+    const scl=boss?2.4:2.6+Math.min(0.7,floor/140);
+    let mesh,eLight;
+    if(boss){
+      // Boss gerbang — model prosedural asli "Voidmaw" (Three.js tulen).
+      mesh=soloBuildBossMonster(scl);
+      mesh.position.set(ex,0,ez);
+      eLight=new THREE.PointLight(0xff2244,0.9,7);
+      eLight.position.y=1.8*scl;
+      mesh.add(eLight);
+    } else {
+      // Monster tingkat biasa — model prosedural asli "Shadefang", warna
+      // ikut biome semasa supaya berubah setiap 10 tingkat.
+      mesh=soloBuildMinionMonster(scl,bio);
+      mesh.position.set(ex,0,ez);
+      eLight=new THREE.PointLight(bio.glow,0.7,6);
+      eLight.position.y=0.55*scl;
+      mesh.add(eLight);
+    }
+    soloScene.add(mesh);
+    // Penanda "outline" — kekal tersembunyi secara normal, hanya
+    // dipaparkan (depthTest:false supaya tembus objek) bila pandangan
+    // kamera ke monster ini terhalang oleh hiasan/objek lain.
+    const marker=new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.17,0),
+      new THREE.MeshBasicMaterial({color:boss?0xff3355:0xffee33,transparent:true,opacity:0.95,depthTest:false,depthWrite:false})
+    );
+    marker.position.set(0,((boss?2.6:1.7)*scl+0.5)/scl,0);
+    marker.renderOrder=999;
+    marker.visible=false;
+    mesh.add(marker);
+    // Jarak serangan — monster BERHENTI di jarak ini dan menyerang dari
+    // situ (jangan sentuh tubuh hero). Monster lebih besar (scl tinggi)
+    // diberi jarak berhenti lebih jauh supaya nampak logik dgn saiznya.
+    const atkRange=boss?(3.2+scl*0.5):(1.8+scl*0.62);
+    // Kawasan spawn/patrol — monster berlegar dekat titik asal
+    // (spawnX/spawnZ) dlm radius patrolR bila hero jauh; hanya mengejar
+    // (chase) bila hero masuk aggroRange, & undur balik (return) ke
+    // kawasan asal jika ditarik terlalu jauh drpd leashRange.
+    const en={
+      mesh,hp:baseHp,hpMax:baseHp,scl,
+      speed:boss?1.6:2.2+Math.random()*0.6,
+      atkCd:0,marker,atkRange,windup:0,windupMax:boss?0.55:0.4,isBoss:boss,
+      spawnX:ex,spawnZ:ez,
+      patrolR:boss?2.2:3+Math.random()*3,
+      aggroRange:boss?15:9+scl*1.3,
+      leashRange:boss?22:13+scl*2.2,
+      state:'patrol',
+      wanderX:ex,wanderZ:ez,wanderT:0
+    };
+    en.hpBar=soloCreateHpBar();
+    soloScene.add(en.hpBar);
+    soloUpdateEnemyHpBar(en);
+    soloEnemies.push(en);
+  }
+
+  // portal seterusnya (tersembunyi sehingga semua monster tumpas)
+  const portalRing=new THREE.Mesh(new THREE.TorusGeometry(1.6,0.18,10,32),new THREE.MeshBasicMaterial({color:bio.glow,transparent:true,opacity:0.95}));
+  portalRing.position.set(0,1.6,-ARENA_R+3);
+  portalRing.visible=false;
+  soloScene.add(portalRing);
+  soloPortalMesh=portalRing;
+
+  soloCamera.position.set(0,5,7);
+  soloTower.invuln=0.6;
+  soloRenderHud(floor,bio,boss);
+ }catch(err){
+   console.error('soloBuildFloor error:',err);
+ }
+}
+
+function soloRenderHud(floor,bio,boss){
+  const r=soloTowerRank(floor);
+  const fl=document.getElementById('soloFloorLabel'); if(fl) fl.textContent='TINGKAT '+floor+' / '+SOLO_MAX_FLOOR+' — '+bio.name;
+  const rk=document.getElementById('soloRankLabel'); if(rk){ rk.textContent=r.name+(boss?' · GERBANG BOS':''); rk.style.color=r.color; }
+  const bl=document.getElementById('soloBestLabel'); if(bl) bl.textContent='TERBAIK: '+Math.max(soloTower.best,floor-1);
+  const mn=document.getElementById('soloMonsterName'); if(mn) mn.textContent=(boss?'👑 BOS: ':'')+soloTowerMonsterName(floor);
+  soloUpdateHpHud();
+}
+function soloUpdateHpHud(){
+  const hpEl=document.getElementById('soloPlayerHp');
+  if(hpEl) hpEl.textContent='❤️'.repeat(Math.max(0,soloTower.hp))+'🖤'.repeat(Math.max(0,soloTower.hpMax-soloTower.hp));
+  const left=document.getElementById('soloEnemiesLeft');
+  if(left) left.textContent='Musuh baki: '+soloEnemies.length;
+}
+
+// Mainkan skill di slot idx (0-3) ikut skillset hero semasa. Uruskan
+// cooldown, animasi (glbPlayAction guna fail skill/*.fbx jika skin GLB
+// dipasang; fallback pulse kapsul jika tidak), dan kesan permainan.
+function soloUseSkill(idx){
+  if(!soloTower.running) return;
+  if(soloTower.quizActive) return;
+  const skillset=soloCurrentSkillset||soloGetSkillSet(soloPlayerSkinId);
+  const sk=skillset[idx];
+  if(!sk) return;
+  if((soloSkillCooldowns[idx]||0)>0) return;
+  soloSkillCooldowns[idx]=sk.cd;
+  playSound(soloSkillFXSound(sk));
+  // Cari monster paling sesuai (paling hampir / paling hampir dgn arah
+  // kamera) dan pusingkan hero menghadapnya dgn cepat (0.1–0.2s) sebelum
+  // animasi serangan dimainkan, supaya serangan sentiasa kena sasaran.
+  const soloSkillTgt=soloFindSkillTarget();
+  soloTower._skillTarget=soloSkillTgt||null;
+  if(soloSkillTgt){
+    const dx=soloSkillTgt.mesh.position.x-soloPlayer.position.x, dz=soloSkillTgt.mesh.position.z-soloPlayer.position.z;
+    const targetAngle=Math.atan2(dx,dz);
+    const from=soloPlayer.rotation.y;
+    let diff=targetAngle-from;
+    while(diff>Math.PI) diff-=Math.PI*2;
+    while(diff<-Math.PI) diff+=Math.PI*2;
+    const turnDur=0.1+Math.random()*0.1; // 0.1–0.2 saat
+    soloPlayer._turn={active:true,from:from,diff:diff,t:0,duration:turnDur};
+    soloPlayer._lockUntil=performance.now()+turnDur*1000;
+  }
+  // Cuba mainkan animasi skill sebenar (GLB) — TAPI ini bergantung pd
+  // fail animasi dimuat dari network (async, boleh gagal senyap kalau
+  // fail tak sempat/tak berjaya dimuat). Supaya serangan TAK PERNAH
+  // kelihatan "kosong" (tiada animasi langsung) walaupun itu berlaku,
+  // kita juga mainkan "lunge" (sentakan ke hadapan) yg dijamin sentiasa
+  // kelihatan pd rig/model — lapisan keselamatan visual tambahan.
+  if(soloPlayer && soloPlayer._glbSkinId && typeof glbPlayAction==='function'){
+    glbPlayAction(soloPlayer, sk.action);
+  } else if(soloPlayer && soloPlayer._fallbackMesh){
+    const m=soloPlayer._fallbackMesh;
+    m.scale.multiplyScalar(1.25);
+    setTimeout(function(){ if(m) m.scale.multiplyScalar(1/1.25); },120);
+  }
+  soloPlayAttackLunge();
+  // Hayun senjata setiap kali skill digunakan (sama ada rig fallback
+  // atau model GLB dipakai — senjata sentiasa kelihatan di sisi hero).
+  if(soloPlayer && soloPlayer._weaponMesh){
+    const wpn=soloPlayer._weaponMesh;
+    wpn.rotation.x=-1.3; wpn.rotation.y=-0.6;
+    setTimeout(function(){ if(wpn){ wpn.rotation.x=0; wpn.rotation.y=0; } },160);
+  }
+  soloApplySkillEffect(sk);
+}
+// Sentakan/"lunge" ke hadapan yg DIJAMIN kelihatan tiap kali skill
+// digunakan — mengatasi masalah animasi GLB kadang gagal/lambat dimuat
+// (network) hingga serangan nampak "kosong" (FX/dmg jalan tapi hero tak
+// bergerak langsung). Diterapkan pd objek visual (fallback kapsul &
+// model GLB semasa) dlm ruang LOKAL supaya tak sentuh soloPlayer.position
+// sebenar (elak ganggu logik jarak/pergerakan/kamera).
+function soloPlayAttackLunge(){
+  if(!soloPlayer) return;
+  const targets=[];
+  if(soloPlayer._fallbackMesh) targets.push(soloPlayer._fallbackMesh);
+  const activeGlb=(soloPlayer._glbMoving&&soloPlayer._glbWalkModel)?soloPlayer._glbWalkModel:soloPlayer._glbIdleModel;
+  if(activeGlb) targets.push(activeGlb);
+  if(!targets.length) return;
+  const dur=170, lungeDist=0.34;
+  targets.forEach(function(obj){
+    if(obj._lungeActive) return;
+    obj._lungeActive=true;
+    const baseZ=obj.position.z;
+    const start=performance.now();
+    (function tick(){
+      const t=(performance.now()-start)/dur;
+      if(t>=1){ obj.position.z=baseZ; obj._lungeActive=false; return; }
+      const k=Math.sin(Math.min(1,t)*Math.PI);
+      obj.position.z=baseZ+k*lungeDist;
+      requestAnimationFrame(tick);
+    })();
+  });
+}
+function soloApplySkillEffect(sk){
+  if(sk.heal){
+    soloTower.hp=Math.min(soloTower.hpMax, soloTower.hp+sk.heal);
+    soloUpdateHpHud();
+    soloFloatText('+'+sk.heal+' HP','#33ff88');
+    soloSpawnSkillFX(sk,soloPlayer.position);
+    return;
+  }
+  if(sk.block){
+    soloPlayer._blockUntil=performance.now()+2400;
+    soloFloatText('🛡️ BERTAHAN','#66ccff');
+    soloSpawnSkillFX(sk,soloPlayer.position);
+    return;
+  }
+  if(sk.buffAtk){
+    soloTower.atkMult=sk.buffAtk;
+    soloTower._buffUntil=performance.now()+7000;
+    soloFloatText('💪 SERANGAN NAIK!','#ffcc33');
+    soloSpawnSkillFX(sk,soloPlayer.position);
+    return;
+  }
+  const range=sk.range||2.4;
+  const mult=(soloTower.atkMult && soloTower._buffUntil>performance.now()) ? soloTower.atkMult : 1;
+  const dmg=Math.max(1,Math.round((sk.dmg||1)*mult));
+  let targets=[];
+  if(sk.aoe){
+    targets=soloEnemies.filter(function(en){ return soloDist2D(soloPlayer.position,en.mesh.position)<range; });
+  } else {
+    // Guna sasaran yang telah dikunci semasa soloUseSkill (musuh paling
+    // hampir/hampir dgn arah kamera) jika masih dlm julat; kalau tidak,
+    // kembali cari musuh paling dekat seperti asal.
+    let nearest=soloTower._skillTarget;
+    if(!nearest || soloDist2D(soloPlayer.position,nearest.mesh.position)>=range){
+      nearest=null; let nd=999;
+      soloEnemies.forEach(function(en){ const d=soloDist2D(soloPlayer.position,en.mesh.position); if(d<nd){nd=d;nearest=en;} });
+      if(!(nearest&&nd<range)) nearest=null;
+    }
+    if(nearest) targets=[nearest];
+  }
+  if(!targets.length) return;
+  soloSpawnSkillFX(sk,soloPlayer.position,targets.map(function(en){ return en.mesh.position; }),targets[0]);
+  // Membunuh monster perlukan PUKULAN MAUT dijawab betul dahulu (lihat
+  // soloShowKillQuiz). Pukulan yang akan menewaskan monster (hp<=0) TIDAK
+  // terus membunuh — hp dikekalkan pd 1 sehingga soalan dijawab. Kalau ada
+  // >1 sasaran (aoe) yg layak jadi pukulan maut serentak, hanya SATU
+  // soalan dipaparkan (musuh lain kekal 1 HP menunggu giliran).
+  let pendingKill=null;
+  targets.forEach(function(en){
+    const would=en.hp-dmg;
+    if(would<=0){
+      en.hp=1;
+      if(!pendingKill && !en._quizPending) pendingKill=en;
+    } else {
+      en.hp=would;
+    }
+    en.mesh.scale.multiplyScalar(0.9);
+    setTimeout(function(){ if(en.mesh) en.mesh.scale.multiplyScalar(1/0.9); },100);
+    soloUpdateEnemyHpBar(en);
+  });
+  soloFloatText('-'+dmg,'#ff5555');
+  if(pendingKill){
+    pendingKill._quizPending=true;
+    soloShowKillQuiz(pendingKill);
+  }
+}
+// ── Kuiz Pukulan Maut — dipaparkan bila serangan sepatutnya membunuh
+//    monster. Soalan ditentukan ikut TINGKAT semasa (lihat
+//    soloGenQuestionForFloor): tingkat 1-10=Tingkatan1, 11-20=Tingkatan2,
+//    dst sehingga 41-50=Tingkatan5. Jawab betul → monster tumbang.
+//    Jawab salah → monster terselamat (kembali sedikit HP) & giliran
+//    permainan disambung semula.
+function soloShowKillQuiz(en){
+  if(!en||!en.mesh){ if(en) en._quizPending=false; return; }
+  soloTower.quizActive=true;
+  const q=soloGenQuestionForFloor(soloTower.floor);
+  const tagEl=document.getElementById('soloQuizTag');
+  if(tagEl) tagEl.textContent='💀 PUKULAN MAUT — TINGKATAN '+soloFloorTingkatan(soloTower.floor)+' BAB '+soloFloorBab(soloTower.floor);
+  const textEl=document.getElementById('soloQuizText');
+  if(textEl) textEl.textContent=q.text;
+  const fbEl=document.getElementById('soloQuizFeedback');
+  if(fbEl){ fbEl.textContent=''; }
+  const optsEl=document.getElementById('soloQuizOpts');
+  if(optsEl){
+    optsEl.innerHTML='';
+    (q.opts||[]).forEach(function(opt){
+      const btn=document.createElement('button');
+      btn.textContent=opt;
+      btn.onclick=function(){ soloAnswerKillQuiz(opt===q.ans, en); };
+      optsEl.appendChild(btn);
+    });
+  }
+  const ov=document.getElementById('soloQuizOverlay');
+  if(ov) ov.classList.add('show');
+}
+function soloAnswerKillQuiz(correct, en){
+  const optsEl=document.getElementById('soloQuizOpts');
+  if(optsEl){ Array.prototype.forEach.call(optsEl.children,function(b){ b.disabled=true; }); }
+  const fbEl=document.getElementById('soloQuizFeedback');
+  if(fbEl){
+    fbEl.textContent=correct?'✅ BETUL! Pukulan maut kena!':'❌ SALAH! Monster terselamat...';
+    fbEl.style.color=correct?'#33ff88':'#ff5566';
+  }
+  playSound(correct?'correct':'wrong');
+  setTimeout(function(){
+    const ov=document.getElementById('soloQuizOverlay');
+    if(ov) ov.classList.remove('show');
+    soloTower.quizActive=false;
+    if(en) en._quizPending=false;
+    if(correct && en && soloEnemies.indexOf(en)!==-1){
+      en.hp=0;
+      soloScene.remove(en.mesh);
+      if(en.hpBar&&en.hpBar.parent) soloScene.remove(en.hpBar);
+      soloSpawnImpactBurst({x:en.mesh.position.x,y:1.1*(en.scl||1),z:en.mesh.position.z},en.isBoss?0xff3355:0xffcc55,en.isBoss?26:16,en.isBoss?3.6:2.4);
+      soloCameraShake(en.isBoss?0.24:0.1,en.isBoss?0.3:0.16);
+      playSound('enemydead');
+      soloEnemies=soloEnemies.filter(function(e2){ return e2!==en; });
+      soloUpdateHpHud();
+      if(soloEnemies.length===0 && soloPortalMesh){ soloPortalMesh.visible=true; }
+    } else if(!correct && en && soloEnemies.indexOf(en)!==-1){
+      en.hp=Math.max(1,Math.ceil((en.hpMax||en.hp||1)*0.2));
+      soloUpdateEnemyHpBar(en);
+      soloTower.invuln=Math.max(soloTower.invuln,0.6);
+    }
+  },1300);
+}
+// Kemaskini paparan 4 butang skill (ikon + overlay cooldown + label saat).
+function soloUpdateSkillBarUI(){
+  if(!soloCurrentSkillset) return;
+  for(let i=0;i<4;i++){
+    const btn=document.getElementById('soloSkill'+i);
+    if(!btn) continue;
+    const cd=soloSkillCooldowns[i]||0;
+    const sk=soloCurrentSkillset[i];
+    const maxCd=(sk&&sk.cd)||1;
+    const overlay=btn.querySelector('.cdOverlay');
+    const label=btn.querySelector('.cdLabel');
+    const frac=Math.max(0,Math.min(1,cd/maxCd));
+    if(overlay) overlay.style.height=(frac*100)+'%';
+    if(label) label.textContent = cd>0.05 ? Math.ceil(cd) : '';
+    btn.style.opacity = cd>0.05 ? '0.5' : '1';
+  }
+}
+// Bina butang skill (4) ikut skin yang di-equip semasa buka Solo Tower.
+function soloRenderSkillBar(){
+  soloCurrentSkillset=soloGetSkillSet(soloPlayerSkinId);
+  const bar=document.getElementById('soloSkillBar');
+  if(!bar) return;
+  bar.innerHTML=soloCurrentSkillset.map(function(sk,i){
+    return '<div id="soloSkill'+i+'" class="solo-skill solo-skill'+i+'" onclick="soloUseSkill('+i+')" ontouchstart="event.preventDefault();soloUseSkill('+i+');">'
+      +'<span class="solo-skill-ico">'+sk.icon+'</span>'
+      +'<div class="cdOverlay"></div>'
+      +'<div class="cdLabel"></div>'
+      +'</div>';
+  }).join('');
+}
+
+function soloTowerOpen(){
+  // Menara Solo cuma boleh dimasuki jika ada skin FBX/GLB di-equip — mod
+  // ni dibina sekitar model 3D skin (senjata, animasi aksi/skill, dll),
+  // jadi rig kapsul fallback bukan pengalaman yang dimaksudkan. Kalau
+  // pemain cuba masuk gerbang tanpa skin, halang & bawa balik ke menu
+  // utama (bukan biarkan tersadai di skrin kosong — laluan gerbang Peta
+  // Sekolah dah sorok smap overlay & alih canvas SEBELUM panggil fungsi
+  // ni, jadi kita perlu pastikan ada skrin utk kembali).
+  if(!soloEquippedSkin()){
+    alert('🌀 Anda perlu equip skin FBX/GLB dahulu sebelum boleh masuk Menara Solo!');
+    document.getElementById('mainMenuScreen')?.classList.add('show');
+    return;
+  }
+  document.getElementById('mainMenuScreen')?.classList.remove('show');
+  soloEnsureEngine();
+  soloTower.floor=1; soloTower.hp=6; soloTower.hpMax=6; soloTower.running=true;
+  soloTower.best=soloTowerLoad();
+  soloTower.atkMult=1; soloTower._buffUntil=0;
+  soloSkillCooldowns=[0,0,0,0];
+  soloPlayerSkinId=soloEquippedSkin();
+  // Buang pemain lama (jika sesi sebelum ini pernah dibuka) supaya skin
+  // GLB yang mungkin ditukar oleh pemain di kedai sejak itu diambil kira.
+  if(soloPlayer){
+    if(typeof glbRemoveSkin==='function') glbRemoveSkin(soloPlayer);
+    soloPlayer=null;
+  }
+  soloKeysDown={};
+  document.getElementById('soloTowerOverlay').classList.add('show');
+  soloClearWorld();
+  soloBuildFloor(1);
+  soloRenderSkillBar();
+  soloClock.start();
+  soloLoop();
+}
+function menuGoSoloTower(){ soloTowerOpen(); }
+
+function soloLoop(){
+  if(!soloTower.running && !soloTower.dying) return;
+  soloRAF=requestAnimationFrame(soloLoop);
+  try{
+  const dt=Math.min(0.05,soloClock.getDelta());
+  if(typeof glbUpdateMixers==='function') glbUpdateMixers(dt);
+  soloSyncWeaponBone();
+  if(soloTower.dying){ soloRenderer.render(soloScene,soloCamera); return; }
+  if(soloTower.quizActive){ soloRenderer.render(soloScene,soloCamera); return; }
+  soloAttackCooldown=Math.max(0,soloAttackCooldown-dt);
+  soloTower.invuln=Math.max(0,soloTower.invuln-dt);
+  for(let i=0;i<4;i++){ if(soloSkillCooldowns[i]>0) soloSkillCooldowns[i]=Math.max(0,soloSkillCooldowns[i]-dt); }
+  soloUpdateSkillBarUI();
+
+  // pergerakan pemain (papan kekunci + joystick sentuh)
+  let mx=0,mz=0;
+  if(soloKeysDown['w']||soloKeysDown['arrowup']) mz-=1;
+  if(soloKeysDown['s']||soloKeysDown['arrowdown']) mz+=1;
+  if(soloKeysDown['a']||soloKeysDown['arrowleft']) mx-=1;
+  if(soloKeysDown['d']||soloKeysDown['arrowright']) mx+=1;
+  if(soloJoy.active){ mx+=soloJoy.dx; mz+=soloJoy.dz; }
+  const mlen=Math.hypot(mx,mz);
+  // Semasa hero sedang berpusing pantas ke arah sasaran skill (lock
+  // singkat 0.1–0.2s), jangan biar pergerakan menimpa semula rotation
+  // supaya hero benar2 menghadap monster sebelum/semasa serangan.
+  const soloTurnLocked=soloPlayer._lockUntil && soloPlayer._lockUntil>performance.now();
+  if(mlen>0.05){
+    mx/=mlen; mz/=mlen;
+    const speed=6.5;
+    soloPlayer.position.x+=mx*speed*dt;
+    soloPlayer.position.z+=mz*speed*dt;
+    const r=Math.hypot(soloPlayer.position.x,soloPlayer.position.z);
+    if(r>soloArenaR-1){ soloPlayer.position.x*=(soloArenaR-1)/r; soloPlayer.position.z*=(soloArenaR-1)/r; }
+    if(!soloTurnLocked) soloPlayer.rotation.y=Math.atan2(mx,mz);
+  }
+  if(typeof glbSetMoving==='function') glbSetMoving(soloPlayer, mlen>0.05);
+  // Pusingan pantas hero menghadap sasaran skill (0.1–0.2 saat).
+  if(soloPlayer._turn && soloPlayer._turn.active){
+    const tn=soloPlayer._turn;
+    tn.t+=dt;
+    const frac=Math.min(1,tn.t/tn.duration);
+    soloPlayer.rotation.y=tn.from+tn.diff*frac;
+    if(frac>=1) tn.active=false;
+  }
+  // Kamera over-the-shoulder: sedikit ke kanan bahu hero, lebih tinggi,
+  // dan memandang lebih ke bawah (sudut dongak lebih curam).
+  const campShoulder=0.95, campBehind=6.3, campHeight=6.6;
+  const campPerp=soloPlayer.rotation.y+Math.PI/2;
+  const camTX=soloPlayer.position.x-Math.sin(soloPlayer.rotation.y)*campBehind+Math.sin(campPerp)*campShoulder;
+  const camTZ=soloPlayer.position.z-Math.cos(soloPlayer.rotation.y)*campBehind+Math.cos(campPerp)*campShoulder;
+  soloCamera.position.x+=(camTX-soloCamera.position.x)*0.09;
+  soloCamera.position.z+=(camTZ-soloCamera.position.z)*0.09;
+  soloCamera.position.y+=(campHeight-soloCamera.position.y)*0.09;
+  // Kamera shake ringkas (impak skill/serangan) — memudar dgn cepat.
+  if(soloShake.dur>0){
+    soloShake.t+=dt;
+    const k=Math.max(0,1-soloShake.t/soloShake.dur);
+    if(k<=0){ soloShake.dur=0; soloShake.mag=0; }
+    else {
+      soloCamera.position.x+=(Math.random()-0.5)*soloShake.mag*k;
+      soloCamera.position.y+=(Math.random()-0.5)*soloShake.mag*k*0.6;
+    }
+  }
+  soloCamera.lookAt(soloPlayer.position.x,0.85,soloPlayer.position.z);
+  // Outline monster bila terlindung + hero jadi lutsinar bila objek
+  // benar2 menghalang pandangan kamera ke arahnya.
+  soloUpdateOcclusion();
+
+  // AI musuh — kini ada kawasan SPAWN & kawasan PERGERAKAN (patrol)
+  // sendiri: berlegar dekat titik asal bila hero jauh, mengejar bila
+  // hero masuk jarak aggro, & undur balik ke kawasan asal jika ditarik
+  // terlalu jauh (leash). Serangan tetap dari jarak (TIDAK sentuh tubuh
+  // hero) — berhenti di atkRange, "windup" amaran, baru lancar serangan.
+  soloEnemies.forEach(en=>{
+    // Anggarkan seberapa laju monster ini benar2 bergerak (drpd bingkai
+    // sebelumnya) supaya animasi kaki/lengan sepadan dgn pergerakan
+    // sebenar (bukan sentiasa "menari" sama ada berjalan atau diam).
+    const _px=en.mesh.position.x, _pz=en.mesh.position.z;
+    let moveAmt=0;
+    if(en._prevX!==undefined && dt>0){
+      const moved=Math.hypot(_px-en._prevX,_pz-en._prevZ);
+      moveAmt=Math.min(1,(moved/dt)/Math.max(1,en.speed||3));
+    }
+    en._prevX=_px; en._prevZ=_pz;
+    if(en.mesh._animUpdate) en.mesh._animUpdate(dt,moveAmt);
+    en.atkCd=Math.max(0,en.atkCd-dt);
+    const dx=soloPlayer.position.x-en.mesh.position.x, dz=soloPlayer.position.z-en.mesh.position.z;
+    const d=Math.hypot(dx,dz);
+    const atkRange=en.atkRange||3.2;
+    // Bar HP sentiasa mengekori & menghadap kamera.
+    if(en.hpBar){
+      en.hpBar.position.set(en.mesh.position.x,(en.isBoss?3.2:2.15)*en.scl+0.35,en.mesh.position.z);
+      en.hpBar.quaternion.copy(soloCamera.quaternion);
+    }
+    if(en.windup>0){
+      // Sedang bersedia menyerang — kekal diam, hanya menghadap hero.
+      en.windup=Math.max(0,en.windup-dt);
+      if(d>0.05) en.mesh.rotation.y=Math.atan2(dx,dz);
+      if(en.windup<=0){
+        const stillInRange=d<=atkRange+1.2; // sedikit toleransi "lunge"
+        soloEnemyRangedStrike(en,stillInRange);
+      }
+      return;
+    }
+    const spdx=en.mesh.position.x-(en.spawnX||0), spdz=en.mesh.position.z-(en.spawnZ||0);
+    const distFromSpawn=Math.hypot(spdx,spdz);
+    // Tentukan status (state machine): patrol → chase → return.
+    if(d<=(en.aggroRange||10)){
+      en.state=(distFromSpawn>(en.leashRange||14))?'return':'chase';
+    } else if(en.state==='chase'){
+      en.state=(d>(en.aggroRange||10)*1.4)?'patrol':'chase';
+    }
+    if(en.state==='return'){
+      const rx=(en.spawnX||0)-en.mesh.position.x, rz=(en.spawnZ||0)-en.mesh.position.z;
+      const rd=Math.hypot(rx,rz);
+      if(rd<0.6){ en.state='patrol'; }
+      else {
+        en.mesh.position.x+=(rx/rd)*en.speed*0.85*dt;
+        en.mesh.position.z+=(rz/rd)*en.speed*0.85*dt;
+        en.mesh.rotation.y=Math.atan2(rx,rz);
+      }
+      return;
+    }
+    if(en.state==='chase'){
+      if(d>atkRange){
+        en.mesh.position.x+=(dx/d)*en.speed*dt;
+        en.mesh.position.z+=(dz/d)*en.speed*dt;
+        en.mesh.rotation.y=Math.atan2(dx,dz);
+      } else {
+        if(d>0.05) en.mesh.rotation.y=Math.atan2(dx,dz);
+        if(en.atkCd<=0&&soloTower.invuln<=0){
+          en.atkCd=en.isBoss?1.7:1.3+Math.random()*0.3;
+          en.windup=en.windupMax||0.4;
+          soloSpawnEnemyTelegraph(en);
+        }
+      }
+      return;
+    }
+    // patrol — berlegar dgn tenang dlm radius kawasan spawn sendiri.
+    en.wanderT=(en.wanderT||0)-dt;
+    if(en.wanderT<=0){
+      const wa=Math.random()*Math.PI*2, wr=Math.random()*(en.patrolR||3.5);
+      en.wanderX=(en.spawnX||0)+Math.cos(wa)*wr;
+      en.wanderZ=(en.spawnZ||0)+Math.sin(wa)*wr;
+      en.wanderT=2+Math.random()*2.5;
+    }
+    const wx=en.wanderX-en.mesh.position.x, wz=en.wanderZ-en.mesh.position.z;
+    const wd=Math.hypot(wx,wz);
+    if(wd>0.3){
+      en.mesh.position.x+=(wx/wd)*en.speed*0.32*dt;
+      en.mesh.position.z+=(wz/wd)*en.speed*0.32*dt;
+      en.mesh.rotation.y=Math.atan2(wx,wz);
+    }
+  });
+
+  // portal — masuk untuk naik tingkat
+  if(soloPortalMesh&&soloPortalMesh.visible){
+    soloPortalMesh.rotation.z+=dt*2.2;
+    const pd=soloDist2D(soloPlayer.position,soloPortalMesh.position);
+    if(pd<2.2){ soloAdvanceFloor(); return; }
+  }
+
+  soloRenderer.render(soloScene,soloCamera);
+  }catch(err){
+    console.error('soloLoop error:',err);
+  }
+}
+
+// Semak sama ada objek hiasan (soloOccluders) menghalang garis pandang
+// kamera→hero dan kamera→setiap monster. Monster yang terhalang papar
+// penanda "outline" (tembus objek); hero yang benar2 terhalang jadi
+// 50% lutsinar supaya pemain tetap boleh nampak watak sendiri.
+function soloUpdateOcclusion(){
+  if(!soloCamera||!soloPlayer) return;
+  if(!soloRaycaster) soloRaycaster=new THREE.Raycaster();
+  const camPos=soloCamera.position;
+  // Hero
+  const pTarget=new THREE.Vector3(soloPlayer.position.x,1.1,soloPlayer.position.z);
+  const toPlayer=pTarget.clone().sub(camPos);
+  const distToPlayer=toPlayer.length();
+  let playerBlocked=false;
+  if(distToPlayer>0.3 && soloOccluders.length){
+    soloRaycaster.set(camPos,toPlayer.clone().normalize());
+    soloRaycaster.far=distToPlayer-0.35;
+    playerBlocked=soloRaycaster.intersectObjects(soloOccluders,false).length>0;
+  }
+  soloSetPlayerTransparency(playerBlocked);
+  // Monster
+  soloEnemies.forEach(function(en){
+    if(!en.marker) return;
+    const ePos=new THREE.Vector3(en.mesh.position.x,1.0*(en.scl||1),en.mesh.position.z);
+    const toE=ePos.clone().sub(camPos);
+    const dist=toE.length();
+    let occluded=false;
+    if(dist>0.3 && soloOccluders.length){
+      soloRaycaster.set(camPos,toE.clone().normalize());
+      soloRaycaster.far=dist-0.35;
+      occluded=soloRaycaster.intersectObjects(soloOccluders,false).length>0;
+    }
+    en.marker.visible=occluded;
+  });
+}
+// Tetapkan kelutsinaran hero (fallback kapsul + model GLB jika dipakai).
+function soloSetPlayerTransparency(isBlocked){
+  if(!soloPlayer) return;
+  const op=isBlocked?0.5:1;
+  if(soloPlayer._fallbackMesh && soloPlayer._fallbackMesh.material){
+    soloPlayer._fallbackMesh.material.transparent=true;
+    soloPlayer._fallbackMesh.material.opacity=op;
+  }
+  if(soloPlayer._glbSkinId){
+    soloPlayer.traverse(function(o){
+      if(o.isMesh && o!==soloPlayer._fallbackMesh && o.material){
+        const mats=Array.isArray(o.material)?o.material:[o.material];
+        mats.forEach(function(m){ m.transparent=true; m.opacity=op; });
+      }
+    });
+  }
+}
+
+// Lancarkan serangan jarak monster (dipanggil bila windup tamat).
+// hit=false bermaksud hero sempat lari keluar jarak semasa windup —
+// serangan terlepas sepenuhnya (tiada dmg), memberi ganjaran sebenar
+// kpd pemain yg bergerak/mengelak bila nampak amaran.
+function soloEnemyRangedStrike(en,hit){
+  soloSpawnEnemyStrikeFX(en.mesh.position);
+  if(!hit) return;
+  const blocking=soloPlayer._blockUntil && soloPlayer._blockUntil>performance.now();
+  if(blocking){
+    soloTower.invuln=0.3;
+    soloFloatText('🛡️ BLOCK!','#66ccff');
+    playSound('correct');
+  } else {
+    soloTower.hp--; soloTower.invuln=0.8;
+    playSound('wrong');
+    soloUpdateHpHud();
+    if(soloTower.hp<=0){ soloTowerDefeat(); }
+  }
+}
+// Amaran visual (bulatan merah berkembang di kaki monster) semasa
+// tempoh windup — beri isyarat jelas hero perlu elak/block.
+function soloSpawnEnemyTelegraph(en){
+  if(!soloScene) return;
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.32,0.44,20),new THREE.MeshBasicMaterial({color:0xff3344,transparent:true,opacity:0.85,side:THREE.DoubleSide}));
+  ring.rotation.x=-Math.PI/2;
+  ring.position.set(en.mesh.position.x,0.12,en.mesh.position.z);
+  soloScene.add(ring);
+  const start=performance.now();
+  const dur=Math.max(100,(en.windupMax||0.4)*1000);
+  (function tick(){
+    const t=(performance.now()-start)/dur;
+    if(t>=1||!ring.parent||!en.mesh){ if(ring.parent) soloScene.remove(ring); return; }
+    const s=1+t*1.5;
+    ring.scale.set(s,s,s);
+    ring.material.opacity=0.85*(1-t*0.4);
+    ring.position.set(en.mesh.position.x,0.12,en.mesh.position.z);
+    requestAnimationFrame(tick);
+  })();
+}
+// Kesan tembakan/hayunan jarak monster ke hero (garis pendek pantas)
+// — menggambarkan serangan datang dari jarak, bukan sentuhan tubuh.
+function soloSpawnEnemyStrikeFX(fromPos){
+  if(!soloScene||!soloPlayer) return;
+  const bolt=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,8),new THREE.MeshBasicMaterial({color:0xff3344}));
+  bolt.position.set(fromPos.x,1.1,fromPos.z);
+  soloScene.add(bolt);
+  const from={x:fromPos.x,z:fromPos.z};
+  const start=performance.now();
+  (function tick(){
+    const t=(performance.now()-start)/170;
+    if(t>=1||!bolt.parent){ if(bolt.parent) soloScene.remove(bolt); return; }
+    const tx=soloPlayer.position.x, tz=soloPlayer.position.z;
+    bolt.position.x=from.x+(tx-from.x)*t;
+    bolt.position.z=from.z+(tz-from.z)*t;
+    bolt.position.y=1.1;
+    requestAnimationFrame(tick);
+  })();
+}
+
+// Cipta bar HP terapung (3D, sentiasa menghadap kamera) — dua satah:
+// latar gelap + isian berwarna yang mengecut ikut peratus HP.
+function soloCreateHpBar(){
+  const g=new THREE.Group();
+  const bg=new THREE.Mesh(new THREE.PlaneGeometry(1.05,0.16),new THREE.MeshBasicMaterial({color:0x220000,transparent:true,opacity:0.85,depthTest:false,depthWrite:false}));
+  g.add(bg);
+  const fg=new THREE.Mesh(new THREE.PlaneGeometry(0.95,0.1),new THREE.MeshBasicMaterial({color:0x33ff55,transparent:true,opacity:0.95,depthTest:false,depthWrite:false}));
+  fg.position.z=0.001;
+  g.add(fg);
+  g.userData.fg=fg;
+  g.renderOrder=998;
+  g.visible=false;
+  return g;
+}
+// Kemaskini lebar/warna bar HP ikut peratus nyawa semasa monster.
+function soloUpdateEnemyHpBar(en){
+  if(!en||!en.hpBar) return;
+  const frac=Math.max(0,Math.min(1,en.hp/en.hpMax));
+  const fg=en.hpBar.userData.fg;
+  fg.scale.x=Math.max(0.001,frac);
+  fg.position.x=-(0.95/2)*(1-frac);
+  fg.material.color.setHex(frac>0.55?0x33ff55:(frac>0.25?0xffcc33:0xff3344));
+  en.hpBar.visible=true;
+}
+
+function soloAdvanceFloor(){
+  soloTowerSaveBest(soloTower.floor);
+  if(soloTower.floor>=SOLO_MAX_FLOOR){ soloTowerVictory(); return; }
+  soloTower.floor++;
+  soloClearWorld();
+  soloBuildFloor(soloTower.floor);
+}
+
+function soloTowerDefeat(){
+  soloTower.running=false;
+  const hasSkin=soloPlayer && soloPlayer._glbSkinId;
+  let _finished=false;
+  const finish=function(){
+    if(_finished) return; _finished=true;
+    soloTower.dying=false;
+    if(soloRAF) cancelAnimationFrame(soloRAF);
+    soloTowerSaveBest(soloTower.floor-1);
+    const box=document.getElementById('soloEndBox');
+    if(box){
+      box.innerHTML=`<h2 style="color:#ff3355;">💀 GERBANG DITUTUP</h2>
+        <p>Anda tumpas di Tingkat ${soloTower.floor}</p>
+        <p class="big">Pangkat: ${soloTowerRank(soloTower.floor).name}</p>
+        <button class="obtn" onclick="soloTowerRetry()">🔁 CUBA SEMULA</button>
+        <button class="obtn" onclick="soloTowerClose()">✖ KELUAR</button>`;
+    }
+    document.getElementById('soloEndOverlay').classList.add('show');
+  };
+  if(hasSkin && typeof glbPlayAction==='function'){
+    // Mainkan animasi "death" dulu (soloLoop terus render semasa ni —
+    // lihat flag soloTower.dying), baru papar skrin tumpas.
+    soloTower.dying=true;
+    glbPlayAction(soloPlayer,'death',{ forceHold:true, onDone:function(){ setTimeout(finish,400); } });
+    setTimeout(finish,1800); // jaring keselamatan kalau event 'finished' tak sempat trigger
+  } else {
+    if(soloRAF) cancelAnimationFrame(soloRAF);
+    finish();
+  }
+}
+function soloTowerVictory(){
+  soloTower.running=false;
+  if(soloRAF) cancelAnimationFrame(soloRAF);
+  soloTowerSaveBest(SOLO_MAX_FLOOR);
+  if(soloPlayer && soloPlayer._glbSkinId && typeof glbPlayAction==='function') glbPlayAction(soloPlayer,'buff');
+  const box=document.getElementById('soloEndBox');
+  if(box){
+    box.innerHTML=`<h2 style="color:#00eaff;">👑 SOVEREIGN OF SHADOWS</h2>
+      <p>Anda menawan kesemua ${SOLO_MAX_FLOOR} tingkat Menara Solo!</p>
+      <p class="big">MONARCH RANK DICAPAI</p>
+      <button class="obtn" onclick="soloTowerRetry()">🔁 MAIN SEMULA</button>
+      <button class="obtn" onclick="soloTowerClose()">✖ KELUAR</button>`;
+  }
+  document.getElementById('soloEndOverlay').classList.add('show');
+}
+function soloTowerRetry(){
+  document.getElementById('soloEndOverlay').classList.remove('show');
+  soloTower.floor=1; soloTower.hp=soloTower.hpMax; soloTower.running=true; soloTower.dying=false;
+  soloTower.atkMult=1; soloTower._buffUntil=0;
+  // Selamatkan diri drpd kes kuiz pukulan-maut yg masih terbuka semasa mati/keluar —
+  // kalau quizActive tak direset, soloLoop akan terus render sahaja (tak proses
+  // pergerakan/serangan) buat SELAMANYA pada percubaan baru ini.
+  soloTower.quizActive=false;
+  const quizOv=document.getElementById('soloQuizOverlay'); if(quizOv) quizOv.classList.remove('show');
+  soloSkillCooldowns=[0,0,0,0];
+  soloPlayerSkinId=soloEquippedSkin();
+  soloClearWorld(); soloBuildFloor(1);
+  soloRenderSkillBar();
+  soloClock.start();
+  soloLoop();
+}
+function soloTowerClose(){
+  soloTower.running=false; soloTower.dying=false;
+  soloTower.quizActive=false;
+  const quizOv=document.getElementById('soloQuizOverlay'); if(quizOv) quizOv.classList.remove('show');
+  if(soloRAF) cancelAnimationFrame(soloRAF);
+  document.getElementById('soloEndOverlay').classList.remove('show');
+  document.getElementById('soloTowerOverlay').classList.remove('show');
+  document.getElementById('mainMenuScreen')?.classList.add('show');
+  // BUGFIX: masuk Menara Solo (dari butang GERBANG di Peta Sekolah) alihkan
+  // canvas kongsi ('#c') keluar drpd smap balik ke konteks scene utama —
+  // tapi tiada tempat lain panggil applyCostume() utk scene ni bila kita
+  // kembali ke mainMenuScreen. Result: window.marioMesh kekal dlm keadaan
+  // box asas (bahagian kotak nampak, model GLB skin tak dilekat) sebab
+  // costume terakhir yg disegerakkan ialah utk window.smHero, bukan
+  // marioMesh. Panggil applyCostume() di sini (sama macam smapOpen()/
+  // permulaan game buat) supaya skin GLB yg di-equip terus melekat &
+  // bahagian box tersorok, tak kira hero mana yg sedang ditunjuk.
+  if(typeof applyCostume==='function') applyCostume();
+}
+
+// ── Joystick sentuh (mobile) — base TETAP di kiri-bawah, knob bergerak ──
+function soloJoyStart(e){
+  const t=e.changedTouches?e.changedTouches[0]:e;
+  soloJoy.active=true; soloJoy.touchId=t.identifier??'mouse';
+  const base=document.getElementById('soloJoyBase');
+  if(base){
+    // Pusat base TETAP (bukan ikut titik sentuh) — supaya joystick sentiasa
+    // di lokasi yang sama/boleh dijangka, macam butang fizikal kiri-bawah.
+    const r=base.getBoundingClientRect();
+    soloJoy._ox=r.left+r.width/2; soloJoy._oy=r.top+r.height/2;
+    base.classList.add('active');
+  }
+  const stick=document.getElementById('soloJoyStick');
+  if(stick){ stick.style.left='29px'; stick.style.top='29px'; }
+}
+function soloJoyMove(e){
+  if(!soloJoy.active) return;
+  const t=e.changedTouches?[...e.changedTouches].find(tt=>tt.identifier===soloJoy.touchId):e;
+  if(!t) return;
+  const dx=t.clientX-soloJoy._ox, dy=t.clientY-soloJoy._oy;
+  const len=Math.hypot(dx,dy)||1;
+  const cl=Math.min(1,len/40);
+  soloJoy.dx=(dx/len)*cl; soloJoy.dz=(dy/len)*cl;
+  const stick=document.getElementById('soloJoyStick');
+  if(stick){ stick.style.left=(29+soloJoy.dx*29)+'px'; stick.style.top=(29+soloJoy.dz*29)+'px'; }
+}
+function soloJoyEnd(){
+  soloJoy.active=false; soloJoy.dx=0; soloJoy.dz=0;
+  const base=document.getElementById('soloJoyBase'); if(base) base.classList.remove('active');
+  const stick=document.getElementById('soloJoyStick');
+  if(stick){ stick.style.left='29px'; stick.style.top='29px'; }
+}
+
+
 
 function menuGoMap(){
   document.getElementById('mainMenuScreen').classList.remove('show');
@@ -15729,6 +17833,119 @@ function smapBuild3D(){
     sm3.mathTowerX=TW_X; sm3.mathTowerZ=TW_Z;
   })();
   // ══════════════════════════════════════════════════════
+  //  MENARA SOLO LEVELING — GERBANG 50 TINGKAT (ala "Solo Leveling")
+  // ══════════════════════════════════════════════════════
+  (()=>{
+    const SL_X=260, SL_Z=1;
+    const SEG_H=2.6, SEGS=22; // segmen visual (mewakili 100 tingkat secara simbolik)
+    const BASE_R=6.5, TOP_R=2.2;
+
+    // ── Asas gerbang (plinth gelap retak) ──
+    const baseMat=new THREE.MeshLambertMaterial({color:0x0a0510,emissive:0x1a0030,emissiveIntensity:0.35});
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(BASE_R+2.2,BASE_R+3,1.4,24),baseMat);
+    base.position.set(SL_X,0.7,SL_Z); base.castShadow=true; smScene.add(base);
+    for(let s=0;s<3;s++){
+      const st=new THREE.Mesh(new THREE.CylinderGeometry(BASE_R+2.2-s*1.0,BASE_R+2.6-s*1.0,0.3,24),new THREE.MeshLambertMaterial({color:0x140a20}));
+      st.position.set(SL_X,1.4+s*0.3,SL_Z); smScene.add(st);
+    }
+
+    // ── Menara berbentuk conical (menyerupai gerbang "Gate" gelap) ──
+    for(let f=0;f<SEGS;f++){
+      const t=f/(SEGS-1);
+      const r0=BASE_R+(TOP_R-BASE_R)*t;
+      const r1=BASE_R+(TOP_R-BASE_R)*Math.min(1,(f+1)/(SEGS-1));
+      const y=2.0+f*SEG_H;
+      const segColor=new THREE.Color().setHSL(0.72-0.05*t,0.85,0.10+0.10*t);
+      const segMat=new THREE.MeshLambertMaterial({color:segColor,emissive:0x2a0060,emissiveIntensity:0.22+0.18*t});
+      const seg=new THREE.Mesh(new THREE.CylinderGeometry(r1,r0,SEG_H,16,1,true),segMat);
+      seg.position.set(SL_X,y+SEG_H/2,SL_Z); seg.castShadow=true; smScene.add(seg);
+      // gelang lampu ungu setiap 4 segmen (menandakan setiap 20 tingkat = 1 rank)
+      if(f%4===0){
+        const ringMat=new THREE.MeshBasicMaterial({color:0x7c4dff,transparent:true,opacity:0.85});
+        const ring=new THREE.Mesh(new THREE.TorusGeometry(r0+0.12,0.09,8,28),ringMat);
+        ring.rotation.x=Math.PI/2; ring.position.set(SL_X,y,SL_Z); smScene.add(ring);
+        const rlight=new THREE.PointLight(0x7c4dff,1.4,10);
+        rlight.position.set(SL_X,y,SL_Z); smScene.add(rlight);
+      }
+    }
+
+    // ── Puncak — mata gelap bercahaya biru (Monarch's Eye) ──
+    const apexY=2.0+SEGS*SEG_H;
+    const eyeMat=new THREE.MeshLambertMaterial({color:0x0a0018,emissive:0x2200ff,emissiveIntensity:1.4});
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(1.6,20,20),eyeMat);
+    eye.position.set(SL_X,apexY+1.6,SL_Z); smScene.add(eye);
+    const pupilMat=new THREE.MeshBasicMaterial({color:0x00eaff});
+    const pupil=new THREE.Mesh(new THREE.SphereGeometry(0.55,14,14),pupilMat);
+    pupil.position.set(SL_X,apexY+1.6,SL_Z+1.3); smScene.add(pupil);
+    const apexLight=new THREE.PointLight(0x4400ff,4.0,32);
+    apexLight.position.set(SL_X,apexY+1.6,SL_Z); smScene.add(apexLight);
+    sm3._soloTowerEye=eye;
+
+    // ── Sign "MENARA SOLO — 50 TINGKAT" ──
+    const signCv=document.createElement('canvas');
+    signCv.width=1024; signCv.height=192;
+    const signCtx=signCv.getContext('2d');
+    const grd=signCtx.createLinearGradient(0,0,1024,0);
+    grd.addColorStop(0,'#020006'); grd.addColorStop(0.5,'#180030'); grd.addColorStop(1,'#020006');
+    signCtx.fillStyle=grd; signCtx.fillRect(0,0,1024,192);
+    signCtx.strokeStyle='#7c4dff'; signCtx.lineWidth=8; signCtx.strokeRect(4,4,1016,184);
+    signCtx.strokeStyle='#00eaff'; signCtx.lineWidth=3; signCtx.strokeRect(14,14,996,164);
+    signCtx.shadowColor='#7c4dff'; signCtx.shadowBlur=30;
+    signCtx.fillStyle='#ffffff'; signCtx.font='bold 46px "Press Start 2P",monospace';
+    signCtx.textAlign='center'; signCtx.textBaseline='middle';
+    signCtx.fillText('MENARA SOLO',512,70);
+    signCtx.fillStyle='#00eaff'; signCtx.shadowColor='#00eaff'; signCtx.font='bold 40px "Press Start 2P",monospace';
+    signCtx.fillText('50 TINGKAT',512,132);
+    const signTex=new THREE.CanvasTexture(signCv);
+    const signMesh=new THREE.Mesh(new THREE.BoxGeometry(13,2.6,0.2),new THREE.MeshBasicMaterial({map:signTex}));
+    signMesh.position.set(SL_X,5.4,SL_Z-BASE_R-0.3); smScene.add(signMesh);
+    const signLight=new THREE.PointLight(0x7c4dff,2.0,16);
+    signLight.position.set(SL_X,6,SL_Z-BASE_R-2); smScene.add(signLight);
+
+    // ── PORTAL GERBANG MASUK (biru gelap khas Solo Leveling) ──
+    const PORTAL_X=SL_X, PORTAL_Z=SL_Z-BASE_R-1.0;
+    const portalPillarMat=new THREE.MeshLambertMaterial({color:0x0a0018,emissive:0x2200aa,emissiveIntensity:0.8});
+    [-4.0,4.0].forEach(ox=>{
+      const pp=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.6,8.5,10),portalPillarMat);
+      pp.position.set(PORTAL_X+ox,4.25,PORTAL_Z); smScene.add(pp);
+      const cap=new THREE.Mesh(new THREE.OctahedronGeometry(0.7,0),new THREE.MeshLambertMaterial({color:0x00eaff,emissive:0x00aacc,emissiveIntensity:1.2}));
+      cap.position.set(PORTAL_X+ox,8.9,PORTAL_Z); smScene.add(cap);
+      const pl=new THREE.PointLight(0x4400ff,1.4,8);
+      pl.position.set(PORTAL_X+ox,8.4,PORTAL_Z); smScene.add(pl);
+    });
+    const archMat=new THREE.MeshLambertMaterial({color:0x140020,emissive:0x330066,emissiveIntensity:0.6});
+    const arch=new THREE.Mesh(new THREE.BoxGeometry(9.5,1.1,0.75),archMat);
+    arch.position.set(PORTAL_X,8.5,PORTAL_Z); smScene.add(arch);
+
+    // Gelang portal luar/dalam — warna biru gelap khas Gate
+    const portalRing=new THREE.Mesh(new THREE.TorusGeometry(3.0,0.2,12,40),new THREE.MeshBasicMaterial({color:0x2200ff,transparent:true,opacity:0.9}));
+    portalRing.position.set(PORTAL_X,4.3,PORTAL_Z); smScene.add(portalRing);
+    sm3._soloPortalRing=portalRing;
+    const portalRingIn=new THREE.Mesh(new THREE.TorusGeometry(2.25,0.14,10,36),new THREE.MeshBasicMaterial({color:0x00eaff,transparent:true,opacity:0.85}));
+    portalRingIn.position.set(PORTAL_X,4.3,PORTAL_Z); smScene.add(portalRingIn);
+    sm3._soloPortalRingIn=portalRingIn;
+    const portalSurf=new THREE.Mesh(new THREE.CircleGeometry(2.5,48),new THREE.MeshBasicMaterial({color:0x050014,transparent:true,opacity:0.55,side:THREE.DoubleSide}));
+    portalSurf.position.set(PORTAL_X,4.3,PORTAL_Z+0.05); smScene.add(portalSurf);
+    const portalLight=new THREE.PointLight(0x2200ff,5,14);
+    portalLight.position.set(PORTAL_X,2.4,PORTAL_Z); smScene.add(portalLight);
+    sm3._soloPortalLight=portalLight;
+
+    // Zarah portal (mengikut corak zarah menara matematik)
+    sm3._soloParticles=[];
+    sm3._soloPortalX=PORTAL_X; sm3._soloPortalZ=PORTAL_Z;
+    const partGeo=new THREE.SphereGeometry(0.09,6,6);
+    for(let i=0;i<18;i++){
+      const pm=new THREE.MeshBasicMaterial({color:0x7c4dff,transparent:true,opacity:0.8});
+      const p=new THREE.Mesh(partGeo,pm);
+      p._baseAngle=Math.random()*Math.PI*2; p._radius=1.6+Math.random()*1.4;
+      p._speed=0.5+Math.random()*0.8; p._phase=Math.random()*Math.PI*2;
+      p.position.set(PORTAL_X,4.3,PORTAL_Z);
+      smScene.add(p); sm3._soloParticles.push(p);
+    }
+
+    sm3.soloTowerX=SL_X; sm3.soloTowerZ=SL_Z;
+  })();
+  // ══════════════════════════════════════════════════════
   //  DEWAN GUILD — Adventurers' Guild Hall (gempak, ala MMORPG moden)
   // ══════════════════════════════════════════════════════
   (()=>{
@@ -16878,7 +19095,7 @@ function smapBuild3D(){
     // masing-masing (flag _gk.running / futsal running dsb.) yang kawal bila ia patut nampak.
     var _ziCoreHudIds={smapHint:1,smapNpcDialog:1,smapMinimapHint:1,smapInteractBtn:1,
       smapFaceBtn:1,smapStatBtn:1,smapBagBtn:1,smapVehicleBtn:1,smapDamBtn:1,smapChessBtn:1,
-      smapArenaBtn:1,smapMathTowerBtn:1,smapPetCatchBtn:1,smapPetPvPBtn:1,
+      smapArenaBtn:1,smapMathTowerBtn:1,smapSoloTowerBtn:1,smapPetCatchBtn:1,smapPetPvPBtn:1,
       smapCoordDisplay:1};
     if(wrap){for(var _i=0;_i<wrap.children.length;_i++){var ch=wrap.children[_i];
       if(!_ziCoreHudIds[ch.id])continue;
@@ -18252,6 +20469,7 @@ function smapBuild3D(){
     {xmin:-36.5,xmax:-27.5,zmin:-35,zmax:-18.5}, // e-sport arena - dinding belakang+sisi (bukan pintu)
     {xmin: 20,xmax: 44,zmin:-34,zmax:-18}, // perpustakaan
     {xmin: 21,xmax: 43,zmin: 19,zmax: 37}, // menara matematik — tapak PENUH (auto dari TW_X=32,TW_Z=28,FLOOR_W=18,FLOOR_D=14 +4 plinth). Zon "nearMT" portal (z14-26) masih boleh sentuh sebab depan plinth start z=19, jadi butang MASUK tetap keluar sebelum hero terlanggar dinding.
+    {xmin: 251,xmax: 269,zmin: -8,zmax: 12}, // menara solo leveling — tapak (SL_X=260,SL_Z=1, base radius ~9.5). Zon "nearST" portal di depan (z=-9..1) masih boleh disentuh sebelum dinding tapak.
     {xmin:-13,xmax: 13,zmin:-28,zmax:-8}, // paintball
     {xmin:-6, xmax: 6, zmin:34, zmax:43},  // kedai
     {xmin: 20,xmax: 40,zmin:-92,zmax:-76}, // guild hall (GX=30,GZ=-84,GW=20,GD=16 — bangunan pejal, Guild Master berdiri di luar depan z=-72)
@@ -18934,6 +21152,31 @@ function smapBuild3D(){
         // Butang masuk menara — tunjuk bila dekat portal
         const mtBtn=document.getElementById('smapMathTowerBtn');
         if(mtBtn) mtBtn.style.display=(nearMT&&!smapNearNPC)?'flex':'none';
+      }
+
+      // ── MENARA SOLO LEVELING portal animasi ──
+      if(sm3._soloPortalRing){
+        const nearST=(smHeroState.x>250&&smHeroState.x<270&&smHeroState.z>-9&&smHeroState.z<11);
+        sm3._soloPortalRing.rotation.z+=dt*(nearST?2.6:1.1);
+        sm3._soloPortalRingIn.rotation.z-=dt*(nearST?3.2:1.5);
+        sm3._soloPortalRing.material.opacity=nearST?1.0:0.75;
+        sm3._soloPortalRing.material.color.setHex(nearST?0x00eaff:0x2200ff);
+        if(sm3._soloPortalLight) sm3._soloPortalLight.intensity=nearST?5.5+Math.sin(ts*0.006)*1.5:3.0+Math.sin(ts*0.004)*0.8;
+        if(sm3._soloParticles){
+          sm3._soloParticles.forEach((p)=>{
+            p._baseAngle+=dt*p._speed*(nearST?1.8:1.0);
+            const r=p._radius*(0.9+Math.sin(ts*0.002+p._phase)*0.1);
+            p.position.x=sm3._soloPortalX+Math.cos(p._baseAngle)*r;
+            p.position.y=4.3+Math.sin(p._baseAngle)*r*0.7;
+            p.position.z=sm3._soloPortalZ+Math.sin(p._baseAngle*0.5)*0.5;
+            p.material.opacity=0.6+Math.sin(ts*0.003+p._phase)*0.3;
+          });
+        }
+        if(sm3._soloTowerEye){
+          sm3._soloTowerEye.material.emissiveIntensity=1.2+Math.sin(ts*0.003)*0.4;
+        }
+        const stBtn=document.getElementById('smapSoloTowerBtn');
+        if(stBtn) stBtn.style.display=(nearST&&!smapNearNPC)?'flex':'none';
       }
 
       // ── PAINT BALL portal animasi & butang ──
@@ -28449,7 +30692,7 @@ function glbPrepareModel(data, forcedScale){
   return { model:model, mixer:mixer, scale:s };
 }
 
-function glbApplySkin(heroGrp, skinId){
+function glbApplySkin(heroGrp, skinId, onReady){
   if(!heroGrp) return;
   // DEBUG: kenal pasti heroGrp MANA sebenarnya yang sedang menerima skin
   // ni — window.smHero (Peta Sekolah), window.marioMesh (scene utama),
@@ -28536,6 +30779,13 @@ function glbApplySkin(heroGrp, skinId){
     heroGrp._glbIdleModel = idleModel;
     heroGrp._glbWalkModel = walkModel;  // null if this skin has no walk rig
     heroGrp._glbMoving = false;
+    // Simpan scale rig idle supaya rig AKSI/SKILL (slash, heal, bazuka, dll —
+    // lihat sistem glbPlayAction di bawah) boleh dikongsikan scale yang SAMA,
+    // supaya saiz hero tak "melompat" besar/kecil bila animasi skill dimainkan.
+    heroGrp._glbScale = idlePrep.scale;
+    heroGrp._glbActionModels = {};   // cache model aksi yang dah dimuat utk heroGrp ni
+    heroGrp._glbActionMixers = {};   // mixer sepadan setiap model aksi
+    heroGrp._glbCurrentAction = null;
 
     if(idlePrep.mixer){
       _glbMixers.push({mixer:idlePrep.mixer, model:idleModel});
@@ -28545,6 +30795,15 @@ function glbApplySkin(heroGrp, skinId){
       _glbMixers.push({mixer:walkMixer, model:walkModel});
       heroGrp._glbWalkMixer = walkMixer;
     }
+    // Simpan animation clip ASAL idle/walk (bukan model/mixer) supaya sistem
+    // SKILL (glbPlayAction) boleh "pinjam" mixer rig ni utk main animasi
+    // skill terus atas mesh sedia ada, dan boleh kembalikan clip asal ni
+    // selepas skill selesai — lihat nota panjang kat glbPlayAction pasal
+    // kenapa fail skill/*.fbx (tiada mesh sendiri) TAK BOLEH dibina jadi
+    // model berasingan (punca bug hero "halimunan" bila skill dimainkan).
+    heroGrp._glbIdleClips = (data.idle && data.idle.animations) || [];
+    heroGrp._glbWalkClips = (data.walk && data.walk.animations) || [];
+    if(typeof onReady==='function') onReady();
   });
 }
 
@@ -28597,6 +30856,27 @@ function glbRemoveSkin(heroGrp){
   });
   if(heroGrp._glbMixer){ heroGrp._glbMixer.stopAllAction(); heroGrp._glbMixer=null; }
   if(heroGrp._glbWalkMixer){ heroGrp._glbWalkMixer.stopAllAction(); heroGrp._glbWalkMixer=null; }
+  // Buang semua rig AKSI/SKILL (slash, heal, bazuka, dll) yang mungkin
+  // sudah dimuat untuk heroGrp ni — kalau tak, ia akan "bocor" (kekal dalam
+  // scene / dalam _glbMixers) selepas skin ditanggalkan.
+  if(heroGrp._glbActionModels){
+    Object.keys(heroGrp._glbActionModels).forEach(function(k){
+      var m=heroGrp._glbActionModels[k];
+      if(m && m.parent) m.parent.remove(m);
+    });
+  }
+  if(heroGrp._glbActionMixers){
+    _glbMixers = _glbMixers.filter(function(entry){
+      return !Object.keys(heroGrp._glbActionMixers).some(function(k){ return heroGrp._glbActionMixers[k]===entry.mixer; });
+    });
+    Object.keys(heroGrp._glbActionMixers).forEach(function(k){
+      heroGrp._glbActionMixers[k].stopAllAction();
+    });
+  }
+  heroGrp._glbActionModels = null;
+  heroGrp._glbActionMixers = null;
+  heroGrp._glbCurrentAction = null;
+  heroGrp._glbScale = null;
   heroGrp._glbSkinId = null;
   heroGrp._glbMoving = false;
 }
@@ -28615,7 +30895,180 @@ function glbHasSkin(heroGrp){
   return heroGrp && heroGrp._glbSkinId && heroGrp._glbSkinId.length>0;
 }
 
+// ══════════════════════════════════════════════════════════════
+//  GLB/FBX SKILL & ACTION ANIMATIONS — folder skill/ (GitHub repo sama
+//  dengan skins/) — nama fail = nama skill (spt yang di-upload):
+//    skill/archer_shot.fbx    skill/bazuka.fbx        skill/block.fbx
+//    skill/buff.fbx           skill/death.fbx         skill/Gunplay.fbx
+//    skill/Heal.fbx           skill/Jump.fbx          skill/magic_area.fbx
+//    skill/magic_attack_1.fbx skill/magic_attack_2.fbx skill/Run.fbx
+//    skill/Shooting.fbx       skill/slash.fbx         skill/Walking.fbx
+//
+//  Fail-fail ni TIADA rig idle sendiri — ia hanya animasi TAMBAHAN yang
+//  dilekat di ATAS skin yang SEDANG DIPAKAI hero (Knight/Ninja/Robot/dll).
+//  Bila skill dimainkan: rig idle/walk skin disorok sekejap, rig skill
+//  ditunjuk & dimainkan SEKALI (atau berulang utk Run/Walking), lepas
+//  siap automatik kembali ke idle/walk macam biasa.
+//
+//  Kalau nama repo/folder berbeza drpd skins/, tukar path di bawah ke
+//  URL penuh raw.githubusercontent.com (sama format macam GLB_SKINS).
+// ══════════════════════════════════════════════════════════════
+var GLB_ACTIONS = {
+  archerShot   : { file:'skill/archer_shot.fbx',     loop:false },
+  bazuka       : { file:'skill/bazuka.fbx',          loop:false },
+  block        : { file:'skill/block.fbx',           loop:true  }, // tahan sehingga dilepaskan
+  buff         : { file:'skill/buff.fbx',            loop:false },
+  death        : { file:'skill/death.fbx',           loop:false, hold:true }, // kekal di frame akhir (tak kembali idle)
+  gunplay      : { file:'skill/Gunplay.fbx',         loop:false },
+  heal         : { file:'skill/Heal.fbx',            loop:false },
+  jump         : { file:'skill/Jump.fbx',            loop:false },
+  magicArea    : { file:'skill/magic_area.fbx',      loop:false },
+  magicAttack1 : { file:'skill/magic_attack_1.fbx',  loop:false },
+  magicAttack2 : { file:'skill/magic_attack_2.fbx',  loop:false },
+  run          : { file:'skill/Run.fbx',             loop:true  },
+  shooting     : { file:'skill/Shooting.fbx',        loop:false },
+  slash        : { file:'skill/slash.fbx',           loop:false },
+  walking      : { file:'skill/Walking.fbx',         loop:true  },
+};
+var _glbActionCache={};     // "actionKey" → {scene, animations}  (fail dikongsi semua hero, tak kira skin)
+var _glbActionLoading={};
+var _glbActionCallbacks={};
 
+// Muat SATU fail skill (sekali sahaja — hasil dicache & dikongsi semua hero).
+function glbLoadActionFile(actionKey, cb){
+  var info=GLB_ACTIONS[actionKey];
+  if(!info) return cb && cb(null);
+  if(_glbActionCache[actionKey]) return cb && cb(_glbActionCache[actionKey]);
+  if(_glbActionLoading[actionKey]){
+    if(cb) _glbActionCallbacks[actionKey].push(cb);
+    return;
+  }
+  var LoaderCls=(typeof FBXLoader!=='undefined') ? FBXLoader : (typeof THREE!=='undefined' && THREE.FBXLoader) ? THREE.FBXLoader : null;
+  if(!LoaderCls){ console.warn('FBXLoader not available for skill:',actionKey); return cb && cb(null); }
+  _glbActionLoading[actionKey]=true;
+  _glbActionCallbacks[actionKey]=cb ? [cb] : [];
+  var loader=new LoaderCls();
+  loader.load(info.file, function(result){
+    _glbActionCache[actionKey]={ scene:result, animations:result.animations||[] };
+    _glbActionLoading[actionKey]=false;
+    var cbs=_glbActionCallbacks[actionKey]||[]; _glbActionCallbacks[actionKey]=[];
+    cbs.forEach(function(fn){fn(_glbActionCache[actionKey]);});
+  }, undefined, function(err){
+    console.warn('Skill FBX load failed:',actionKey,info.file,err);
+    _glbActionLoading[actionKey]=false;
+    var cbs=_glbActionCallbacks[actionKey]||[]; _glbActionCallbacks[actionKey]=[];
+    cbs.forEach(function(fn){fn(null);});
+  });
+}
+
+// Mainkan satu animasi SKILL/AKSI pada heroGrp yang SUDAH ada skin GLB
+// dipasang (glbApplySkin). Selamat panggil berkali-kali (akan queue/ignore
+// kalau fail masih loading). opts (semua opsyenal):
+//   onDone()        — dipanggil bila animasi (non-loop) selesai & rig kembali idle/walk
+//   forceLoop / forceHold — override tetapan loop/hold default action tu
+// Contoh guna:
+//   glbPlayAction(window.smHero, 'slash');
+//   glbPlayAction(window._mmoHero, 'heal', { onDone:function(){ console.log('heal selesai'); } });
+//   glbPlayAction(window.marioMesh, 'death', { });   // kekal di frame akhir
+// Kembalikan mixer rig idle/walk yang SEDANG aktif (ikut heroGrp._glbMoving)
+// kepada animasi asalnya (idle sway / walk cycle). Dipanggil selepas skill
+// (non-hold) selesai, atau bila skill dihentikan awal (glbStopAction).
+function glbRevertToBaseAnim(heroGrp){
+  if(!heroGrp || !heroGrp._glbSkinId) return; // skin dah ditanggal semasa animasi main
+  var moving = !!heroGrp._glbMoving;
+  var mixer = moving ? heroGrp._glbWalkMixer : heroGrp._glbMixer;
+  var baseClips = moving ? heroGrp._glbWalkClips : heroGrp._glbIdleClips;
+  // Kalau rig walk takde (skin ni tiada walk rig berasingan), fallback ke
+  // mixer/clip idle spt logik visibility sedia ada (glbSetMoving).
+  if(moving && !heroGrp._glbWalkModel){
+    mixer = heroGrp._glbMixer;
+    baseClips = heroGrp._glbIdleClips;
+  }
+  if(mixer){
+    mixer.stopAllAction();
+    (baseClips||[]).forEach(function(clip){
+      var a=mixer.clipAction(clip);
+      a.reset();
+      a.setLoop(THREE.LoopRepeat, Infinity);
+      a.clampWhenFinished=false;
+      a.play();
+    });
+  }
+  heroGrp._glbCurrentAction=null;
+}
+
+// Mainkan satu animasi SKILL/AKSI pada heroGrp yang SUDAH ada skin GLB
+// dipasang (glbApplySkin).
+//
+// PENTING — kenapa ni TAK bina model 3D baru drpd fail skill/*.fbx:
+// Fail-fail tu sengaja HANYA animasi (skeleton + keyframe), TIADA mesh
+// sendiri (lihat nota di GLB_ACTIONS di atas). Versi asal fungsi ni cuba
+// glbPrepareModel() fail tu (macam skin biasa) lalu TAMBAH model baru
+// & SOROK rig idle/walk sedia ada — hasilnya: model baru tu 0 mesh (jadi
+// tak render apa-apa = "halimunan"), manakala rig SEBENAR yang ada mesh
+// pula disorokkan. Itu punca bug hero hilang bila skill dimainkan.
+//
+// Fix: jangan bina model/mixer baru langsung. Sebaliknya "pinjam" mixer
+// rig idle/walk yang SEDANG ditunjuk (mesh kekal visible sepanjang masa)
+// dan main clip animasi skill tu terus atasnya (retarget by bone name —
+// selamat sebab semua fail skill & rig kongsi skeleton/nama tulang yang
+// sama, spt lazim utk aset Mixamo). Lepas skill habis, mixer dikembalikan
+// ke clip idle/walk asal (glbRevertToBaseAnim).
+function glbPlayAction(heroGrp, actionKey, opts){
+  opts = opts||{};
+  if(!heroGrp || !heroGrp._glbSkinId){ console.warn('glbPlayAction: heroGrp tiada skin GLB dipasang'); return; }
+  var info=GLB_ACTIONS[actionKey];
+  if(!info){ console.warn('glbPlayAction: action tak dikenali:',actionKey); return; }
+
+  function playOnBaseRig(clips){
+    if(!heroGrp._glbSkinId) return; // skin dah ditanggal sementara loading
+    var moving = !!heroGrp._glbMoving;
+    var model = (moving && heroGrp._glbWalkModel) ? heroGrp._glbWalkModel : heroGrp._glbIdleModel;
+    var mixer = (moving && heroGrp._glbWalkMixer) ? heroGrp._glbWalkMixer : heroGrp._glbMixer;
+    if(!model || !mixer || !clips || !clips.length){
+      console.warn('glbPlayAction: tiada rig/mixer/clip sedia utk mainkan skill:',actionKey);
+      if(opts.onDone) opts.onDone();
+      return;
+    }
+    var isLoop = (opts.forceLoop!==undefined) ? opts.forceLoop : info.loop;
+    var isHold = (opts.forceHold!==undefined) ? opts.forceHold : !!info.hold;
+
+    mixer.stopAllAction();
+    clips.forEach(function(clip){
+      // Sama macam glbPrepareModel: buang track ".scale" yang kadang
+      // dibakar dalam clip Mixamo (elak model tetiba jadi gergasi/kecil
+      // bila skeleton skill tu skin punya unit sikit berbeza).
+      clip.tracks = clip.tracks.filter(function(t){ return t.name.indexOf('.scale')===-1; });
+      var a=mixer.clipAction(clip, model);
+      a.reset();
+      a.setLoop(isLoop ? THREE.LoopRepeat : THREE.LoopOnce, isLoop ? Infinity : 1);
+      a.clampWhenFinished = !isLoop; // kekal di frame akhir sehingga kita alih (bukan loop balik ke T-pose)
+      a.play();
+    });
+    heroGrp._glbCurrentAction=actionKey;
+    if(!isLoop){
+      mixer.removeEventListener('finished', mixer._glbFinishedHandler||function(){});
+      mixer._glbFinishedHandler=function(){
+        if(!isHold) glbRevertToBaseAnim(heroGrp);
+        if(opts.onDone) opts.onDone();
+      };
+      mixer.addEventListener('finished', mixer._glbFinishedHandler);
+    }
+  }
+
+  // Fail skill dikongsi/dicache global (sekali muat, dipakai semua hero) —
+  // lihat glbLoadActionFile.
+  glbLoadActionFile(actionKey, function(data){
+    if(!data){ if(opts.onDone) opts.onDone(); return; }
+    playOnBaseRig(data.animations);
+  });
+}
+
+// Hentikan animasi skill semasa (contoh: lepaskan block) & kembali ke idle/walk.
+function glbStopAction(heroGrp){
+  if(!heroGrp || !heroGrp._glbCurrentAction) return;
+  glbRevertToBaseAnim(heroGrp);
+}
 
 function shopUseInGame(itemId){
   const item=SHOP_ITEMS.find(i=>i.id===itemId);
@@ -70067,6 +72520,33 @@ function roomVoiceCleanup(){
       <button id="roomPosterCloseBtn" onclick="roomClosePoster()" style="background:#e52521;color:#fff;border:3px solid #ff6666;padding:5px 20px;font-family:'Press Start 2P',monospace;font-size:clamp(8px,1.4vw,10px);cursor:pointer;border-radius:4px;margin-top:8px;">✖ TUTUP</button>
     </div>
   </div>
+</div>
+<!-- Menara Solo Leveling — 100 Tingkat overlay (Open-World Action RPG) -->
+<div id="soloTowerOverlay">
+  <canvas id="soloCanvas"></canvas>
+  <div id="soloTowerHud">
+    <div id="soloFloorLabel">TINGKAT 1 / 50</div>
+    <div id="soloRankLabel">E-RANK</div>
+    <div id="soloBestLabel">TERBAIK: 0</div>
+    <div id="soloMonsterName">Rat Bayangan</div>
+    <div id="soloEnemiesLeft">Musuh baki: 0</div>
+    <div id="soloPlayerHp">❤️❤️❤️❤️❤️❤️</div>
+  </div>
+  <div id="soloJoyZone" ontouchstart="soloJoyStart(event)" ontouchmove="soloJoyMove(event)" ontouchend="soloJoyEnd(event)" onmousedown="soloJoyStart(event)" onmousemove="soloJoyMove(event)" onmouseup="soloJoyEnd(event)" onmouseleave="soloJoyEnd(event)"></div>
+  <div id="soloJoyBase"><div id="soloJoyStick"></div></div>
+  <div id="soloSkillBar"></div>
+  <button id="soloExitBtn" onclick="soloTowerClose()">✖ TINGGALKAN GERBANG</button>
+</div>
+<div id="soloQuizOverlay">
+  <div id="soloQuizBox">
+    <div id="soloQuizTag">💀 SOALAN PUKULAN MAUT</div>
+    <div id="soloQuizText"></div>
+    <div id="soloQuizOpts"></div>
+    <div id="soloQuizFeedback"></div>
+  </div>
+</div>
+<div id="soloEndOverlay">
+  <div id="soloEndBox"></div>
 </div>
 </body>
 </html>

@@ -161,6 +161,32 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 #soloQuizOpts button:active{transform:scale(0.95);}
 #soloQuizFeedback{margin-top:12px;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.7vw,11px);min-height:16px;}
 
+/* ── Dewan Exam — sesi peperiksaan ── */
+#examOverlay{display:none;position:fixed;inset:0;background:rgba(0,4,16,0.92);z-index:170;align-items:center;justify-content:center;padding:16px;}
+#examOverlay.show{display:flex;}
+#examQuizBox{border:5px solid #ffd700;background:#050b1f;padding:22px 22px;text-align:center;box-shadow:8px 8px 0 #0a1a3d;max-width:92vw;width:440px;}
+#examQuizTag{color:#ffd700;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.6vw,9px);margin-bottom:6px;letter-spacing:1px;}
+#examQuizProgress{color:#7fdfff;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,8px);margin-bottom:12px;}
+#examQuizText{color:#fff;font-family:'Press Start 2P',monospace;font-size:clamp(8px,2vw,12px);white-space:pre-line;line-height:1.7;margin-bottom:16px;}
+#examQuizOpts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+#examQuizOpts button{font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.6vw,10px);padding:12px 6px;background:#0a1a3d;border:3px solid #ffd700;color:#ffe9a8;cursor:pointer;border-radius:4px;}
+#examQuizOpts button:active{transform:scale(0.95);}
+#examQuizFeedback{margin-top:12px;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.7vw,11px);min-height:16px;}
+#examQuitBtn{margin-top:16px;background:#3a0000;border:2px solid #ff5555;color:#ff9999;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,8px);padding:8px 14px;border-radius:4px;cursor:pointer;}
+#examEndOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:160;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+#examEndOverlay.show{display:flex;}
+#examEndBox{border:5px solid #ffd700;background:#050b1f;padding:26px 30px;text-align:center;box-shadow:10px 10px 0 #0a1a3d;max-width:92vw;width:480px;max-height:90vh;overflow-y:auto;}
+#examEndBox h2{font-family:'Press Start 2P',monospace;font-size:clamp(12px,3vw,20px);margin-bottom:10px;color:#ffd700;}
+#examEndBox p{color:#fff;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.6vw,10px);margin:6px 0;}
+#examEndBox p.big{color:#00eaff;font-size:clamp(9px,2vw,13px);}
+#examRankTabs{display:flex;justify-content:center;gap:6px;margin:14px 0 8px;flex-wrap:wrap;}
+#examRankTabs button{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.3vw,8px);padding:6px 10px;background:#0a1a3d;border:2px solid #7fdfff;color:#7fdfff;border-radius:4px;cursor:pointer;}
+#examRankTabs button.active{background:#ffd700;color:#0a1a3d;border-color:#ffd700;}
+#examRankList{text-align:left;font-family:monospace;font-size:clamp(7px,1.5vw,10px);color:#eee;max-height:220px;overflow-y:auto;margin:8px 0;}
+#examRankList .row{display:flex;justify-content:space-between;padding:3px 6px;border-bottom:1px solid rgba(255,215,0,0.12);}
+#examRankList .row.me{background:rgba(255,215,0,0.12);}
+#examEndBox .obtn{margin:8px 6px 0;}
+
 /* ── Auth Screen (Roblox 3D Style) ── */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
 #loginScreen{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
@@ -420,6 +446,7 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 #smapTopBar{width:100%;background:rgba(0,0,0,0.88);border-bottom:3px solid #ffd700;padding:6px 14px;padding-top:calc(6px + env(safe-area-inset-top));padding-left:calc(14px + env(safe-area-inset-left));padding-right:calc(14px + env(safe-area-inset-right));display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;z-index:2;}
 #smapTopTitle{color:#ffd700;font-size:clamp(7px,2vw,12px);text-shadow:2px 2px 0 #e52521;}
 #smapLocLabel{color:#00e676;font-size:clamp(5px,1.4vw,9px);}
+#smapWeatherLabel{color:#ffe082;font-size:clamp(5px,1.3vw,9px);white-space:nowrap;}
 #smapCloseTopBtn{background:#e52521;color:#fff;border:3px solid #fff;padding:5px 12px;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,9px);cursor:pointer;}
 #smapCloseTopBtn:hover{background:#ffd700;color:#000;}
 #smapMain{display:flex;flex:1;width:100%;overflow:hidden;min-height:0;position:relative;flex-direction:column;}
@@ -930,6 +957,12 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 #smapVehicleBtn{position:absolute;width:56px;height:56px;border-radius:12px;border:3px solid rgba(255,255,255,0.7);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;-webkit-tap-highlight-color:transparent;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.2;z-index:10;transition:all .1s;bottom:calc(82px + env(safe-area-inset-bottom));right:calc(16px + env(safe-area-inset-right));background:radial-gradient(circle at 35% 35%,rgba(150,80,255,0.7),rgba(80,0,180,0.85));box-shadow:0 2px 12px rgba(150,80,255,0.5);}
 #smapVehicleBtn.mounted{background:radial-gradient(circle at 35% 35%,rgba(255,60,60,0.8),rgba(150,0,0,0.9));box-shadow:0 2px 14px rgba(255,60,60,0.6);}
 #smapVehicleBtn:active{transform:scale(0.92);}
+/* ── Bot Memancing (boat) button ── */
+#smapBoatBtn{position:absolute;width:56px;height:56px;border-radius:12px;border:3px solid rgba(255,255,255,0.7);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;-webkit-tap-highlight-color:transparent;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.2;z-index:10;transition:all .1s;bottom:calc(146px + env(safe-area-inset-bottom));right:calc(16px + env(safe-area-inset-right));background:radial-gradient(circle at 35% 35%,rgba(0,200,255,0.75),rgba(0,90,170,0.9));box-shadow:0 2px 12px rgba(0,200,255,0.5);}
+#smapBoatBtn.mounted{background:radial-gradient(circle at 35% 35%,rgba(255,60,60,0.8),rgba(150,0,0,0.9));box-shadow:0 2px 14px rgba(255,60,60,0.6);}
+#smapBoatBtn:active{transform:scale(0.92);}
+#smapBoatFishBtn{position:absolute;width:56px;height:56px;border-radius:50%;border:3px solid #fff;color:#fff;font-size:16px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;-webkit-tap-highlight-color:transparent;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.2;z-index:10;transition:all .1s;bottom:calc(146px + env(safe-area-inset-bottom));right:calc(80px + env(safe-area-inset-right));background:radial-gradient(circle at 35% 35%,rgba(0,230,150,0.85),rgba(0,110,70,0.95));box-shadow:0 2px 14px rgba(0,230,150,0.55);}
+#smapBoatFishBtn:active{transform:scale(0.92);}
 #vehiclePanelOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:610;align-items:center;justify-content:center;}
 #vehiclePanelOverlay.show{display:flex;}
 .veh-box{background:linear-gradient(160deg,#150a24 0%,#0a0a1e 100%);border:4px solid #9c4dff;box-shadow:0 0 0 1px rgba(156,77,255,.3),0 0 50px rgba(156,77,255,.25),8px 8px 0 #3a1a6e;padding:16px;max-width:min(560px,94vw);width:100%;max-height:88vh;overflow-y:auto;border-radius:4px;}
@@ -1788,7 +1821,30 @@ window.addEventListener('error', function(e){
   window._fbSendWorld = (who, text) => {
     if (!window._fbReady) return false;
     const t = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-    push(worldRef, { who, text, time: t, ts: Date.now() });
+    const msgObj = { who, text, time: t, ts: Date.now() };
+    let newRef;
+    try{
+      newRef = push(worldRef, msgObj);
+    }catch(e){
+      return false; // gagal terus hantar — biar smapWorldSend() guna fallback localStorage
+    }
+    // FIX: papar mesej sendiri SERTA-MERTA (optimistic echo) — jangan tunggu
+    // Firebase round-trip (onChildAdded) sebab kalau baca-balik lambat/gagal,
+    // mesej sendiri tak pernah keluar walaupun berjaya dihantar.
+    const key = newRef && newRef.key;
+    if (key && !_fbLocalMsgs.find(x => x._key === key)) {
+      _fbLocalMsgs.push({ ...msgObj, _key: key });
+      if (_fbLocalMsgs.length > 100) _fbLocalMsgs = _fbLocalMsgs.slice(-100);
+      if (typeof smapRenderWorldMsgs === 'function') smapRenderWorldMsgs();
+    }
+    // Jika write sebenar ke Firebase gagal (contoh: permission denied), maklumkan pengguna
+    if(newRef && newRef.catch){
+      newRef.catch(err=>{
+        console.warn('World chat send failed:', err);
+        const el = document.getElementById('smapWorldMsgs');
+        if(el) el.innerHTML += '<div class="smap-msg sys">⚠ Mesej mungkin tidak sampai ke server (semak sambungan internet).</div>';
+      });
+    }
     return true;
   };
 
@@ -2988,6 +3044,7 @@ setTimeout(()=>{
 <div id="schoolMapOverlay">
   <div id="smapTopBar">
     <span id="smapTopTitle">🏫 KAWASAN SEKOLAH 3D</span>
+    <span id="smapWeatherLabel">☀️ Musim Panas • 🔆 Siang</span>
     <span id="smapLocLabel">📍 —</span>
     <button id="smapCloseTopBtn" onclick="smapClose()">✖ KELUAR</button>
   </div>
@@ -3059,6 +3116,10 @@ setTimeout(()=>{
       <div id="smapBagBtn" onclick="heroBagOpen()">🎒<br><span style="font-size:7px;">BAG</span></div>
       <!-- VEHICLE button (tunggang/turun kenderaan) -->
       <div id="smapVehicleBtn" onclick="vehicleHudPress()" style="display:none;">🏍️<br><span style="font-size:6px;">KENDERAAN</span></div>
+      <!-- BOT MEMANCING button (naik/turun bot utk belayar & memancing di laut) -->
+      <div id="smapBoatBtn" onclick="smBoatMount()">🚤<br><span style="font-size:6px;">BOT</span></div>
+      <!-- Butang PANCING (hanya muncul bila sedang di atas bot & bot berhenti) -->
+      <div id="smapBoatFishBtn" onclick="smBoatFish()" style="display:none;">🎣<br><span style="font-size:6px;">PANCING</span></div>
       <!-- Papan Dam button (shows when near board) -->
       <div id="smapDamBtn" onclick="damGameOpen()" style="display:none;position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));left:calc(172px + env(safe-area-inset-left));width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,215,0,0.7),rgba(180,120,0,0.85));border:3px solid #fff;color:#000;font-size:16px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.3;z-index:10;box-shadow:0 2px 14px rgba(255,200,0,0.6);">♟<br><span style="font-size:8px;">MAIN</span></div>
       <!-- Papan Catur button (shows when near chess board) -->
@@ -3077,6 +3138,9 @@ setTimeout(()=>{
       <!-- Solo Leveling Tower button (shows when near gate at X:260 Z:1) -->
       <div id="smapSoloTowerBtn" onclick="(function(){smapActive=false;if(typeof smapStopWorldPoller==='function')smapStopWorldPoller();if(sm3&&sm3.presenceClear)sm3.presenceClear();if(smapRAF)cancelAnimationFrame(smapRAF);smapKeys={};document.getElementById('schoolMapOverlay').classList.remove('show');document.getElementById('smapNpcDialog').style.display='none';var mc=document.getElementById('c'),wr=document.getElementById('smapCanvasWrap');if(mc&&mc.parentElement===wr){mc.style.position='';mc.style.inset='';mc.style.width='';mc.style.height='';document.body.insertBefore(mc,document.body.firstChild);renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();}setTimeout(menuGoSoloTower,200);})()" style="display:none;position:absolute;bottom:310px;left:16px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(10,5,30,0.95),rgba(60,0,90,0.95));border:3px solid #7c4dff;color:#c8a8ff;font-size:20px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:Press Start 2P,monospace;text-align:center;line-height:1.3;z-index:10;box-shadow:0 2px 22px rgba(124,77,255,0.8);">🌀<br><span style="font-size:5px;color:#c8a8ff;">GERBANG</span></div>
 
+      <!-- Dewan Exam button (shows when near pintu Dewan Exam, Pulau TL) -->
+      <div id="smapExamBtn" onclick="examStart()" style="display:none;position:absolute;bottom:400px;left:16px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(10,20,60,0.95),rgba(60,45,0,0.95));border:3px solid #ffd700;color:#ffd700;font-size:20px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:Press Start 2P,monospace;text-align:center;line-height:1.3;z-index:10;box-shadow:0 2px 22px rgba(255,215,0,0.7);">📝<br><span style="font-size:5px;color:#ffd700;">EXAM</span></div>
+
       <!-- 🐾 PET SYSTEM: Butang tangkap & beg pet -->
       <div id="smapPetCatchBtn" onclick="petTryCatch()" style="display:none;position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));left:calc(304px + env(safe-area-inset-left));width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(0,200,120,0.85),rgba(0,100,60,0.95));border:3px solid #fff;color:#fff;font-size:18px;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;font-family:'Press Start 2P',monospace;text-align:center;line-height:1.2;z-index:15;box-shadow:0 2px 14px rgba(0,230,118,0.6);-webkit-tap-highlight-color:transparent;">🎯<br><span style="font-size:6px;">TANGKAP</span></div>
       <!-- PVP Pet Challenge button (shows when near another player) -->
@@ -3087,6 +3151,8 @@ setTimeout(()=>{
       <div id="smapCoordDisplay" style="position:absolute;top:10px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1vw,8px);z-index:11;pointer-events:none;user-select:none;background:rgba(0,0,0,0.5);padding:4px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);">📌 X:0 Z:0</div>
       <a href="https://www.facebook.com/profile.php?id=100078015591115" target="_blank" rel="noopener" style="position:absolute;top:34px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(5px,0.8vw,7px);z-index:11;pointer-events:auto;user-select:none;background:rgba(24,24,60,0.7);padding:3px 8px;border-radius:4px;border:1px solid #3b5998;text-decoration:none;box-shadow:0 0 6px rgba(59,89,152,0.4);">📘 Facebook</a>
       <div id="smapScreenshotBtn" onclick="smapTakeScreenshot()" style="position:absolute;top:56px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(5px,0.8vw,7px);z-index:11;pointer-events:auto;user-select:none;background:rgba(24,24,60,0.7);padding:3px 8px;border-radius:4px;border:1px solid #e1306c;cursor:pointer;box-shadow:0 0 6px rgba(225,48,108,0.4);">📸 Share</div>
+      <!-- Panel Cuaca (bawah butang Share): awan+matahari waktu siang, bintang+bulan+aurora/bintang jatuh waktu malam -->
+      <div id="smapWeatherPanel" style="position:absolute;top:80px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(4.5px,0.75vw,6.5px);line-height:1.7;z-index:11;pointer-events:none;user-select:none;background:rgba(24,24,60,0.7);padding:4px 8px;border-radius:4px;border:1px solid #6a8aaa;box-shadow:0 0 6px rgba(106,138,170,0.4);text-align:right;">☀️ Musim Panas • 🔆 Siang<br>☁️ Awan</div>
       <!-- Screenshot Share Overlay -->
       <div id="smapScreenshotOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);font-family:'Press Start 2P',monospace;color:#fff;overflow-y:auto;"></div>
       <!-- Daily Claim Overlay -->
@@ -10853,6 +10919,351 @@ let smapLastT=0;
 // 3D scene objects
 let sm3={}; // holds renderer, scene, camera, hero, npcMeshes, etc.
 
+// ══════════════════════════════════════════════════════════════════
+//  SISTEM CUACA & 4 MUSIM + SIANG/MALAM — PETA SEKOLAH 3D
+// ══════════════════════════════════════════════════════════════════
+const SM_SEASONS=[
+  {key:'bunga', name:'🌸 Musim Bunga', emoji:'🌸', sky:0x9fe0ff, fog:0xafe8f5, sun:0xfff2da, ambient:0xfff2e0, particle:'petal',  particleColor:0xffb6d8, particleRate:14},
+  {key:'panas', name:'☀️ Musim Panas', emoji:'☀️', sky:0x5ec8ff, fog:0x87ceeb, sun:0xfff5cc, ambient:0xffffff, particle:null,     particleColor:0xffffff, particleRate:0 },
+  {key:'luruh', name:'🍂 Musim Luruh', emoji:'🍂', sky:0xd8a15a, fog:0xe0b478, sun:0xffb84d, ambient:0xffe0b0, particle:'leaf',   particleColor:0xd2691e, particleRate:16},
+  {key:'sejuk', name:'❄️ Musim Sejuk', emoji:'❄️', sky:0xbcd9ea, fog:0xd7ecf7, sun:0xdfe8ff, ambient:0xe8f0ff, particle:'snow',   particleColor:0xffffff, particleRate:22},
+];
+const smWeather={
+  season:1,           // index dalam SM_SEASONS — mula di Musim Panas
+  dayTime:0.30,        // 0..1 → 0=tengah malam, 0.25=subuh, 0.5=tengahari, 0.75=senja
+  dayLength:480,        // saat SEBENAR utk 1 kitaran siang/malam penuh (8 minit)
+  seasonLength:1800,    // saat SEBENAR utk 1 musim (30 minit) sebelum tukar musim seterusnya
+  seasonT:0,
+  particleGroup:null,
+  particles:[],
+  labelT:0,
+  ready:false,
+};
+window.smWeather=smWeather;
+
+// ── Helper: canvas texture bulat (glow) utk matahari/bulan/bintang ──
+function smMakeGlowTexture(colorInner,colorOuter,size){
+  size=size||128;
+  const cnv=document.createElement('canvas'); cnv.width=cnv.height=size;
+  const ctx=cnv.getContext('2d');
+  const g=ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+  g.addColorStop(0,colorInner); g.addColorStop(1,colorOuter);
+  ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
+  return new THREE.CanvasTexture(cnv);
+}
+// ── Helper: canvas texture awan (beberapa gumpalan lembut) ──
+function smMakeCloudTexture(){
+  const s=128;
+  const cnv=document.createElement('canvas'); cnv.width=cnv.height=s;
+  const ctx=cnv.getContext('2d');
+  for(let i=0;i<7;i++){
+    const cx=s*0.5+(Math.random()-0.5)*s*0.55;
+    const cy=s*0.5+(Math.random()-0.5)*s*0.32;
+    const r=s*(0.16+Math.random()*0.2);
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0,'rgba(255,255,255,0.95)');
+    g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  }
+  return new THREE.CanvasTexture(cnv);
+}
+// ── Bina semua objek langit (matahari, bulan, awan, bintang, aurora, bintang jatuh) sekali sahaja ──
+function smBuildSkyObjects(scene){
+  const sky=smWeather.sky={};
+  // Matahari
+  const sunTex=smMakeGlowTexture('rgba(255,250,220,1)','rgba(255,200,80,0)');
+  const sunSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:sunTex,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));
+  sunSprite.scale.set(34,34,1);
+  scene.add(sunSprite);
+  sky.sunSprite=sunSprite;
+  // Bulan
+  const moonTex=smMakeGlowTexture('rgba(235,240,255,1)','rgba(200,210,255,0)');
+  const moonSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex,transparent:true,opacity:0,depthWrite:false}));
+  moonSprite.scale.set(22,22,1);
+  scene.add(moonSprite);
+  sky.moonSprite=moonSprite;
+  // Awan
+  const cloudTex=smMakeCloudTexture();
+  const cloudGrp=new THREE.Group(); cloudGrp.name='smClouds';
+  const cloudDefs=[];
+  for(let i=0;i<14;i++){
+    const m=new THREE.Sprite(new THREE.SpriteMaterial({map:cloudTex,transparent:true,opacity:0.7,depthWrite:false}));
+    const scl=18+Math.random()*22;
+    m.scale.set(scl*1.6,scl,1);
+    const ang=Math.random()*Math.PI*2, rad=60+Math.random()*160;
+    m.position.set(Math.cos(ang)*rad, 45+Math.random()*22, Math.sin(ang)*rad);
+    cloudGrp.add(m);
+    cloudDefs.push({mesh:m,spd:1.2+Math.random()*2.2});
+  }
+  scene.add(cloudGrp);
+  sky.cloudGroup=cloudGrp; sky.cloudDefs=cloudDefs;
+  // Bintang (malam)
+  const starCount=260;
+  const starGeo=new THREE.BufferGeometry();
+  const pos=new Float32Array(starCount*3);
+  for(let i=0;i<starCount;i++){
+    const r=280+Math.random()*40;
+    const th=Math.random()*Math.PI*2;
+    const ph=Math.random()*Math.PI*0.42;
+    pos[i*3]=Math.cos(th)*Math.cos(ph)*r;
+    pos[i*3+1]=Math.sin(ph)*r+30;
+    pos[i*3+2]=Math.sin(th)*Math.cos(ph)*r;
+  }
+  starGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const starTex=smMakeGlowTexture('rgba(255,255,255,1)','rgba(255,255,255,0)',32);
+  const starMat=new THREE.PointsMaterial({size:2.6,map:starTex,transparent:true,opacity:0,depthWrite:false,sizeAttenuation:false});
+  const starsPoints=new THREE.Points(starGeo,starMat);
+  scene.add(starsPoints);
+  sky.starsPoints=starsPoints;
+  // Aurora (jarang muncul, waktu malam sahaja)
+  const auroraCnv=document.createElement('canvas'); auroraCnv.width=64; auroraCnv.height=128;
+  const actx=auroraCnv.getContext('2d');
+  const ag=actx.createLinearGradient(0,0,0,128);
+  ag.addColorStop(0,'rgba(60,255,170,0)');
+  ag.addColorStop(0.35,'rgba(70,255,180,0.55)');
+  ag.addColorStop(0.65,'rgba(140,110,255,0.45)');
+  ag.addColorStop(1,'rgba(140,110,255,0)');
+  actx.fillStyle=ag; actx.fillRect(0,0,64,128);
+  const auroraTex=new THREE.CanvasTexture(auroraCnv);
+  const auroraGrp=new THREE.Group(); auroraGrp.name='smAurora';
+  for(let i=0;i<5;i++){
+    const w=40+Math.random()*22, h=60+Math.random()*30;
+    const plane=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:auroraTex,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
+    plane.position.set(-90+i*45+(Math.random()-0.5)*20, 85+Math.random()*15, -180-Math.random()*40);
+    plane.rotation.y=(Math.random()-0.5)*0.5;
+    auroraGrp.add(plane);
+  }
+  scene.add(auroraGrp);
+  sky.auroraGroup=auroraGrp;
+  sky.auroraActive=false; sky.auroraOpacity=0; sky.auroraTimer=40+Math.random()*60; sky.auroraDuration=0;
+  // Bintang jatuh (tahi bintang) — jarang berlaku, waktu malam sahaja
+  const shootGeo=new THREE.BufferGeometry();
+  shootGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
+  const shootLine=new THREE.Line(shootGeo,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0}));
+  scene.add(shootLine);
+  sky.shootLine=shootLine;
+  sky.shootActive=false; sky.shootT=0; sky.shootTimer=15+Math.random()*30;
+  sky.shootFrom=new THREE.Vector3(); sky.shootTo=new THREE.Vector3();
+}
+// ── Kembalikan objek langit sedia ada ke scene baru (bila peta sekolah dibina semula) ──
+function smSkyReattach(scene){
+  const sky=smWeather.sky; if(!sky) return;
+  scene.add(sky.sunSprite);
+  scene.add(sky.moonSprite);
+  scene.add(sky.cloudGroup);
+  scene.add(sky.starsPoints);
+  scene.add(sky.auroraGroup);
+  scene.add(sky.shootLine);
+}
+// ── Bina kumpulan partikel cuaca (hujan bunga/daun/salji) ──
+function smInitWeatherSystem(scene){
+  if(smWeather.particleGroup){ scene.add(smWeather.particleGroup); smSkyReattach(scene); smWeather.ready=true; return; }
+  const grp=new THREE.Group();
+  grp.name='smWeatherParticles';
+  scene.add(grp);
+  smWeather.particleGroup=grp;
+  smWeather.particles=[];
+  smBuildSkyObjects(scene);
+  smWeather.ready=true;
+}
+
+// ── Tukar semua partikel sedia ada kepada jenis musim baru ──
+function smWeatherRebuildParticles(){
+  const grp=smWeather.particleGroup;
+  if(!grp) return;
+  while(grp.children.length){
+    const c=grp.children.pop();
+    if(c.geometry) c.geometry.dispose();
+    if(c.material) c.material.dispose();
+  }
+  smWeather.particles=[];
+  const s=SM_SEASONS[smWeather.season];
+  if(!s.particle) return;
+  const count = s.particle==='snow' ? 90 : 55;
+  const mat=new THREE.MeshBasicMaterial({color:s.particleColor,transparent:true,opacity:0.85,side:THREE.DoubleSide});
+  const geo = s.particle==='snow'
+    ? new THREE.CircleGeometry(0.14,6)
+    : (s.particle==='petal' ? new THREE.CircleGeometry(0.16,5) : new THREE.PlaneGeometry(0.28,0.2));
+  for(let i=0;i<count;i++){
+    const m=new THREE.Mesh(geo,mat);
+    const px=(Math.random()-0.5)*160, pz=(Math.random()-0.5)*160, py=Math.random()*26+2;
+    m.position.set(px,py,pz);
+    m.rotation.z=Math.random()*Math.PI*2;
+    grp.add(m);
+    smWeather.particles.push({
+      mesh:m,
+      fallSpd:0.5+Math.random()*(s.particle==='snow'?0.9:1.6),
+      swaySpd:0.6+Math.random()*1.2,
+      swayAmp:0.4+Math.random()*1.1,
+      swayPhase:Math.random()*Math.PI*2,
+      spinSpd:(Math.random()-0.5)*1.4,
+    });
+  }
+}
+
+// ── Kemas kini kitaran cuaca/musim/siang-malam setiap frame ──
+function smUpdateWeatherSystem(dt,heroX,heroZ){
+  if(!smWeather.ready) return;
+  const scene=sm3.scene, sun=sm3.sun, amb=sm3.amb;
+  if(!scene||!sun||!amb) return;
+
+  // ── Kemajuan masa ──
+  smWeather.dayTime=(smWeather.dayTime + dt/smWeather.dayLength) % 1;
+  smWeather.seasonT += dt;
+  if(smWeather.seasonT >= smWeather.seasonLength){
+    smWeather.seasonT=0;
+    smWeather.season=(smWeather.season+1)%SM_SEASONS.length;
+    smWeatherRebuildParticles();
+  }
+  if(!smWeather.particleGroup.children.length && SM_SEASONS[smWeather.season].particle){
+    smWeatherRebuildParticles();
+  }
+
+  const season=SM_SEASONS[smWeather.season];
+  const t=smWeather.dayTime;
+  // curve terang: puncak di tengahari (t=0.5), gelap di tengah malam (t=0)
+  const brightness=Math.max(0.06, Math.sin(t*Math.PI*2-Math.PI/2)*0.5+0.5); // 0..1
+  const isNight = brightness<0.22;
+  const isDawnDusk = brightness>=0.22 && brightness<0.5;
+
+  // ── Warna langit/fog: campur warna musim dengan gelap malam ──
+  const nightTint=new THREE.Color(0x030818);
+  const seasonSky=new THREE.Color(season.sky);
+  const seasonFog=new THREE.Color(season.fog);
+  const skyMix=seasonSky.clone().lerp(nightTint,1-brightness);
+  const fogMix=seasonFog.clone().lerp(nightTint,1-brightness);
+  scene.background.copy(skyMix);
+  if(scene.fog) scene.fog.color.copy(fogMix);
+
+  // ── Cahaya matahari: warna musim, malap waktu subuh/senja & malam ──
+  const seasonSun=new THREE.Color(season.sun);
+  const duskColor=new THREE.Color(0xff8a50);
+  const sunColor = isDawnDusk ? seasonSun.clone().lerp(duskColor,0.4) : seasonSun;
+  sun.color.copy(sunColor);
+  sun.intensity=0.15+brightness*1.25;
+
+  // ── Cahaya ambient: musim + terang/gelap ──
+  amb.color.copy(new THREE.Color(season.ambient).lerp(nightTint,1-brightness*0.85));
+  amb.intensity=0.18+brightness*0.5;
+
+  // ── Kedudukan matahari (naik dari timur, terbenam ke barat) ──
+  const sunAngle=t*Math.PI*2 - Math.PI/2;
+  sun.position.set(Math.cos(sunAngle)*60, Math.max(6,Math.sin(sunAngle)*55+10), 20);
+
+  // ── Gerakkan partikel cuaca (bunga/daun/salji) ──
+  if(smWeather.particles.length){
+    const hx=heroX||0, hz=heroZ||0;
+    smWeather.particles.forEach(p=>{
+      const m=p.mesh;
+      m.position.y-=p.fallSpd*dt;
+      p.swayPhase+=p.swaySpd*dt;
+      m.position.x+=Math.sin(p.swayPhase)*p.swayAmp*dt;
+      m.rotation.z+=p.spinSpd*dt;
+      if(m.position.y<0.1){
+        m.position.y=24+Math.random()*6;
+        m.position.x=hx+(Math.random()-0.5)*160;
+        m.position.z=hz+(Math.random()-0.5)*160;
+      }
+    });
+  }
+
+  // ── Objek langit: matahari, bulan, awan, bintang, aurora & bintang jatuh ──
+  const sky=smWeather.sky;
+  if(sky){
+    const hx=heroX||0, hz=heroZ||0;
+    const skyRadius=230;
+    // Matahari — ikut kedudukan sebenar cahaya, pudar waktu senja/subuh & hilang waktu malam
+    sky.sunSprite.position.set(hx+Math.cos(sunAngle)*skyRadius, Math.max(-30,Math.sin(sunAngle)*skyRadius*0.55+40), hz+20);
+    sky.sunSprite.material.opacity=Math.max(0,Math.min(1,(brightness-0.12)*1.6));
+    // Bulan — sentiasa bertentangan dgn matahari, hanya nampak waktu gelap
+    const moonAngle=sunAngle+Math.PI;
+    sky.moonSprite.position.set(hx+Math.cos(moonAngle)*skyRadius, Math.max(-30,Math.sin(moonAngle)*skyRadius*0.55+40), hz+20);
+    sky.moonSprite.material.opacity=Math.max(0,Math.min(1,(0.55-brightness)*2.2));
+    // Awan — hanyut perlahan, ikut hero, lebih nampak waktu siang, malap sikit waktu malam
+    sky.cloudDefs.forEach(c=>{
+      c.mesh.position.x+=c.spd*dt;
+      if(c.mesh.position.x-hx>220) c.mesh.position.x=hx-200+Math.random()*20;
+      c.mesh.material.opacity=(0.35+brightness*0.4);
+    });
+    // Bintang — hanya nampak waktu malam, beransur pudar masuk waktu senja
+    sky.starsPoints.position.set(hx,0,hz);
+    sky.starsPoints.material.opacity=Math.max(0,Math.min(0.95,(0.32-brightness)*2.6));
+    // Aurora — jarang muncul, waktu malam gelap sahaja, beransur masuk/keluar
+    if(isNight){
+      sky.auroraTimer-=dt;
+      if(!sky.auroraActive && sky.auroraTimer<=0){
+        sky.auroraActive=true;
+        sky.auroraDuration=25+Math.random()*35;
+      }
+      if(sky.auroraActive){
+        sky.auroraDuration-=dt;
+        sky.auroraOpacity=Math.min(1,sky.auroraOpacity+dt*0.3);
+        if(sky.auroraDuration<=0){
+          sky.auroraActive=false;
+          sky.auroraTimer=90+Math.random()*150;
+        }
+      } else {
+        sky.auroraOpacity=Math.max(0,sky.auroraOpacity-dt*0.3);
+      }
+    } else {
+      sky.auroraOpacity=Math.max(0,sky.auroraOpacity-dt*0.5);
+      sky.auroraActive=false;
+    }
+    sky.auroraGroup.position.set(hx,0,hz);
+    const auroraTNow=performance.now()*0.0006;
+    sky.auroraGroup.children.forEach((pl,i)=>{
+      pl.material.opacity=sky.auroraOpacity*(0.5+0.5*Math.sin(auroraTNow+i));
+    });
+    // Bintang jatuh (tahi bintang) — jarang berlaku, waktu malam sahaja
+    if(isNight && !sky.shootActive){
+      sky.shootTimer-=dt;
+      if(sky.shootTimer<=0){
+        if(Math.random()<0.35){
+          sky.shootActive=true; sky.shootT=0;
+          const a1=Math.random()*Math.PI*2;
+          const fx=hx+Math.cos(a1)*180, fz=hz+Math.sin(a1)*180, fy=140+Math.random()*40;
+          const a2=a1+(Math.random()<0.5?1:-1)*(0.4+Math.random()*0.5);
+          sky.shootFrom.set(fx,fy,fz);
+          sky.shootTo.set(hx+Math.cos(a2)*180, fy-60-Math.random()*30, hz+Math.sin(a2)*180);
+        }
+        sky.shootTimer=25+Math.random()*45;
+      }
+    }
+    if(sky.shootActive){
+      sky.shootT+=dt/0.9;
+      const tt=Math.min(1,sky.shootT);
+      const cur=sky.shootFrom.clone().lerp(sky.shootTo,tt);
+      const tail=sky.shootFrom.clone().lerp(sky.shootTo,Math.max(0,tt-0.08));
+      const posArr=sky.shootLine.geometry.attributes.position.array;
+      posArr[0]=tail.x;posArr[1]=tail.y;posArr[2]=tail.z;
+      posArr[3]=cur.x;posArr[4]=cur.y;posArr[5]=cur.z;
+      sky.shootLine.geometry.attributes.position.needsUpdate=true;
+      sky.shootLine.material.opacity=tt<0.85?0.95:0.95*(1-(tt-0.85)/0.15);
+      if(tt>=1){ sky.shootActive=false; sky.shootLine.material.opacity=0; }
+    }
+  }
+
+  // ── HUD label & panel cuaca (dikemas kini ~2x sesaat) ──
+  smWeather.labelT+=dt;
+  if(smWeather.labelT>0.5){
+    smWeather.labelT=0;
+    const masaTxt = isNight ? '🌙 Malam' : (isDawnDusk ? (t<0.5?'🌅 Subuh':'🌇 Senja') : '🔆 Siang');
+    const lbl=document.getElementById('smapWeatherLabel');
+    if(lbl){
+      lbl.textContent = season.emoji+' '+season.name.replace(/^\S+\s/,'')+' • '+masaTxt;
+    }
+    const panel=document.getElementById('smapWeatherPanel');
+    if(panel){
+      let line2 = isNight ? '✨ Bintang & 🌙 Bulan' : '☁️ Awan & ☀️ Matahari';
+      if(sky){
+        if(sky.auroraOpacity>0.15) line2 += '<br><span style="color:#66ffb0;">🌌 Aurora</span>';
+        if(sky.shootActive) line2 += ' <span style="color:#ffe082;">🌠 Bintang Jatuh!</span>';
+      }
+      panel.innerHTML = season.emoji+' '+season.name.replace(/^\S+\s/,'')+' • '+masaTxt+'<br>'+line2;
+    }
+  }
+}
+
 // ────────────────────────────────────────────────────────────────
 //  BUILD 3D WORLD
 // ────────────────────────────────────────────────────────────────
@@ -10898,18 +11309,58 @@ function smapBuild3D(){
 
   // ── PULAU SEKOLAH ──
   const islandMat=new THREE.MeshLambertMaterial({color:0x4a9e2a});
+  const beachSandMat=new THREE.MeshLambertMaterial({color:0xE3C89A});
   function makeIsland(cx,cz,w,d){
     const isl=new THREE.Mesh(new THREE.BoxGeometry(w,3.0,d),islandMat);
     isl.position.set(cx,-1.5,cz); isl.receiveShadow=true; smScene.add(isl);
   }
-  makeIsland(0,0,210,210);  // Pulau utama sekolah (x:-105..105, z:-105..105)
+  // Titik sekeliling petak pulau, "bengkak" rawak KE LUAR sahaja (tak pernah ke dalam)
+  // supaya petak asal (utk jeti/bangunan/sempadan) sentiasa selamat berada di dalamnya.
+  function _islandCoastPts(hw,hd,perEdge,maxBulge){
+    const pts=[];
+    const edges=[
+      {x0:-hw,y0:-hd,x1: hw,y1:-hd,nx: 0,ny:-1},
+      {x0: hw,y0:-hd,x1: hw,y1: hd,nx: 1,ny: 0},
+      {x0: hw,y0: hd,x1:-hw,y1: hd,nx: 0,ny: 1},
+      {x0:-hw,y0: hd,x1:-hw,y1:-hd,nx:-1,ny: 0}
+    ];
+    edges.forEach(e=>{
+      for(let i=0;i<perEdge;i++){
+        const t=i/perEdge;
+        const x=e.x0+(e.x1-e.x0)*t;
+        const y=e.y0+(e.y1-e.y0)*t;
+        const bulge=maxBulge*(0.3+Math.random()*0.7);
+        pts.push(new THREE.Vector2(x+e.nx*bulge, y+e.ny*bulge));
+      }
+    });
+    return pts;
+  }
+  // Pulau + pantai pasir iregular sekeliling — petak rumput asal dikekalkan
+  // di dalam (jadi jeti/bangunan/sempadan berjalan sama macam dulu), tapi
+  // sekeliling pulau kini nampak iregular sebab dibalut pasir tak sekata.
+  function makeOrganicIsland(cx,cz,w,d){
+    const hw=w/2, hd=d/2;
+    const maxBulge=Math.max(3, Math.min(18, Math.min(w,d)*0.08));
+    const perEdge=Math.max(5, Math.round(Math.min(w,d)/14));
+    // ── Lapisan pasir (lebih besar, iregular, sedikit lebih rendah — nampak pantai) ──
+    const sandPts=_islandCoastPts(hw,hd,perEdge,maxBulge);
+    const sandShape=new THREE.Shape(sandPts);
+    const sandGeo=new THREE.ExtrudeGeometry(sandShape,{depth:1.1,bevelEnabled:false});
+    sandGeo.rotateX(-Math.PI/2);
+    const sandMesh=new THREE.Mesh(sandGeo,beachSandMat);
+    sandMesh.position.set(cx,-1.2,cz); sandMesh.receiveShadow=true;
+    smScene.add(sandMesh);
+    // ── Lapisan rumput (petak asal — kekal petak, selamat utk jeti/bangunan) ──
+    makeIsland(cx,cz,w,d);
+  }
+  makeOrganicIsland(0,0,210,210);  // Pulau utama sekolah (x:-105..105, z:-105..105)
   // ── 6 PULAU KOSONG + 1 PULAU ZOMBIE (Utara) ──
-  makeIsland(260,0,40,40);   // Island Timur
-  makeIsland(-260,0,40,40);  // Island Barat
-  makeIsland(0,-240,40,40);  // Island MMORPG (Selatan)
-  makeIsland(180,160,30,30); // Island Timur Laut
-  makeIsland(-170,-160,30,30); // Island Barat Daya
-  makeIsland(0,240,40,40);   // Island Zombie (Utara)
+  makeOrganicIsland(260,0,40,40);   // Island Timur
+  makeOrganicIsland(-260,0,40,40);  // Island Barat
+  makeOrganicIsland(0,-240,40,40);  // Island MMORPG (Selatan)
+  makeOrganicIsland(180,160,30,30); // Island Timur Laut
+  makeOrganicIsland(-170,-160,30,30); // Island Barat Daya
+  makeOrganicIsland(0,240,40,40);   // Island Zombie (Utara)
 
   // ── SEMPADAN PULAU (untuk walkability check) ──
   const ISLAND_BOUNDS=[
@@ -11002,17 +11453,17 @@ function smapBuild3D(){
   }
   // Jeti setiap pulau (menghadap ke arah Pulau Sekolah)
   makeJetty(0,-112,0,7);    // School — atas air, depan pulau
-  makeJetty(240,0,180,6);    // Timur
-  makeJetty(-240,0,0,6);     // Barat
-  makeJetty(0,-220,90,6);    // Selatan
-  makeJetty(165,145,-135,5); // TL
-  makeJetty(-155,-145,45,5); // BD
-  makeJetty(0,220,-90,6);    // Utara
+  makeJetty(240,0,-115,6);    // Timur (menghadap jeti Pulau Sekolah)
+  makeJetty(-240,0,115,6);     // Barat (menghadap jeti Pulau Sekolah)
+  makeJetty(0,-220,0,6);    // Selatan (menghadap jeti Pulau Sekolah)
+  makeJetty(165,145,-147.3,5); // TL (menghadap jeti Pulau Sekolah)
+  makeJetty(-155,-145,78,5); // BD (menghadap jeti Pulau Sekolah)
+  makeJetty(0,220,180,6);    // Utara (menghadap jeti Pulau Sekolah)
 
   // ── DATA PELABUHAN (untuk sistem kapal) ──
   const ISLAND_PORTS=[
     {id:'school',name:'🏫 Pulau Sekolah',    jx:0,   jz:-105},
-    {id:'timur', name:'🌴 Pulau Timur',      jx:240, jz:0},
+    {id:'timur', name:'🗼 Pulau Menara Solo', jx:240, jz:0},
     {id:'selatan',name:'⚔️ Pulau MMORPG',   jx:0,  jz:-220},
     {id:'tl',    name:'🌴 Pulau TL',         jx:165,jz:145},
     {id:'bd',    name:'🌴 Pulau BD',         jx:-155,jz:-145},
@@ -11467,7 +11918,6 @@ function smapBuild3D(){
   makePkPatch(-66, -66, 20, 20);
   makePkPatch( 92, -66, 20, 20);
   makePkPatch(-66,  92, 20, 20);
-  makePkPatch(110, 110, 16, 16);
 
   // [6] Patch di pulau kosong — Timur, Barat, Utara, Selatan
   makePkPatch(260,0,30,30);
@@ -15835,6 +16285,7 @@ function smapBuild3D(){
     _ziCoop.handledDefeat=true;
     _ziGrantRareCoin(5);
     smZbFloatingText(smHeroState.x,4.5,smHeroState.z,'🏆 SKUAD MENANG! +5 Rare Coin','#ffd700');
+    if(typeof window.rareCoinToast==='function') window.rareCoinToast('🧟 SARANG ZOMBIE — SKUAD MENANG!',5);
     smZbSfx('levelup');
     if(_ziNest.bossRef){
       _ziNest.bossRef._zbAlive=false;
@@ -17626,6 +18077,24 @@ function smapBuild3D(){
   })();
   // Perpustakaan (top-right)
   makeBuilding({x:32,z:-26,w:24,d:16,h:9,wallColor:0x1a0008,roofColor:0x8b0000,label:'ARENA MASTER',windows:true,door:true});
+  // Dewan Exam — Pulau TL (tengah pulau, x:165-195, z:145-175, jauh dari jeti)
+  makeBuilding({x:180,z:160,w:20,d:16,h:8,wallColor:0x0a1a3d,roofColor:0xb8860b,label:'DEWAN EXAM',windows:true,door:true});
+  // Papan rekod terbaik — dipasang pada dinding kiri Dewan Exam (elak lokasi pintu/papan tanda)
+  (function(){
+    const cv=document.createElement('canvas'); cv.width=1400; cv.height=700;
+    const tex=new THREE.CanvasTexture(cv);
+    tex.anisotropy=8;
+    const mat=new THREE.MeshBasicMaterial({map:tex});
+    const mesh=new THREE.Mesh(new THREE.PlaneGeometry(12,5),mat);
+    mesh.position.set(180-10-0.1,4.5,160); // dinding kiri (x=170), tengah kedalaman bangunan
+    mesh.rotation.y=-Math.PI/2;
+    smScene.add(mesh);
+    const spot=new THREE.PointLight(0xffe9a8,2.2,14);
+    spot.position.set(180-10-2,6.5,160); smScene.add(spot);
+    sm3.examBillboardCanvas=cv;
+    sm3.examBillboardTexture=tex;
+    if(typeof examUpdateWallBoard==='function') examUpdateWallBoard();
+  })();
   // ══════════════════════════════════════════════════════
   //  MENARA MATEMATIK — 10 TINGKAT GEMPAK (ganti DEWAN)
   // ══════════════════════════════════════════════════════
@@ -19096,7 +19565,7 @@ function smapBuild3D(){
     var _ziCoreHudIds={smapHint:1,smapNpcDialog:1,smapMinimapHint:1,smapInteractBtn:1,
       smapFaceBtn:1,smapStatBtn:1,smapBagBtn:1,smapVehicleBtn:1,smapDamBtn:1,smapChessBtn:1,
       smapArenaBtn:1,smapMathTowerBtn:1,smapSoloTowerBtn:1,smapPetCatchBtn:1,smapPetPvPBtn:1,
-      smapCoordDisplay:1};
+      smapExamBtn:1,smapCoordDisplay:1};
     if(wrap){for(var _i=0;_i<wrap.children.length;_i++){var ch=wrap.children[_i];
       if(!_ziCoreHudIds[ch.id])continue;
       ch.style.display=onZI?'none':'';
@@ -20302,6 +20771,219 @@ function smapBuild3D(){
   }
   window.vehicleDismount=vehicleDismount;
 
+  // ══════════════════════════════════════════════════════════════════
+  //  SISTEM BOT MEMANCING — belayar keliling laut Peta Sekolah
+  // ══════════════════════════════════════════════════════════════════
+  var _smBoat={active:false,x:0,z:0,heading:0,speed:0,mesh:null,fishing:false};
+  // Titik jeti (padan dengan makeJetty() di atas) — tempat naik/turun bot
+  var SMAP_BOAT_DOCKS=[
+    {x:0,z:-108},{x:240,z:6},{x:-240,z:6},{x:0,z:-216},
+    {x:163,z:141},{x:-153,z:-141},{x:0,z:216}
+  ];
+  function smNearBoatDock(x,z){
+    return SMAP_BOAT_DOCKS.some(function(d){const dx=x-d.x,dz=z-d.z;return (dx*dx+dz*dz)<15*15;});
+  }
+  function smNearestBoatDock(x,z){
+    let best=null,bestD=Infinity;
+    SMAP_BOAT_DOCKS.forEach(function(d){const dx=x-d.x,dz=z-d.z,dd=dx*dx+dz*dz;if(dd<bestD){bestD=dd;best=d;}});
+    return best;
+  }
+  function smBoatUpdateHudBtn(){
+    const btn=document.getElementById('smapBoatBtn');
+    if(!btn) return;
+    if(_smBoat.active){ btn.classList.add('mounted'); btn.innerHTML='🛑<br><span style="font-size:6px;">TURUN BOT</span>'; }
+    else { btn.classList.remove('mounted'); btn.innerHTML='🚤<br><span style="font-size:6px;">BOT</span>'; }
+  }
+  window.smBoatUpdateHudBtn=smBoatUpdateHudBtn;
+
+  function smBoatMount(){
+    if(!smapActive||(smZb&&smZb.qActive)) return;
+    if(_smBoat.active){ smBoatDismount(); return; }
+    if(window._vehState&&window._vehState.mountedId){
+      smZbFloatingText(smHeroState.x,3,smHeroState.z,'🚤 Turun kenderaan darat dahulu!','#ffaa44');
+      return;
+    }
+    if(sm3._ziActive){
+      smZbFloatingText(smHeroState.x,3,smHeroState.z,'🚤 Tak boleh bawa bot dalam Sarang Zombie!','#ff4444');
+      return;
+    }
+    if(!smNearBoatDock(smHeroState.x,smHeroState.z)){
+      smZbFloatingText(smHeroState.x,3,smHeroState.z,'🚤 Pergi ke jeti dahulu utk naik bot!','#ffaa44');
+      return;
+    }
+    _smBoat.x=smHeroState.x; _smBoat.z=smHeroState.z;
+    _smBoat.heading=smHeroState.facing||0; _smBoat.speed=0; _smBoat.fishing=false;
+    if(!_smBoat.mesh){ _smBoat.mesh=smMakeBoat(); }
+    else if(_smBoat.mesh.parent!==smScene){ smScene.add(_smBoat.mesh); }
+    _smBoat.mesh.visible=true;
+    _smBoat.active=true;
+    if(smHero) smHero.visible=false;
+    smBoatUpdateHudBtn();
+    smZbFloatingText(smHeroState.x,3,smHeroState.z,'⛵ Naik bot! Gerak utk belayar, 🎣 utk memancing','#66ccff');
+  }
+  window.smBoatMount=smBoatMount;
+
+  function smBoatDismount(){
+    if(!_smBoat.active) return;
+    if(!smNearBoatDock(_smBoat.x,_smBoat.z)){
+      smZbFloatingText(smHeroState.x,3,smHeroState.z,'🚤 Belayar balik ke jeti dahulu utk turun!','#ffaa44');
+      return;
+    }
+    _smBoat.active=false; _smBoat.fishing=false; _smBoat.speed=0;
+    const dock=smNearestBoatDock(_smBoat.x,_smBoat.z);
+    if(dock){
+      const ang=Math.atan2(_smBoat.z-dock.z,_smBoat.x-dock.x);
+      smHeroState.x=dock.x+Math.cos(ang)*4;
+      smHeroState.z=dock.z+Math.sin(ang)*4;
+    }
+    if(smHero) smHero.visible=true;
+    smBoatUpdateHudBtn();
+    const fishBtn=document.getElementById('smapBoatFishBtn');
+    if(fishBtn) fishBtn.style.display='none';
+    smZbFloatingText(smHeroState.x,3,smHeroState.z,'🚶 Turun dari bot','#aaddff');
+  }
+  window.smBoatDismount=smBoatDismount;
+
+  function smBoatFish(){
+    if(!_smBoat.active||_smBoat.fishing) return;
+    _smBoat.fishing=true; _smBoat.speed=0;
+    smZbFloatingText(smHeroState.x,3,smHeroState.z,'🎣 Melabuh pancing...','#88ddff');
+    const fishBtn=document.getElementById('smapBoatFishBtn');
+    if(fishBtn){ fishBtn.style.pointerEvents='none'; fishBtn.style.opacity='0.5'; }
+    const waitMs=1200+Math.random()*1200;
+    setTimeout(function(){
+      if(!_smBoat.active){ // pemain dah turun bot semasa menunggu
+        _smBoat.fishing=false;
+        if(fishBtn){ fishBtn.style.pointerEvents='all'; fishBtn.style.opacity='1'; }
+        return;
+      }
+      smZbFloatingText(_smBoat.x,3.5,_smBoat.z,'🐟 Ada renjatan! Jawab soalan!','#ffee66');
+      smFishShowQ();
+    }, waitMs);
+  }
+  window.smBoatFish=smBoatFish;
+
+  // ══════════════════════════════════════════════════════════════════
+  //  SOALAN STATISTIK MEMANCING — jawab betul = dapat ikan, salah = terlepas
+  // ══════════════════════════════════════════════════════════════════
+  function smFishGenQ(){
+    const rng=n=>Math.floor(Math.random()*n)+1;
+    const types=['min','maks','julat','median','mod','purata'];
+    const type=types[rng(types.length)-1];
+    const label={min:'Nilai MINIMUM',maks:'Nilai MAKSIMUM',julat:'JULAT (maks − min)',median:'MEDIAN',mod:'MOD',purata:'PURATA (min)'};
+    let data,a;
+    if(type==='mod'){
+      const base=rng(20)+1;
+      let others=[];
+      while(others.length<3){
+        const v=rng(20)+1;
+        if(v!==base) others.push(v);
+      }
+      data=[base,base,others[0],others[1],others[2]];
+      a=base;
+    } else if(type==='purata'){
+      const n=5;
+      const mean=rng(12)+3; // 4..15
+      let arr=[],sum=0,tries=0,last=-1;
+      do{
+        arr=[];sum=0;
+        for(let i=0;i<n-1;i++){ const v=rng(mean*2>2?mean*2-2:2)+1; arr.push(v); sum+=v; }
+        last=mean*n-sum;
+        tries++;
+      }while((last<1||last>60)&&tries<30);
+      if(last<1) last=1;
+      arr.push(last);
+      data=arr;
+      a=mean;
+    } else {
+      const n=5;
+      const set=new Set();
+      while(set.size<n){ set.add(rng(50)); }
+      data=Array.from(set);
+      const sorted=[...data].sort((x,y)=>x-y);
+      if(type==='min') a=sorted[0];
+      else if(type==='maks') a=sorted[n-1];
+      else if(type==='julat') a=sorted[n-1]-sorted[0];
+      else a=sorted[Math.floor(n/2)]; // median
+    }
+    const shuffled=[...data].sort(()=>Math.random()-0.5);
+    const q='📊 Data ikan hari ini:\n'+shuffled.join(', ')+'\n\nCari '+label[type]+' data ini.';
+    return {q:q,a:String(a)};
+  }
+
+  let smFishQUI=false;
+  function smFishInitQUI(){
+    if(smFishQUI) return; smFishQUI=true;
+    const s=document.createElement('style');
+    s.textContent='#smFishQ{display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,10,30,0.9);font-family:"Press Start 2P",monospace;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:16px;}#smFishQ.show{display:flex;}#smFishQT{font-size:12px;color:#66ccff;text-align:center;white-space:pre-line;line-height:1.8;text-shadow:2px 2px 4px #000;max-width:420px;background:rgba(10,20,40,0.85);padding:20px 24px;border-radius:12px;border:2px solid #66ccff;}#smFishQI{background:#111;border:2px solid #446;color:#fff;font-family:"Press Start 2P",monospace;font-size:16px;text-align:center;padding:12px 20px;border-radius:8px;width:200px;outline:none;}#smFishQI:focus{border-color:#88ddff;}#smFishQB{background:linear-gradient(180deg,#134,#012);border:2px solid #44aadd;color:#fff;padding:12px 24px;border-radius:8px;font-family:"Press Start 2P",monospace;font-size:11px;cursor:pointer;}#smFishQB:hover{border-color:#66ccff;}#smFishQL{font-size:9px;color:#888;margin-top:4px;}#smFishQR{font-size:11px;color:#ff4444;min-height:16px;text-shadow:1px 1px 3px #000;}';
+    document.head.appendChild(s);
+    const d=document.createElement('div'); d.id='smFishQ';
+    d.innerHTML='<div id="smFishQT"></div><input id="smFishQI" type="number" placeholder="Jawapan..." autocomplete="off"><button id="smFishQB">🎣 HANTAR</button><div id="smFishQR"></div><div id="smFishQL">Tekan Enter untuk hantar</div>';
+    document.body.appendChild(d);
+    document.getElementById('smFishQB').onclick=function(){ smFishQSubmit(); };
+    d.addEventListener('keydown',e=>{ if(e.key==='Enter') smFishQSubmit(); });
+  }
+
+  let smFishQuiz=null;
+  function smFishShowQ(){
+    smFishInitQUI();
+    smFishQuiz=smFishGenQ();
+    smZb.qActive=true;
+    document.getElementById('smFishQT').textContent='🎣 SOALAN STATISTIK\n\n'+smFishQuiz.q;
+    document.getElementById('smFishQI').value='';
+    document.getElementById('smFishQR').textContent='';
+    document.getElementById('smFishQ').classList.add('show');
+    setTimeout(()=>{ const el=document.getElementById('smFishQI'); if(el) el.focus(); },100);
+  }
+  window.smFishShowQ=smFishShowQ;
+
+  function smFishFinish(){
+    document.getElementById('smFishQ').classList.remove('show');
+    smZb.qActive=false; smFishQuiz=null; _smBoat.fishing=false;
+    const fishBtn=document.getElementById('smapBoatFishBtn');
+    if(fishBtn){ fishBtn.style.pointerEvents='all'; fishBtn.style.opacity='1'; }
+  }
+
+  window.smFishQSubmit=function(){
+    if(!smZb.qActive||!smFishQuiz) return;
+    const inpEl=document.getElementById('smFishQI');
+    const inp=inpEl.value.trim();
+    if(inp==='') return;
+    const quiz=smFishQuiz;
+    if(inp===quiz.a){
+      document.getElementById('smFishQR').textContent='✅ Betul!';
+      document.getElementById('smFishQR').style.color='#44ff44';
+      if(typeof smZbSfx==='function') smZbSfx('correct');
+      setTimeout(function(){
+        const wasActive=_smBoat.active;
+        const bx=_smBoat.x,bz=_smBoat.z;
+        smFishFinish();
+        if(!wasActive) return; // pemain dah turun bot semasa menjawab
+        const fishList=[
+          {n:'🐟 Ikan Kembung',v:8},{n:'🐠 Ikan Puyu-Puyu',v:10},{n:'🦑 Sotong Kurita',v:14},
+          {n:'🐡 Ikan Buntal',v:18},{n:'🦐 Udang Gergasi',v:16},{n:'🐋 Ikan Emas Legenda',v:40}
+        ];
+        const r2=Math.random();
+        const pick=r2<0.05?fishList[5]:fishList[Math.floor(Math.random()*5)];
+        if(typeof shopAddPoints==='function') shopAddPoints(pick.v);
+        smZbFloatingText(bx,3.5,bz,'✅ Betul! Dapat '+pick.n+'! +'+pick.v+' mata','#66ff99');
+        if(typeof playSound==='function') playSound('coin');
+      },600);
+    } else {
+      document.getElementById('smFishQR').textContent='❌ Salah! Jawapan: '+quiz.a+' — Ikan terlepas!';
+      document.getElementById('smFishQR').style.color='#ff4444';
+      if(typeof smZbSfx==='function') smZbSfx('wrong');
+      setTimeout(function(){
+        const wasActive=_smBoat.active;
+        const bx=_smBoat.x,bz=_smBoat.z;
+        smFishFinish();
+        if(wasActive) smZbFloatingText(bx,3.5,bz,'😅 Ikan terlepas! Cuba lagi.','#ffaa66');
+      },900);
+    }
+  };
+
+
+
   function vehicleOwnedList(){
     const d=shopLoadData(shopGetUsername());
     return SHOP_ITEMS.filter(i=>i.cat==='vehicle'&&d.owned&&d.owned[i.id]);
@@ -20473,6 +21155,7 @@ function smapBuild3D(){
     {xmin:-13,xmax: 13,zmin:-28,zmax:-8}, // paintball
     {xmin:-6, xmax: 6, zmin:34, zmax:43},  // kedai
     {xmin: 20,xmax: 40,zmin:-92,zmax:-76}, // guild hall (GX=30,GZ=-84,GW=20,GD=16 — bangunan pejal, Guild Master berdiri di luar depan z=-72)
+    {xmin:170,xmax:190,zmin:152,zmax:168}, // dewan exam — Pulau TL (x=180,z=160,w=20,d=16)
 
     // ── Gerbang depan (2 tiang) ──
     {xmin:-4.5,xmax:-3.5,zmin:-240,zmax:-238}, // tiang kiri gerbang (portal MMORPG @ X:0,Z:-239)
@@ -20696,10 +21379,31 @@ function smapBuild3D(){
       smHeroState.facing=_ziVehicle.heading;
     }
 
+    // ── Bot memancing — kawalan belayar (guna vektor input sama macam jalan kaki) ──
+    var _boatDriving=false;
+    if(_smBoat.active){
+      _boatDriving=true;
+      const _bLen=Math.sqrt(wdx*wdx+wdz*wdz);
+      const _bSpd=9;
+      if(!_smBoat.fishing&&_bLen>0.05){
+        const _bnx=_smBoat.x+wdx*_bSpd*dt;
+        const _bnz=_smBoat.z+wdz*_bSpd*dt;
+        if(_bnx>=-300&&_bnx<=300&&!smIsWalkable(_bnx,_smBoat.z,2.2)) _smBoat.x=_bnx;
+        if(_bnz>=-300&&_bnz<=300&&!smIsWalkable(_smBoat.x,_bnz,2.2)) _smBoat.z=_bnz;
+        _smBoat.heading=Math.atan2(wdx,wdz);
+        _smBoat.speed=_bSpd*_bLen;
+      } else {
+        _smBoat.speed*=Math.max(0,1-4*dt);
+      }
+      smHeroState.x=_smBoat.x; smHeroState.z=_smBoat.z; smHeroState.facing=_smBoat.heading;
+      const fishBtn=document.getElementById('smapBoatFishBtn');
+      if(fishBtn) fishBtn.style.display=(Math.abs(_smBoat.speed)<0.4&&!smapNearNPC)?'flex':'none';
+    }
+
     const len=Math.sqrt(wdx*wdx+wdz*wdz);
     let moved=false;
     const _onZI=!!sm3._ziActive;
-    if(!_ziDriving&&len>0.01){
+    if(!_ziDriving&&!_boatDriving&&len>0.01){
       const _vsColl=window._vehState;
       const _def=_vsColl&&_vsColl.mountedId&&_vsColl.def;
       const _collR=_def?_vsColl.def.collR:0.5;
@@ -20811,6 +21515,16 @@ function smapBuild3D(){
       // Bunyi enjin — kuat bila bergerak, idle bila diam
       const speedFrac=moved?1:0.15;
       vehEngineUpdate(speedFrac);
+    }
+
+    // ── Bot memancing: mesh follow + goyang lembut atas air ──
+    if(_smBoat.mesh){
+      const bob=Math.sin(ts*0.0022)*0.12;
+      const roll=Math.sin(ts*0.0016)*0.045;
+      _smBoat.mesh.position.set(_smBoat.x,bob,_smBoat.z);
+      _smBoat.mesh.rotation.set(0,_smBoat.heading,roll);
+      if(_smBoat.mesh.userData.flag) _smBoat.mesh.userData.flag.rotation.y=Math.sin(ts*0.006)*0.3;
+      if(_smBoat.mesh.userData.sail) _smBoat.mesh.userData.sail.rotation.y=Math.sin(ts*0.003)*0.06;
     }
 
     // ── Presence broadcast (OPTIMASI: throttled ~3s, skip jika tak bergerak) ──
@@ -21179,6 +21893,16 @@ function smapBuild3D(){
         if(stBtn) stBtn.style.display=(nearST&&!smapNearNPC)?'flex':'none';
       }
 
+      // ── DEWAN EXAM (Pulau TL) — butang masuk bila dekat pintu ──
+      {
+        const nearEXAM=(smHeroState.x>168&&smHeroState.x<192&&smHeroState.z>148&&smHeroState.z<174);
+        const examBtn=document.getElementById('smapExamBtn');
+        if(examBtn){
+          const canShow=nearEXAM&&!smapNearNPC&&!(window._examState&&window._examState.active)&&(typeof examCanPlayToday!=='function'||examCanPlayToday());
+          examBtn.style.display=canShow?'flex':'none';
+        }
+      }
+
       // ── PAINT BALL portal animasi & butang ──
       if(sm3._pbRing){
         const nearPB=(smHeroState.x>-8&&smHeroState.x<8&&smHeroState.z>-14&&smHeroState.z<-7);
@@ -21397,6 +22121,9 @@ function smapBuild3D(){
     }
     smCam.position.lerp(new THREE.Vector3(_camX,_camY,_camZ),lerpF);
     smCam.lookAt(new THREE.Vector3(smHeroState.x,1.2,smHeroState.z));
+
+    // ── Kemas kini sistem cuaca/musim/siang-malam (bukan semasa dungeon zombie) ──
+    if(!_onZI) smUpdateWeatherSystem(dt,smHeroState.x,smHeroState.z);
 
     // ── Zone detection ──
     const zone=smGetZone(smHeroState.x,smHeroState.z);
@@ -21898,6 +22625,12 @@ function smapBuild3D(){
   sm3.hero=smHero;
   sm3.heroState=smHeroState;
   sm3.npcMeshes=smNPCMeshes;
+  sm3.sun=smSun;
+  sm3.amb=smAmb;
+  sm3.fill=smFill;
+
+  // ── SISTEM CUACA & MUSIM (4 musim + kitaran siang/malam) ──
+  smInitWeatherSystem(smScene);
 
   // ── ZOMBIE TYPES di Sarang Zombie island ──
   const smZombies=[];
@@ -22896,7 +23629,7 @@ function pmOpenConversation(from){
             changed = true;
           }
         });
-        if(changed) set(ref(window._fbPmRef, myKey), data).catch(()=>{});
+        if(changed) set(ref(window._fbPmRef, myName), data).catch(()=>{});
       }).catch(()=>{});
     }
   }catch(e){} // Firebase functions not in scope — non-critical
@@ -24256,6 +24989,7 @@ function dcClaim(){
     msgEl.style.color='#00e676';
     msgEl.textContent='✅ +'+DC_REWARD+' Rare Coin! Total: '+totalCoins+' 🪙';
   }
+  if(typeof window.rareCoinToast==='function') window.rareCoinToast('🎁 GANJARAN HARIAN — HARI '+st.day+'!',DC_REWARD);
 
   if(finished){
     setTimeout(function(){
@@ -25216,8 +25950,18 @@ function _ghSendChat(){
   var ref=_ghGuildRef();if(!ref)return;
   var chatRef=window._fbRefFn(window._fbPresenceDb,'guild_houses/'+_ghGetGuildInfo().id+'/chat');
   var newRef=window._fbPush(chatRef);
+  var msgObj={from:_ghUser(),msg:msg,ts:Date.now()};
   if(window._fbSetFn){
-    window._fbSetFn(newRef,{from:_ghUser(),msg:msg,ts:Date.now()}).catch(function(){});
+    window._fbSetFn(newRef,msgObj).catch(function(){
+      var box=document.getElementById('ghChatMsgs');
+      if(box) box.innerHTML+='<div style="color:#e52521;font-size:6px;margin:2px 0;">⚠ Mesej tidak sampai ke server.</div>';
+    });
+  }
+  // FIX: papar mesej sendiri serta-merta — jangan tunggu semata-mata untuk
+  // onValue() sync balik dari Firebase (sama isu macam world chat).
+  if(!_ghChatMessages.find(function(m){return m._localKey===newRef.key;})){
+    _ghChatMessages=_ghChatMessages.concat([Object.assign({_localKey:newRef.key},msgObj)]).slice(-30);
+    _ghRenderChat();
   }
 }
 function _ghRenderChat(){
@@ -31219,38 +31963,55 @@ function heroStatRecordScore(sc, lv){
   heroStatSave(d);
 }
 
+// ── Notifikasi Rare Coin generik — boleh dipanggil oleh MANA-MANA mod permainan ──
+window.rareCoinToast=function(titleText,amount){
+  try{
+    let nt=document.getElementById('globalRareCoinToast');
+    if(!nt){
+      nt=document.createElement('div');
+      nt.id='globalRareCoinToast';
+      nt.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:rgba(0,0,0,0.92);border:2px solid #ffd700;border-radius:14px;padding:20px 34px;text-align:center;font-family:"Press Start 2P",monospace;pointer-events:none;transition:opacity .5s;';
+      document.body.appendChild(nt);
+    }
+    nt.innerHTML='<div style="font-size:clamp(16px,3.6vw,26px);color:#ffd700;margin-bottom:8px;">'+titleText+'</div><div style="font-size:clamp(12px,2vw,18px);color:#fff;">+'+amount+' <span style="color:#ffd700;">🪙 Rare Coin</span></div>';
+    nt.style.display='block';nt.style.opacity='1';
+    clearTimeout(nt._t);nt._t=setTimeout(function(){nt.style.opacity='0';},2500);
+  }catch(e){}
+};
+
+// ── 5 Rare Coin ganjaran setiap kali pertama clear satu Menara (M1-M10) ──
+// Kali pertama sahaja setiap menara: kali kedua & seterusnya main menara sama TIADA ganjaran lagi.
+function _menaraGrantRareCoinOnce(lv){
+  if(!(lv>=1&&lv<=10)) return;
+  try{
+    const u=shopGetUsername();
+    const d=shopLoadData(u);
+    if(!d.owned)d.owned={};
+    if(!d.owned.menaraRare)d.owned.menaraRare=[];
+    if(!d.owned.menaraRare.includes(lv)){
+      d.owned.menaraRare.push(lv);
+      d.owned['rare_coin']=(d.owned['rare_coin']||0)+5;
+      shopSaveData(u,d);
+      const rareEl=document.getElementById('shopRarePts'); if(rareEl) rareEl.textContent=d.owned['rare_coin'];
+      // Notifikasi toast — mesti nampak setiap kali dapat Rare Coin
+      window.rareCoinToast('⭐ MENARA '+lv+' CLEAR!',5);
+    }
+  }catch(e){}
+}
+
 // Hook into game end events
 const _orig_showWin2=showWin;
 showWin=function(){
   heroStatRecordScore(score,level);
-  // 5 Rare Coin ganjaran setiap kali pertama clear menara (M1-M10)
-  if(level>=1&&level<=10){
-    try{
-      const u=shopGetUsername();
-      const d=shopLoadData(u);
-      if(!d.owned)d.owned={};
-      if(!d.owned.menaraRare)d.owned.menaraRare=[];
-      if(!d.owned.menaraRare.includes(level)){
-        d.owned.menaraRare.push(level);
-        d.owned['rare_coin']=(d.owned['rare_coin']||0)+5;
-        shopSaveData(u,d);
-        // Toast notification
-        try{
-          let nt=document.getElementById('towerRareToast');
-          if(!nt){
-            nt=document.createElement('div');
-            nt.id='towerRareToast';
-            nt.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:rgba(0,0,0,0.92);border:2px solid #ffd700;border-radius:14px;padding:20px 34px;text-align:center;font-family:Press Start 2P,monospace;pointer-events:none;transition:opacity .5s;';
-            document.body.appendChild(nt);
-          }
-          nt.innerHTML='<div style="font-size:clamp(20px,4vw,32px);color:#ffd700;margin-bottom:8px;">⭐ MENARA '+level+' CLEAR!</div><div style="font-size:clamp(12px,2vw,18px);color:#fff;">+5 <span style="color:#ffd700;">Rare Coin</span></div>';
-          nt.style.display='block';nt.style.opacity='1';
-          clearTimeout(nt._t);nt._t=setTimeout(function(){nt.style.opacity='0';},2500);
-        }catch(e){}
-      }
-    }catch(e){}
-  }
+  _menaraGrantRareCoinOnce(level);
   _orig_showWin2();
+};
+// Hook ke showLevelUp supaya Menara 1-9 pun dapat ganjaran (bukan setakat Menara 10 di showWin)
+const _orig_showLevelUp=showLevelUp;
+showLevelUp=function(){
+  heroStatRecordScore(score,level);
+  _menaraGrantRareCoinOnce(level);
+  _orig_showLevelUp();
 };
 const _orig_endGame2=endGame;
 endGame=function(){
@@ -33947,6 +34708,239 @@ function sifirAddSchoolPoint(game,pts){
 
 // Init Firebase listener selepas halaman muat
 setTimeout(_sifirAttachFbListener, 3500);
+
+// ════════════════════════════════════════════════════
+//  DEWAN EXAM (Pulau TL) — sesi peperiksaan ikut tingkatan
+//  50 soalan campuran semua bab, ranking global per tingkatan
+//  (personal best sahaja), papar rekod tertinggi di dinding.
+// ════════════════════════════════════════════════════
+window._examState={active:false,tingkatan:1,total:50,idx:0,answered:0,correct:0,curQ:null};
+
+function examStart(){
+  if(window._examState.active) return;
+  if(!examCanPlayToday()){
+    alert('📝 Anda sudah buat Dewan Exam hari ini!\nSila kembali esok untuk cuba lagi.');
+    return;
+  }
+  examMarkPlayedToday();
+  const t=getPlayerTingkatan();
+  window._examState={active:true,tingkatan:t,total:50,idx:0,answered:0,correct:0,curQ:null};
+  const btn=document.getElementById('smapExamBtn'); if(btn) btn.style.display='none';
+  document.getElementById('examOverlay').classList.add('show');
+  examNextQuestion();
+}
+
+// ── Had 1x sehari ──
+function _examToday(){ var n=new Date(); return n.getFullYear()+'-'+(n.getMonth()+1)+'-'+n.getDate(); }
+function _examDailyKey(){ return 'exam_daily_'+(shopGetUsername()||'guest'); }
+function examCanPlayToday(){
+  try{ return localStorage.getItem(_examDailyKey())!==_examToday(); }catch(e){ return true; }
+}
+function examMarkPlayedToday(){
+  try{ localStorage.setItem(_examDailyKey(),_examToday()); }catch(e){}
+}
+
+function examNextQuestion(){
+  const st=window._examState;
+  if(!st.active) return;
+  if(st.idx>=st.total){ examFinish(true); return; }
+  st.idx++;
+  const bab=rand(1,10); // campuran rawak semua bab tingkatan pemain
+  const q=genQ(bab);
+  st.curQ=q;
+  document.getElementById('examQuizProgress').textContent='SOALAN '+st.idx+' / '+st.total+'   ✅ '+st.correct;
+  document.getElementById('examQuizText').textContent='📖 TINGKATAN '+st.tingkatan+'  (Bab '+bab+')\n\n'+q.text;
+  const optsEl=document.getElementById('examQuizOpts');
+  optsEl.innerHTML='';
+  const fb=document.getElementById('examQuizFeedback'); fb.textContent='';
+  q.opts.forEach(function(o){
+    const b=document.createElement('button');
+    b.textContent=o;
+    b.onclick=function(){examAnswer(o);};
+    optsEl.appendChild(b);
+  });
+}
+
+function examAnswer(choice){
+  const st=window._examState;
+  if(!st.active||!st.curQ) return;
+  const fb=document.getElementById('examQuizFeedback');
+  const optsEl=document.getElementById('examQuizOpts');
+  Array.from(optsEl.children).forEach(function(btn){btn.disabled=true;});
+  st.answered++;
+  if(choice===st.curQ.ans){
+    st.correct++;
+    fb.textContent='✅ BETUL!'; fb.style.color='#00e676';
+  } else {
+    fb.textContent='❌ SALAH! Jawapan: '+st.curQ.ans; fb.style.color='#ff5252';
+  }
+  st.curQ=null;
+  setTimeout(function(){ if(window._examState.active) examNextQuestion(); },700);
+}
+
+function examQuit(){
+  const st=window._examState;
+  if(!st.active) return;
+  examFinish(false);
+}
+
+async function examFinish(completed){
+  const st=window._examState;
+  st.active=false;
+  const ov=document.getElementById('examOverlay'); if(ov) ov.classList.remove('show');
+  const tingkatan=st.tingkatan, correct=st.correct, answered=st.answered;
+  const pct=answered>0?(correct/answered*100):0;
+  const coins=examComputeCoinReward(pct);
+  if(coins>0) examGrantRareCoin(coins);
+  try{ await examSaveScoreIfBest(tingkatan,correct,answered); }catch(e){}
+  examShowEndScreen(tingkatan,correct,answered,completed,pct,coins);
+}
+
+// ── Ganjaran Rare Coin ikut peratus (correct/answered) ──
+// >=50%:5  >=60%:7  >=70%:9  >=80%:12  >=90%:15
+function examComputeCoinReward(pct){
+  if(pct>=90) return 15;
+  if(pct>=80) return 12;
+  if(pct>=70) return 9;
+  if(pct>=60) return 7;
+  if(pct>=50) return 5;
+  return 0;
+}
+function examGrantRareCoin(amount){
+  if(!amount) return;
+  try{
+    const u=shopGetUsername();
+    const d=shopLoadData(u);
+    d.owned=d.owned||{};
+    d.owned['rare_coin']=(d.owned['rare_coin']||0)+amount;
+    shopSaveData(u,d); // auto sync ke Firebase + localStorage
+    const rareEl=document.getElementById('shopRarePts'); if(rareEl) rareEl.textContent=d.owned['rare_coin'];
+    if(typeof window.rareCoinToast==='function') window.rareCoinToast('📝 DEWAN EXAM SELESAI!',amount);
+  }catch(e){}
+}
+
+function examMyKey(){
+  const pname=(playerProfile&&(playerProfile.username||playerProfile.name)?(playerProfile.username||playerProfile.name):'').trim().toUpperCase();
+  return pname||'ANON';
+}
+
+async function examSaveScoreIfBest(tingkatan,correct,answered){
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn||!window._fbGetModule) return;
+  const key=examMyKey();
+  if(!key||key==='ANON') return;
+  const {get}=window._fbGetModule();
+  const myRef=window._fbRefFn(window._fbPresenceDb,'examRanking/T'+tingkatan+'/'+key);
+  const snap=await get(myRef);
+  const existing=snap&&typeof snap.val==='function'?snap.val():null;
+  if(existing&&(existing.score||0)>=correct) return; // bukan personal best, jangan overwrite
+  const pname=(playerProfile&&(playerProfile.username||playerProfile.name))||key;
+  const school=(playerProfile&&playerProfile.school)||'';
+  await window._fbSetFn(myRef,{name:pname,school:school,score:correct,answered:answered,ts:Date.now()});
+  if(typeof examUpdateWallBoard==='function') examUpdateWallBoard();
+}
+
+async function examLoadRanking(tingkatan){
+  try{
+    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbGetModule) return [];
+    const {get}=window._fbGetModule();
+    const snap=await get(window._fbRefFn(window._fbPresenceDb,'examRanking/T'+tingkatan));
+    const val=(snap&&typeof snap.val==='function'?snap.val():null)||{};
+    const arr=Object.keys(val).map(function(k){ const e=val[k]||{}; e.key=k; return e; });
+    arr.sort(function(a,b){ return (b.score||0)-(a.score||0); });
+    return arr;
+  }catch(e){ return []; }
+}
+
+function examShowEndScreen(tingkatan,correct,answered,completed,pct,coins){
+  const ov=document.getElementById('examEndOverlay');
+  const box=document.getElementById('examEndBox');
+  ov.classList.add('show');
+  const pctTxt=answered>0?Math.round(pct)+'%':'0%';
+  const coinHtml=coins>0
+    ? '<p style="color:#ffd700;">🪙 +'+coins+' Rare Coin! ('+pctTxt+' betul)</p>'
+    : '<p style="color:#888;">🪙 Tiada Rare Coin ('+pctTxt+' betul — perlu ≥50% untuk ganjaran)</p>';
+  box.innerHTML='<h2>📝 KEPUTUSAN EXAM</h2>'+
+    '<p class="big">TINGKATAN '+tingkatan+'</p>'+
+    '<p>Markah: '+correct+' / '+answered+' soalan dijawab</p>'+
+    coinHtml+
+    (completed?'<p style="color:#00e676;">✅ Peperiksaan selesai!</p>':'<p style="color:#ff9999;">⚠ Keluar awal</p>')+
+    '<p style="color:#888;font-size:clamp(6px,1.3vw,8px);">📅 Exam seterusnya boleh dibuat esok</p>'+
+    '<div id="examRankTabs"></div>'+
+    '<div id="examRankList">⏳ Memuatkan ranking...</div>'+
+    '<button class="obtn" onclick="examCloseEnd()" style="font-family:\'Press Start 2P\',monospace;font-size:9px;padding:10px 16px;background:#0a1a3d;border:2px solid #ffd700;color:#ffd700;border-radius:4px;cursor:pointer;">TUTUP</button>';
+  const tabsEl=document.getElementById('examRankTabs');
+  for(let t=1;t<=5;t++){
+    const tb=document.createElement('button');
+    tb.textContent='TINGKATAN '+t;
+    if(t===tingkatan) tb.classList.add('active');
+    tb.onclick=(function(tt){ return function(){ examRenderRankTab(tt,tingkatan); }; })(t);
+    tabsEl.appendChild(tb);
+  }
+  examRenderRankTab(tingkatan,tingkatan);
+}
+
+async function examRenderRankTab(t,myTingkatan){
+  const tabsEl=document.getElementById('examRankTabs');
+  if(tabsEl) Array.from(tabsEl.children).forEach(function(b,i){ b.classList.toggle('active',(i+1)===t); });
+  const listEl=document.getElementById('examRankList');
+  if(!listEl) return;
+  listEl.innerHTML='⏳ Memuatkan...';
+  const arr=await examLoadRanking(t);
+  if(!arr.length){ listEl.innerHTML='<div style="text-align:center;color:#888;padding:10px 0;">Belum ada rekod utk Tingkatan '+t+'.</div>'; return; }
+  const myKey=examMyKey();
+  let html='';
+  arr.slice(0,20).forEach(function(e,i){
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+    const isMe=e.key===myKey;
+    html+='<div class="row'+(isMe?' me':'')+'"><span>'+medal+' '+(e.name||e.key)+'</span><span>'+(e.score||0)+'/'+(e.answered||0)+'</span></div>';
+  });
+  listEl.innerHTML=html;
+}
+
+function examCloseEnd(){
+  const ov=document.getElementById('examEndOverlay'); if(ov) ov.classList.remove('show');
+}
+
+// ── Papan dinding Dewan Exam — rekod TERTINGGI setiap tingkatan (global) ──
+async function examUpdateWallBoard(){
+  if(typeof sm3==='undefined'||!sm3||!sm3.examBillboardCanvas) return;
+  const canvas=sm3.examBillboardCanvas;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const tops=[];
+  for(let t=1;t<=5;t++){
+    const arr=await examLoadRanking(t);
+    tops.push(arr[0]||null);
+  }
+  if(!sm3.examBillboardCanvas) return; // scene mungkin dah ditutup semasa await
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#050b1f'); bg.addColorStop(0.5,'#0a1a3d'); bg.addColorStop(1,'#050b1f');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#ffd700'; ctx.lineWidth=8; ctx.strokeRect(8,8,W-16,H-16);
+  ctx.strokeStyle='rgba(255,215,0,0.3)'; ctx.lineWidth=2; ctx.strokeRect(18,18,W-36,H-36);
+  ctx.shadowColor='#000'; ctx.shadowBlur=8;
+  ctx.fillStyle='#ffd700'; ctx.textAlign='center';
+  ctx.font='bold 42px "Press Start 2P", monospace';
+  ctx.fillText('🏆 REKOD TERBAIK DEWAN EXAM',W/2,60);
+  ctx.shadowBlur=0;
+  ctx.strokeStyle='#ffd700'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(30,90); ctx.lineTo(W-30,90); ctx.stroke();
+  const rowH=(H-130)/5;
+  for(let i=0;i<5;i++){
+    const y=118+rowH*i+rowH/2;
+    const e=tops[i];
+    ctx.textAlign='left'; ctx.fillStyle='#7fdfff';
+    ctx.font='bold 28px monospace';
+    ctx.fillText('TINGKATAN '+(i+1),40,y);
+    ctx.textAlign='right'; ctx.fillStyle=e?'#ffffff':'#555';
+    ctx.font='bold 24px monospace';
+    ctx.fillText(e?(String(e.name||'?').slice(0,18)+'  —  '+(e.score||0)+'/'+(e.answered||0)):'— belum ada rekod —',W-40,y);
+    if(i<4){ ctx.strokeStyle='rgba(255,215,0,0.15)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(30,118+rowH*(i+1)); ctx.lineTo(W-30,118+rowH*(i+1)); ctx.stroke(); }
+  }
+  if(sm3.examBillboardTexture) sm3.examBillboardTexture.needsUpdate=true;
+}
 
 // ════════════════════════════════════════════════════
 //  PAPAN DAM — VERSI BARU dengan:
@@ -37022,6 +38016,7 @@ function rcaGrantReward() {
     d.owned=d.owned||{};
     d.owned['rare_coin']=(d.owned['rare_coin']||0)+1;
     shopSaveData(u,d);
+    if(typeof window.rareCoinToast==='function') window.rareCoinToast('📺 GANJARAN TONTON IKLAN!',1);
   }
 
   // Show success panel
@@ -39486,7 +40481,7 @@ function futsalStart(mode){
   const oppMissChance=0.35-fs.lck*0.25;  // 10–35% salah tendang
 
   // Sembunyikan semua nav buttons semasa futsal
-  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn'].forEach(function(id){
+  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn','smapExamBtn'].forEach(function(id){
     var _b=document.getElementById(id); if(_b){_b.style.display='none';_b.style.pointerEvents='none';}
   });
   // Sembunyi button WAJAH, STAT, BAG, KENDERAAN
@@ -40805,7 +41800,7 @@ function futsalExitSim(){
   ['futsalHud','futsalFeed','futsalQuitBtn','futsalTip','futsalKickBtn','futsalLobBtn','futsalSprintBtn'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
-  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn'].forEach(id=>{
+  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn','smapExamBtn'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.pointerEvents='';
   });
   // Pulihkan button WAJAH, STAT, BAG, KENDERAAN
@@ -40888,7 +41883,7 @@ function _fsMatchEnd(){
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
   // Pulihkan nav buttons
-  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn'].forEach(function(id){
+  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn','smapExamBtn'].forEach(function(id){
     var _b=document.getElementById(id); if(_b) _b.style.pointerEvents='';
   });
   // Pulihkan button WAJAH, STAT, BAG, KENDERAAN
@@ -40984,7 +41979,7 @@ function futsalEnd(){
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
   // Restore pointer-events pada nav buttons
-  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn'].forEach(function(id){
+  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn','smapExamBtn'].forEach(function(id){
     var _b=document.getElementById(id); if(_b) _b.style.pointerEvents='';
   });
   // Pulihkan button WAJAH, STAT, BAG, KENDERAAN
@@ -41334,7 +42329,7 @@ function gkStart(mode){
   gkCloseModeMenu();
   if(_gk&&_gk.running) return;
 
-  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn'].forEach(id=>{
+  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn','smapExamBtn'].forEach(id=>{
     const b=document.getElementById(id); if(b){b.style.display='none';b.style.pointerEvents='none';}
   });
   const hud=document.getElementById('gkHud');
@@ -41754,7 +42749,7 @@ function gkEnd(){
   }
   const hud=document.getElementById('gkHud');
   if(hud) hud.style.display='none';
-  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn'].forEach(id=>{
+  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn','smapExamBtn'].forEach(id=>{
     const b=document.getElementById(id); if(b) b.style.pointerEvents='';
   });
   const smH=window.smHero;
@@ -42088,7 +43083,7 @@ function gkOnlineInitRace(playersData){
   const myIdx=arr.findIndex(p=>p.name===myName);
   if(myIdx<0) return;
 
-  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn'].forEach(id=>{
+  ['smapArenaBtn','smapArenaMasterBtn','smapMathTowerBtn','smapDamBtn','smapChessBtn','smapGoKartBtn','smapExamBtn'].forEach(id=>{
     const b=document.getElementById(id); if(b){b.style.display='none';b.style.pointerEvents='none';}
   });
   const hud=document.getElementById('gkHud');
@@ -50331,7 +51326,7 @@ const GRASS_ZONES = [
   {cx:-30, cz:62,  hw:11}, {cx:10,  cz:62,  hw:11},
   // Penjuru pagar
   {cx:-66, cz:-66, hw:10}, {cx:92,  cz:-66, hw:10},
-  {cx:-66, cz:92,  hw:10}, {cx:110, cz:110, hw:8},
+  {cx:-66, cz:92,  hw:10},
 ];
 const PET_CATCH_RADIUS = 5.5;
 const PET_SPAWN_COUNT  = 5; // bilangan wild pet serentak di dunia
@@ -50471,6 +51466,68 @@ const PET_LEVEL_LABEL  = {1:'Tahap 1', 2:'Tahap 2 ⭐', 3:'Tahap 3 💎'};
 const PET_LEVEL_COLOR  = {1:'', 2:'#ffd700', 3:'#00e5ff'};
 
 function petLevelKey(id, level){ return id+'_lv'+level; }
+
+// ══════════════════════════════════════════════════════
+// ── 🌟 SISTEM LEVEL PET (XP) ──
+// Berasingan dari "Tahap" (gabungan). Setiap kumpulan pet
+// (id + tahap) ada Lv & XP sendiri. Pet naik XP bila menang
+// lawan pet liar atau menang PVP pet, dan stat (HP/DMG) naik
+// setiap kali Lv bertambah.
+// ══════════════════════════════════════════════════════
+const PET_LVLDATA_KEY = 'heromath_pet_lvldata_v1';
+const PET_MAX_LVL = 30;
+function petXpNeeded(lvl){ return 25 + (lvl-1)*15; }
+function petLoadLvlData(){
+  try{ return JSON.parse(localStorage.getItem(PET_LVLDATA_KEY)||'{}'); }catch(e){ return {}; }
+}
+function petSaveLvlData(d){
+  try{ localStorage.setItem(PET_LVLDATA_KEY, JSON.stringify(d)); }catch(e){}
+}
+// Dapatkan Lv/XP semasa untuk satu kumpulan pet (id+tahap)
+function petGetLvlInfo(id, tier){
+  const data = petLoadLvlData();
+  const key = petLevelKey(id, tier||1);
+  const info = data[key] || {lvl:1, xp:0};
+  const lvl = info.lvl||1;
+  return {lvl, xp:info.xp||0, need:petXpNeeded(lvl)};
+}
+// Bonus stat ikut Lv
+function petLvlHpBonus(lvl){ return (Math.max(1,lvl)-1)*6; }
+function petLvlDmgBonus(lvl){ return Math.floor((Math.max(1,lvl)-1)/2); }
+// Beri XP pada satu kumpulan pet (id+tahap) — auto naik Lv bila cukup XP
+function petGrantXP(id, tier, amount){
+  if(!id || !amount) return null;
+  const data = petLoadLvlData();
+  const key = petLevelKey(id, tier||1);
+  const info = data[key] || {lvl:1, xp:0};
+  let leveledUp = false;
+  info.lvl = info.lvl||1;
+  info.xp = (info.xp||0) + amount;
+  while(info.lvl < PET_MAX_LVL && info.xp >= petXpNeeded(info.lvl)){
+    info.xp -= petXpNeeded(info.lvl);
+    info.lvl++;
+    leveledUp = true;
+  }
+  if(info.lvl >= PET_MAX_LVL){ info.lvl = PET_MAX_LVL; info.xp = 0; }
+  data[key] = info;
+  petSaveLvlData(data);
+  if(leveledUp) petShowLevelUpNotif(id, info.lvl);
+  return {lvl:info.lvl, xp:info.xp, need:petXpNeeded(info.lvl), leveledUp};
+}
+function petShowLevelUpNotif(id, newLvl){
+  const base = PET_DEFS.find(d=>d.id===id);
+  if(typeof playSound==='function') try{ playSound('sfx_powerup'); }catch(e){}
+  const n = document.createElement('div');
+  n.style.cssText = `position:fixed;top:60px;left:50%;transform:translateX(-50%);
+    background:#0a1a0a;border:3px solid #00e676;color:#fff;
+    font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.5vw,10px);
+    padding:10px 20px;z-index:900;text-align:center;
+    box-shadow:0 0 24px rgba(0,230,118,0.6);pointer-events:none;
+    animation:petNotifPop 2.5s ease forwards;`;
+  n.innerHTML = `${base?base.emoji:'🐾'} PET NAIK LEVEL!<br><span style="color:#ffd700;">${base?base.name:'PET'} → Lv.${newLvl}</span>`;
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(), 2600);
+}
 
 // ── Gabung (Combine) 3 pet sama → 1 pet level+1 ──
 function petCombine(id, level){
@@ -50884,13 +51941,69 @@ function petTryCatch(){
   petBattleStart(w);
 }
 
+// ── Kemas kini HP bar gaya Pokemon (hijau→kuning→merah) ──
+function _pkmnSetHp(elId, pct){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  pct = Math.max(0, Math.min(100, pct));
+  el.style.width = pct + '%';
+  el.classList.remove('mid','low');
+  if(pct <= 20) el.classList.add('low');
+  else if(pct <= 50) el.classList.add('mid');
+}
+
+// ── Animasi lunge (terkam) semasa menyerang ──
+function _pkmnLunge(elId){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  el.classList.remove('lunge'); void el.offsetWidth; el.classList.add('lunge');
+  setTimeout(()=>el.classList.remove('lunge'), 450);
+}
+
+// ── Warna platform ikut jenis/warna pet ──
+function _pkmnColorHex(intColor){
+  if(typeof intColor !== 'number') return null;
+  return '#' + intColor.toString(16).padStart(6,'0');
+}
+function _pkmnShade(hex, factor){
+  const n = parseInt(hex.slice(1),16);
+  const r = Math.round(((n>>16)&255)*factor);
+  const g = Math.round(((n>>8)&255)*factor);
+  const b = Math.round((n&255)*factor);
+  return 'rgb('+r+','+g+','+b+')';
+}
+function _pkmnPlatformColorFor(pet){
+  let hex = null;
+  if(pet && typeof pet.color === 'number') hex = _pkmnColorHex(pet.color);
+  if(!hex && pet && pet.id){
+    const def = PET_DEFS.find(d=>d.id===pet.id);
+    if(def && typeof def.color==='number') hex = _pkmnColorHex(def.color);
+  }
+  return hex || '#4c9c3a';
+}
+function _pkmnSetPlatform(elId, pet){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const hex = _pkmnPlatformColorFor(pet);
+  el.style.background = 'radial-gradient(ellipse at center, '+hex+' 0%, '+_pkmnShade(hex,0.68)+' 70%, '+_pkmnShade(hex,0.45)+' 100%)';
+}
+
+// ── Animasi goyang bila pet kena serang ──
+function _pkmnHit(elId){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+  setTimeout(()=>el.classList.remove('hit'), 400);
+}
+
 function petBattleStart(w){
   const summon = petSummonLoad();
   const myPet = summon || (petLoadBag().length > 0 ? petLoadBag()[0] : null);
   if(!myPet) return;
   const level = myPet.level || 1;
-  const myMaxHP = 30 + level * 20;
-  const myAtk = 5 + level * 5;
+  const lvlInfo = petGetLvlInfo(myPet.id, level);
+  const myMaxHP = 30 + level * 20 + petLvlHpBonus(lvlInfo.lvl);
+  const myAtk = 5 + level * 5 + petLvlDmgBonus(lvlInfo.lvl);
   const wildRarity = w.def.rarity || 'Biasa';
   const wildMaxHP = wildRarity === 'Legenda' ? 80 : wildRarity === 'Nadir' ? 55 : 35;
   const wildAtk = wildRarity === 'Legenda' ? 18 : wildRarity === 'Nadir' ? 12 : 8;
@@ -50904,7 +52017,7 @@ function petBattleStart(w){
 
   // Show battle UI
   document.getElementById('petBattleMyEmoji').textContent = myPet.emoji || '🐾';
-  document.getElementById('petBattleMyName').textContent = (myPet.name||'Pet')+' Lv.'+level;
+  document.getElementById('petBattleMyName').textContent = (myPet.name||'Pet')+' Lv.'+lvlInfo.lvl;
   document.getElementById('petBattleMyHpBar').style.width = '100%';
   document.getElementById('petBattleMyHpText').textContent = myMaxHP+'/'+myMaxHP;
   document.getElementById('petBattleWildEmoji').textContent = w.def.emoji;
@@ -50913,6 +52026,8 @@ function petBattleStart(w){
   document.getElementById('petBattleWildHpText').textContent = wildMaxHP+'/'+wildMaxHP;
   document.getElementById('petBattleLog').textContent = '⚔️ Lawan pet liar! Jawab algebra untuk serang!';
   document.getElementById('petBattleFeedback').textContent = '';
+  _pkmnSetPlatform('petBattlePlatformMine', myPet);
+  _pkmnSetPlatform('petBattlePlatformOpp', w.def);
 
   _petBattleGenQ();
   document.getElementById('petBattleModal').style.display = 'flex';
@@ -50973,7 +52088,11 @@ function _petBattleAnswer(val, isAns, correct){
     s.wildHP -= dmg;
     if(s.wildHP < 0) s.wildHP = 0;
     document.getElementById('petBattleFeedback').innerHTML = '<span style="color:#00e676;">✅ BETUL! Pet liar -'+dmg+' HP</span>';
-    document.getElementById('petBattleWildHpBar').style.width = (s.wildHP/s.wildMaxHP)*100+'%';
+    _pkmnLunge('petBattleMyEmoji');
+    setTimeout(()=>{
+      _pkmnSetHp('petBattleWildHpBar', (s.wildHP/s.wildMaxHP)*100);
+      _pkmnHit('petBattleWildEmoji');
+    }, 180);
     document.getElementById('petBattleWildHpText').textContent = Math.ceil(s.wildHP)+'/'+s.wildMaxHP;
     if(s.wildHP <= 0){
       document.getElementById('petBattleLog').textContent = '🏆 Pet liar tumbang! Kamu MENANG!';
@@ -50999,7 +52118,11 @@ function _petBattleWildAttack(){
   const wDmg = s.wildAtk;
   s.myHP -= wDmg;
   if(s.myHP < 0) s.myHP = 0;
-  document.getElementById('petBattleMyHpBar').style.width = (s.myHP/s.myMaxHP)*100+'%';
+  _pkmnLunge('petBattleWildEmoji');
+  setTimeout(()=>{
+    _pkmnSetHp('petBattleMyHpBar', (s.myHP/s.myMaxHP)*100);
+    _pkmnHit('petBattleMyEmoji');
+  }, 180);
   document.getElementById('petBattleMyHpText').textContent = Math.ceil(s.myHP)+'/'+s.myMaxHP;
   document.getElementById('petBattleLog').textContent = '💥 Pet liar serang! -'+wDmg+' HP';
   if(s.myHP <= 0){
@@ -51037,6 +52160,12 @@ function _petBattleEnd(win){
     petSaveBag(bag);
     petUpdateBagCount();
     petShowCatchNotif(w.def);
+    // 🌟 Beri XP kepada pet yang digunakan lawan (naik Lv bila menang)
+    if(s.myPet){
+      const wRarity = w.def.rarity || 'Biasa';
+      const xpGain = wRarity==='Legenda' ? 30 : wRarity==='Nadir' ? 18 : 10;
+      petGrantXP(s.myPet.id, s.myPet.level||1, xpGain);
+    }
   } else {
     // Kalah → cooldown
     window._petBattleCooldown = Date.now() + 30000;
@@ -51183,14 +52312,60 @@ let _petPvPInvite = null; // {from, fromName, myPet, oppPet}
 // ── Helper: cari pet aktif pemain ──
 function petPvPGetMyPet(){
   const summon = petSummonLoad();
-  if(summon) return summon;
-  const bag = petLoadBag();
-  return bag.length > 0 ? bag[0] : null;
+  const pet = summon || (petLoadBag().length > 0 ? petLoadBag()[0] : null);
+  if(pet) pet.lvl = petGetLvlInfo(pet.id, pet.level||1).lvl; // 🌟 sisipkan Lv XP semasa
+  return pet;
+}
+
+// ── Buka senarai pemain online untuk dicabar (tak perlu dekat lagi) ──
+let _petPvPOnlineRefreshTimer = null;
+function petPvPOpenOnlineList(){
+  const modal = document.getElementById('petPvPOnlineModal');
+  if(!modal) return;
+  modal.style.display = 'flex';
+  _petPvPRenderOnlineList();
+  // Auto-refresh senarai setiap 3s selagi modal terbuka (pemain baru online/offline)
+  if(_petPvPOnlineRefreshTimer) clearInterval(_petPvPOnlineRefreshTimer);
+  _petPvPOnlineRefreshTimer = setInterval(_petPvPRenderOnlineList, 3000);
+}
+function petPvPCloseOnlineList(){
+  const modal = document.getElementById('petPvPOnlineModal');
+  if(modal) modal.style.display = 'none';
+  if(_petPvPOnlineRefreshTimer){ clearInterval(_petPvPOnlineRefreshTimer); _petPvPOnlineRefreshTimer = null; }
+}
+function _petPvPRenderOnlineList(){
+  const list = document.getElementById('petPvPOnlineList');
+  if(!list) return;
+  const me = smapGetPlayerName();
+  const cache = window._fbPresenceCache || {};
+  const now = Date.now();
+  const players = Object.entries(cache)
+    .filter(([name, p]) => name !== me && p && (now - (p.ts||0)) <= 20000)
+    .map(([name, p]) => ({ name, display: p.who || name }))
+    .sort((a,b) => a.display.localeCompare(b.display));
+  if(players.length === 0){
+    list.innerHTML = '<div style="color:#888;font-size:clamp(6px,1.3vw,8px);padding:16px 0;text-align:center;">Tiada pemain lain online sekarang.</div>';
+    return;
+  }
+  list.innerHTML = players.map(p =>
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#1a1a33;border:2px solid #333;padding:6px 10px;margin-bottom:6px;border-radius:4px;">'+
+      '<span style="color:#fff;font-size:clamp(6px,1.3vw,8px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🟢 '+smapEscHtml(p.display)+'</span>'+
+      '<button onclick="petPvPChallengeFromList(\''+smapEscHtml(p.name.replace(/'/g,"\\'"))+'\',\''+smapEscHtml(p.display.replace(/'/g,"\\'"))+'\')" style="background:#a855f7;color:#fff;border:2px solid #fff;padding:4px 10px;font-family:\'Press Start 2P\',monospace;font-size:clamp(5px,1.1vw,7px);cursor:pointer;white-space:nowrap;border-radius:3px;">⚔️ CABAR</button>'+
+    '</div>'
+  ).join('');
+}
+function petPvPChallengeFromList(targetUsername, targetDisplay){
+  petPvPCloseOnlineList();
+  petPvPSendInvite(targetUsername, targetDisplay);
 }
 
 // ── Hantar cabaran PVP Pet ke pemain lain di peta sekolah ──
 function petPvPSendInvite(targetUsername, targetDisplay){
-  const me = (playerProfile&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
+  // FIX: guna smapGetPlayerName() (sama identiti dengan sistem presence/kedudukan)
+  // supaya invite dihantar & didengar di alamat Firebase yang SAMA. Dulu guna
+  // (username||name) di sini tapi presence guna smapGetPlayerName() — bila kedua-dua
+  // berbeza, jemputan "hilang" sebab dihantar ke alamat lain dari yang didengar.
+  const me = smapGetPlayerName();
   if(!targetUsername || targetUsername===me) return;
   const myPet = petPvPGetMyPet();
   if(!myPet){
@@ -51203,7 +52378,7 @@ function petPvPSendInvite(targetUsername, targetDisplay){
   window._fbSetFn(invRef, {
     from: me,
     fromDisplay: (playerProfile.name||me),
-    myPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, rarity:myPet.rarity},
+    myPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, lvl:myPet.lvl||1, rarity:myPet.rarity},
     ts: Date.now(),
     status: 'pending'
   }).then(()=>{
@@ -51241,7 +52416,7 @@ function showPetNotification(icon, title, msg, color){
 function petPvPReceiveInvite(from, fromDisplay, petData){
   _petPvPInvite = {from, fromName: fromDisplay, oppPet: petData};
   document.getElementById('petPvPInviteTitle').textContent = '⚔️ '+fromDisplay+' MENCABAR!';
-  document.getElementById('petPvPInviteInfo').innerHTML = petData.emoji+' <span style="color:#ffd700;">'+petData.name+'</span> Lv.'+(petData.level||1)+
+  document.getElementById('petPvPInviteInfo').innerHTML = petData.emoji+' <span style="color:#ffd700;">'+petData.name+'</span> Lv.'+(petData.lvl||1)+
     '<br><span style="color:#888;font-size:0.8em;">PVP PET BATTLE — Terima?</span>';
   document.getElementById('petPvPInviteModal').style.display = 'flex';
 }
@@ -51255,12 +52430,11 @@ function petPvPAcceptInvite(){
     return;
   }
   // Balas ke Firebase
-  const me = (playerProfile&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
   const respRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+_petPvPInvite.from+'/response');
   if(window._fbSetFn){
     window._fbSetFn(respRef, {
       status: 'accepted',
-      oppPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, rarity:myPet.rarity}
+      oppPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, lvl:myPet.lvl||1, rarity:myPet.rarity}
     });
   }
   // Mulakan battle
@@ -51271,7 +52445,6 @@ function petPvPAcceptInvite(){
 function petPvPDeclineInvite(){
   if(!_petPvPInvite) return;
   document.getElementById('petPvPInviteModal').style.display = 'none';
-  const me = (playerProfile&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
   const respRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+_petPvPInvite.from+'/decline');
   if(window._fbSetFn) window._fbSetFn(respRef, {status:'declined'});
   _petPvPInvite = null;
@@ -51280,8 +52453,9 @@ function petPvPDeclineInvite(){
 // ── Kira HP pet berdasarkan level & rarity ──
 function petPvPGetMaxHP(pet){
   const level = pet.level || 1;
+  const lvl = pet.lvl || 1; // 🌟 Lv XP (jika tiada, anggap Lv.1)
   const base = pet.rarity==='Legenda' ? 120 : pet.rarity==='Nadir' ? 90 : pet.rarity==='Starter' ? 70 : 70;
-  return base + (level-1) * 25;
+  return base + (level-1) * 25 + petLvlHpBonus(lvl);
 }
 
 // ── Dapatkan skill pet ──
@@ -51317,12 +52491,14 @@ function petPvPStartBattle(oppPet){
 
   // Tunjukkan modal
   document.getElementById('petPvPMyEmoji').textContent = myPet.emoji;
-  document.getElementById('petPvPMyName').textContent = (myPet.name||'PET')+' Lv.'+(myPet.level||1);
+  document.getElementById('petPvPMyName').textContent = (myPet.name||'PET')+' Lv.'+(myPet.lvl||1);
   document.getElementById('petPvPMyHpBar').style.width = '100%';
   document.getElementById('petPvPMyHpText').textContent = myMaxHP+'/'+myMaxHP;
+  _pkmnSetPlatform('petPvPPlatformMine', myPet);
+  _pkmnSetPlatform('petPvPPlatformOpp', oppPet);
 
   document.getElementById('petPvPOppEmoji').textContent = oppPet.emoji;
-  document.getElementById('petPvPOppName').textContent = (oppPet.name||'LAWAN')+' Lv.'+(oppPet.level||1);
+  document.getElementById('petPvPOppName').textContent = (oppPet.name||'LAWAN')+' Lv.'+(oppPet.lvl||1);
   document.getElementById('petPvPOppHpBar').style.width = '100%';
   document.getElementById('petPvPOppHpText').textContent = oppMaxHP+'/'+oppMaxHP;
 
@@ -51386,7 +52562,8 @@ function petPvPUseSkill(skillIdx){
         playSound('sfx_powerup');
         document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#00e676;">💚 SEMBUH +'+Math.abs(dmg)+' HP!</span>';
       } else {
-        // Attack: damage + random variance (+-20%)
+        // Attack: damage + Lv bonus + random variance (+-20%)
+        dmg += petLvlDmgBonus(s.myPet && s.myPet.lvl || 1);
         const variance = Math.floor(dmg * 0.2 * (Math.random()*2-1));
         dmg += variance;
         if(dmg < 1) dmg = 1;
@@ -51394,9 +52571,13 @@ function petPvPUseSkill(skillIdx){
         playSound('hit');
         if(s.oppHP < 0) s.oppHP = 0;
         document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 '+sk.name+' kena! -'+dmg+' HP</span>';
+        _pkmnLunge('petPvPMyEmoji');
       }
-      document.getElementById('petPvPOppHpBar').style.width = (s.oppHP/s.oppMaxHP)*100+'%';
-      document.getElementById('petPvPOppHpText').textContent = Math.ceil(s.oppHP)+'/'+s.oppMaxHP;
+      setTimeout(()=>{
+        _pkmnSetHp('petPvPOppHpBar', (s.oppHP/s.oppMaxHP)*100);
+        if(dmg >= 0) _pkmnHit('petPvPOppEmoji');
+        document.getElementById('petPvPOppHpText').textContent = Math.ceil(s.oppHP)+'/'+s.oppMaxHP;
+      }, dmg >= 0 ? 180 : 0);
       document.getElementById('petPvPLog').textContent = '✅ Serangan berjaya! Giliran lawan...';
 
       if(s.oppHP <= 0){
@@ -51504,14 +52685,19 @@ function petPvPOppTurn(){
     s.oppHP = Math.min(s.oppMaxHP, s.oppHP + Math.abs(dmg));
     document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💚 Lawan sembuh +'+Math.abs(dmg)+' HP!</span>';
   } else if(hit){
+    dmg += petLvlDmgBonus(s.oppPet && s.oppPet.lvl || 1);
     const variance = Math.floor(dmg * 0.2 * (Math.random()*2-1));
     dmg += variance;
     if(dmg < 1) dmg = 1;
     s.myHP -= dmg;
     if(s.myHP < 0) s.myHP = 0;
     document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 Lawan guna '+sk.emoji+' '+sk.name+'! -'+dmg+' HP</span>';
-    document.getElementById('petPvPMyHpBar').style.width = (s.myHP/s.myMaxHP)*100+'%';
-    document.getElementById('petPvPMyHpText').textContent = Math.ceil(s.myHP)+'/'+s.myMaxHP;
+    _pkmnLunge('petPvPOppEmoji');
+    setTimeout(()=>{
+      _pkmnSetHp('petPvPMyHpBar', (s.myHP/s.myMaxHP)*100);
+      _pkmnHit('petPvPMyEmoji');
+      document.getElementById('petPvPMyHpText').textContent = Math.ceil(s.myHP)+'/'+s.myMaxHP;
+    }, 180);
 
     if(s.myHP <= 0){
       petPvPEnd(false);
@@ -51535,6 +52721,8 @@ function petPvPEnd(win){
     playSound('sfx_win');
     resultDiv.innerHTML = '🏆 <span style="color:#ffd700;">KAMU MENANG!</span> Pet lawan tumbang!';
     showPetNotification('🏆', 'PVP PET MENANG!', s.oppPet.name+' tumbang!', '#ffd700');
+    // 🌟 Beri XP kepada pet kamu selepas menang PVP
+    if(s.myPet) petGrantXP(s.myPet.id, s.myPet.level||1, 25);
   } else {
     playSound('sfx_lose');
     resultDiv.innerHTML = '💀 <span style="color:#e52521;">KAMU KALAH!</span> Pet kamu tumbang!';
@@ -51560,7 +52748,8 @@ function petPvPQuit(){
 // ── Firebase listener untuk invite masuk ──
 function petPvPInitListener(){
   if(!window._fbPresenceDb || !window._fbRefFn || !window._fbOnValueModule) return;
-  const me = (playerProfile&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
+  // FIX: guna smapGetPlayerName() — sama sebab macam petPvPSendInvite() di atas.
+  const me = smapGetPlayerName();
   if(!me) return;
   const invRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+me);
   window._fbOnValueModule.onValue(invRef, snap=>{
@@ -51647,6 +52836,15 @@ function petBagOpen(){
     });
     body.innerHTML = sorted.map(({def:p,level:lv,n})=>{
       const canCombine = p.id !== 'pikachu' && lv < PET_MAX_LEVEL && n >= PET_COMBINE_NEED;
+      const xpInfo = petGetLvlInfo(p.id, lv);
+      const xpPct = Math.max(0, Math.min(100, (xpInfo.xp/xpInfo.need)*100));
+      const xpBarHtml = `
+        <div style="margin-top:3px;">
+          <div style="color:#00e676;font-size:clamp(4px,0.9vw,6px);">🌟 Lv.${xpInfo.lvl}${xpInfo.lvl>=PET_MAX_LVL?' MAX':''} <span style="color:#556;">(${xpInfo.xp}/${xpInfo.need} XP)</span></div>
+          <div style="width:100%;max-width:120px;height:5px;background:#111;border:1px solid #234;border-radius:3px;overflow:hidden;margin-top:1px;">
+            <div style="height:100%;width:${xpPct}%;background:linear-gradient(90deg,#00e676,#00ff9d);"></div>
+          </div>
+        </div>`;
       const lvLabel = PET_LEVEL_LABEL[lv];
       const lvColor = PET_LEVEL_COLOR[lv] || p.rarColor;
       const borderColor = lv===3 ? '#00e5ff' : lv===2 ? '#ffd700' : p.rarColor;
@@ -51695,6 +52893,7 @@ function petBagOpen(){
             <div style="color:#fff;font-size:clamp(6px,1.4vw,9px);">${p.name}</div>
             <div style="color:${lvColor};font-size:clamp(5px,1.1vw,7px);">${lvLabel}</div>
             <div style="color:${p.rarColor};font-size:clamp(4px,0.9vw,6px);">${p.rarity}</div>
+            ${xpBarHtml}
           </div>
           <div style="color:#ffd700;font-size:clamp(8px,1.8vw,12px);margin-right:6px;">×${n}</div>
           <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
@@ -51757,63 +52956,121 @@ function petBagClose(){
 </div>
 
 <!-- Modal lawan pet (battle) -->
-<div id="petBattleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:700;flex-direction:column;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;">
-  <div style="background:#0a0a2a;border:5px solid #ffd700;box-shadow:8px 8px 0 #a07000,0 0 40px rgba(255,215,0,0.3);padding:16px 20px;max-width:min(500px,93vw);width:100%;text-align:center;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;">
-      <!-- Pet pemain -->
-      <div style="flex:1;text-align:center;">
-        <div id="petBattleMyEmoji" style="font-size:36px;">⚡</div>
-        <div id="petBattleMyName" style="color:#00e676;font-size:clamp(6px,1.2vw,8px);">Pet Lv.1</div>
-        <div style="background:#1a1a1a;border:2px solid #00e676;height:14px;border-radius:6px;overflow:hidden;margin:4px auto;max-width:130px;">
-          <div id="petBattleMyHpBar" style="height:100%;width:100%;background:linear-gradient(90deg,#00e676,#00a651);transition:width .3s;"></div>
-        </div>
-        <div id="petBattleMyHpText" style="color:#fff;font-size:clamp(5px,1vw,7px);">50/50</div>
+<style>
+/* ══ Pokemon-style 3D Pet Battle Arena ══ */
+.pkmn-arena{position:relative;width:100%;max-width:560px;aspect-ratio:16/11;border:5px solid #ffd700;box-shadow:8px 8px 0 #a07000,0 0 40px rgba(255,215,0,0.3);
+  background:linear-gradient(180deg,#8fe8e0 0%,#a8f0d8 35%,#7dd8a0 55%,#5cb87e 100%);overflow:hidden;perspective:600px;}
+.pkmn-arena.pvp{border-color:#a855f7;box-shadow:8px 8px 0 #4a1a7a,0 0 50px rgba(168,85,247,0.35);}
+.pkmn-sky-glow{position:absolute;inset:0 0 55% 0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,0.35),transparent 60%);pointer-events:none;}
+.pkmn-platform{position:absolute;width:150px;height:52px;border-radius:50%;
+  background:radial-gradient(ellipse at center,#7ecb52 0%,#4c9c3a 70%,#3a7a2c 100%);
+  box-shadow:0 10px 0 rgba(0,0,0,0.15),inset 0 -4px 8px rgba(0,0,0,0.2);
+  transform:rotateX(55deg);}
+.pkmn-platform.opp{top:16%;right:8%;width:120px;height:42px;}
+.pkmn-platform.mine{bottom:12%;left:6%;width:170px;height:60px;}
+.pkmn-pet-sprite{position:absolute;font-size:52px;filter:drop-shadow(3px 6px 3px rgba(0,0,0,0.35));
+  animation:pkmnFloat 2.4s ease-in-out infinite;transition:transform .15s,opacity .3s;}
+.pkmn-pet-sprite.opp{top:6%;right:14%;font-size:46px;}
+.pkmn-pet-sprite.mine{bottom:20%;left:12%;font-size:64px;animation:pkmnFloatMine 2.4s ease-in-out infinite;}
+.pkmn-pet-sprite.mine.hit,.pkmn-pet-sprite.opp.hit{animation:pkmnShake .4s ease;}
+.pkmn-pet-sprite.faint{opacity:0;transform:translateY(30px) scale(0.6);}
+@keyframes pkmnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes pkmnFloatMine{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-6px)}}
+@keyframes pkmnShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.pkmn-pet-sprite.mine.lunge{animation:pkmnLungeMine .45s ease !important;}
+.pkmn-pet-sprite.opp.lunge{animation:pkmnLungeOpp .45s ease !important;}
+@keyframes pkmnLungeMine{0%{transform:scaleX(-1) translate(0,0)}40%{transform:scaleX(-1) translate(38px,-14px) scale(1.08)}100%{transform:scaleX(-1) translate(0,0)}}
+@keyframes pkmnLungeOpp{0%{transform:translate(0,0)}40%{transform:translate(-32px,10px) scale(1.08)}100%{transform:translate(0,0)}}
+.pkmn-nameplate{position:absolute;background:#f4f0e0;border:2px solid #4a4a3a;border-radius:6px;
+  box-shadow:2px 3px 0 rgba(0,0,0,0.35);padding:5px 8px;min-width:130px;font-family:'Press Start 2P',monospace;
+  clip-path:polygon(0 0,100% 0,100% 100%,4% 100%);}
+.pkmn-nameplate.opp{top:5%;left:5%;}
+.pkmn-nameplate.mine{bottom:6%;right:5%;clip-path:polygon(0 0,100% 0,96% 100%,0 100%);}
+.pkmn-nameplate .pn-row{display:flex;justify-content:space-between;align-items:center;gap:6px;}
+.pkmn-nameplate .pn-name{color:#333;font-size:clamp(6px,1.3vw,9px);}
+.pkmn-nameplate .pn-lv{color:#666;font-size:clamp(5px,1vw,7px);}
+.pkmn-hp-outer{background:#333;border-radius:5px;height:8px;margin-top:4px;overflow:hidden;position:relative;}
+.pkmn-hp-outer::before{content:'HP';position:absolute;left:-16px;top:-2px;color:#e8a800;font-size:5px;font-weight:bold;}
+.pkmn-hp-fill{height:100%;width:100%;background:linear-gradient(180deg,#7ee85a,#4cb82c);transition:width .4s ease;}
+.pkmn-hp-fill.mid{background:linear-gradient(180deg,#ffd54c,#e8a800);}
+.pkmn-hp-fill.low{background:linear-gradient(180deg,#ff6b5c,#e52521);}
+.pkmn-hp-text{color:#555;font-size:clamp(4px,0.9vw,6px);text-align:right;margin-top:2px;}
+.pkmn-dialog{background:#fdfdf5;border:3px solid #4a4a3a;border-radius:6px;box-shadow:2px 3px 0 rgba(0,0,0,0.3);
+  padding:8px 10px;margin-top:8px;min-height:20px;color:#222;font-size:clamp(6px,1.4vw,9px);}
+.pkmn-answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.pkmn-answer-btn{background:linear-gradient(180deg,#fdfdf5,#e8e4d0);border:2px solid #4a4a3a;border-radius:5px;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.3);padding:8px 6px;font-family:'Press Start 2P',monospace;
+  font-size:clamp(12px,3vw,20px);color:#222;cursor:pointer;transition:transform .1s;}
+.pkmn-answer-btn:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,0.3);}
+.pkmn-answer-btn:disabled{opacity:.5;cursor:default;}
+.pkmn-skill-btn{background:linear-gradient(180deg,#fdfdf5,#e8e4d0);border:2px solid #4a4a3a;border-radius:5px;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.3);padding:6px 8px;font-family:'Press Start 2P',monospace;
+  font-size:clamp(6px,1.3vw,8px);color:#222;cursor:pointer;text-align:left;}
+.pkmn-skill-btn:disabled{opacity:.4;cursor:default;}
+</style>
+
+<div id="petBattleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:700;flex-direction:column;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;padding:10px;">
+  <div style="max-width:min(560px,94vw);width:100%;">
+    <div class="pkmn-arena">
+      <div class="pkmn-sky-glow"></div>
+      <div id="petBattlePlatformOpp" class="pkmn-platform opp"></div>
+      <div id="petBattlePlatformMine" class="pkmn-platform mine"></div>
+      <div id="petBattleWildEmoji" class="pkmn-pet-sprite opp">🐱</div>
+      <div id="petBattleMyEmoji" class="pkmn-pet-sprite mine">⚡</div>
+      <div class="pkmn-nameplate opp">
+        <div class="pn-row"><span id="petBattleWildName" class="pn-name">KUCING [Biasa]</span></div>
+        <div class="pkmn-hp-outer"><div id="petBattleWildHpBar" class="pkmn-hp-fill" style="width:100%;"></div></div>
+        <div id="petBattleWildHpText" style="display:none;"></div>
       </div>
-      <div style="font-size:24px;color:#ffd700;flex-shrink:0;">⚔️</div>
-      <!-- Pet liar -->
-      <div style="flex:1;text-align:center;">
-        <div id="petBattleWildEmoji" style="font-size:36px;">🐱</div>
-        <div id="petBattleWildName" style="color:#e52521;font-size:clamp(6px,1.2vw,8px);">KUCING [Biasa]</div>
-        <div style="background:#1a1a1a;border:2px solid #e52521;height:14px;border-radius:6px;overflow:hidden;margin:4px auto;max-width:130px;">
-          <div id="petBattleWildHpBar" style="height:100%;width:100%;background:linear-gradient(90deg,#e52521,#ff6b6b);transition:width .3s;"></div>
-        </div>
-        <div id="petBattleWildHpText" style="color:#fff;font-size:clamp(5px,1vw,7px);">35/35</div>
+      <div class="pkmn-nameplate mine">
+        <div class="pn-row"><span id="petBattleMyName" class="pn-name">Pet Lv.1</span></div>
+        <div class="pkmn-hp-outer"><div id="petBattleMyHpBar" class="pkmn-hp-fill" style="width:100%;"></div></div>
+        <div id="petBattleMyHpText" class="pkmn-hp-text">50/50</div>
       </div>
     </div>
-    <div id="petBattleLog" style="color:#ffd700;font-size:clamp(6px,1.3vw,9px);margin-bottom:6px;min-height:16px;">⚔️ Lawan pet liar! Jawab sifir untuk serang!</div>
-    <div id="petBattleQ" style="color:#fff;font-size:clamp(22px,5vw,36px);font-weight:bold;margin:8px 0 12px;text-shadow:3px 3px 0 #a07000;letter-spacing:2px;"></div>
-    <div id="petBattleBtns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;"></div>
-    <div id="petBattleFeedback" style="min-height:16px;font-size:clamp(6px,1.5vw,10px);"></div>
+    <div id="petBattleLog" class="pkmn-dialog">⚔️ Lawan pet liar! Jawab sifir untuk serang!</div>
+    <div id="petBattleQ" style="color:#fff;font-size:clamp(22px,5vw,36px);font-weight:bold;margin:8px 0 4px;text-align:center;text-shadow:3px 3px 0 #a07000;letter-spacing:2px;"></div>
+    <div id="petBattleBtns" class="pkmn-answer-grid"></div>
+    <div id="petBattleFeedback" style="min-height:16px;font-size:clamp(6px,1.5vw,10px);color:#ffd700;text-align:center;margin-top:4px;"></div>
   </div>
 </div>
 
 <!-- Modal PVP Pet Battle — vs pemain lain (Pokemon style) -->
-<div id="petPvPBattleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:750;flex-direction:column;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;">
-  <div style="background:#0a0a2a;border:5px solid #ffd700;box-shadow:8px 8px 0 #a07000,0 0 50px rgba(255,215,0,0.25);padding:14px 18px;max-width:min(520px,95vw);width:100%;text-align:center;">
-    <div style="color:#ffd700;font-size:clamp(7px,1.5vw,10px);margin-bottom:6px;">⚔️ PVP PET BATTLE!</div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px;">
-      <div style="flex:1;text-align:center;background:rgba(0,230,118,0.06);border:2px solid #00e676;border-radius:8px;padding:6px 4px;">
-        <div id="petPvPMyEmoji" style="font-size:32px;">⚡</div>
-        <div id="petPvPMyName" style="color:#00e676;font-size:clamp(5px,1.1vw,7px);">PET LV.1</div>
-        <div style="background:#1a1a1a;border:2px solid #00e676;height:10px;border-radius:5px;overflow:hidden;margin:3px auto;max-width:120px;">
-          <div id="petPvPMyHpBar" style="height:100%;width:100%;background:linear-gradient(90deg,#00e676,#00a651);transition:width .3s;"></div>
-        </div>
-        <div id="petPvPMyHpText" style="color:#fff;font-size:clamp(4px,0.9vw,6px);">100/100</div>
+<div id="petPvPBattleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:750;flex-direction:column;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;padding:10px;">
+  <div style="max-width:min(560px,95vw);width:100%;">
+    <div class="pkmn-arena pvp">
+      <div class="pkmn-sky-glow"></div>
+      <div id="petPvPPlatformOpp" class="pkmn-platform opp"></div>
+      <div id="petPvPPlatformMine" class="pkmn-platform mine"></div>
+      <div id="petPvPOppEmoji" class="pkmn-pet-sprite opp">🐱</div>
+      <div id="petPvPMyEmoji" class="pkmn-pet-sprite mine">⚡</div>
+      <div class="pkmn-nameplate opp">
+        <div class="pn-row"><span id="petPvPOppName" class="pn-name">LAWAN LV.1</span></div>
+        <div class="pkmn-hp-outer"><div id="petPvPOppHpBar" class="pkmn-hp-fill" style="width:100%;"></div></div>
+        <div id="petPvPOppHpText" style="display:none;"></div>
       </div>
-      <div style="font-size:18px;color:#ffd700;flex-shrink:0;">⚔️</div>
-      <div style="flex:1;text-align:center;background:rgba(229,37,33,0.06);border:2px solid #e52521;border-radius:8px;padding:6px 4px;">
-        <div id="petPvPOppEmoji" style="font-size:32px;">🐱</div>
-        <div id="petPvPOppName" style="color:#e52521;font-size:clamp(5px,1.1vw,7px);">LAWAN LV.1</div>
-        <div style="background:#1a1a1a;border:2px solid #e52521;height:10px;border-radius:5px;overflow:hidden;margin:3px auto;max-width:120px;">
-          <div id="petPvPOppHpBar" style="height:100%;width:100%;background:linear-gradient(90deg,#e52521,#ff6b6b);transition:width .3s;"></div>
-        </div>
-        <div id="petPvPOppHpText" style="color:#fff;font-size:clamp(4px,0.9vw,6px);">100/100</div>
+      <div class="pkmn-nameplate mine">
+        <div class="pn-row"><span id="petPvPMyName" class="pn-name">PET LV.1</span></div>
+        <div class="pkmn-hp-outer"><div id="petPvPMyHpBar" class="pkmn-hp-fill" style="width:100%;"></div></div>
+        <div id="petPvPMyHpText" class="pkmn-hp-text">100/100</div>
       </div>
+      <div style="position:absolute;top:5px;left:50%;transform:translateX(-50%);color:#a855f7;font-size:clamp(6px,1.3vw,8px);text-shadow:1px 1px 0 #000;">⚔️ PVP PET BATTLE!</div>
     </div>
-    <div id="petPvPLog" style="color:#ffd700;font-size:clamp(5px,1.1vw,7px);margin-bottom:6px;min-height:14px;background:rgba(0,0,0,0.4);padding:4px 6px;border-radius:4px;">Pilih skill untuk serang!</div>
-    <div id="petPvPSkills" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;"></div>
-    <div id="petPvPFeedback" style="min-height:14px;font-size:clamp(5px,1.2vw,8px);margin-bottom:4px;"></div>
-    <button onclick="petPvPQuit()" style="background:#333;color:#aaa;border:1px solid #555;padding:4px 12px;font-family:'Press Start 2P',monospace;font-size:clamp(5px,1vw,7px);cursor:pointer;">✖ LARI (KALAH)</button>
+    <div id="petPvPLog" class="pkmn-dialog">Pilih skill untuk serang!</div>
+    <div id="petPvPSkills" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;"></div>
+    <div id="petPvPFeedback" style="min-height:14px;font-size:clamp(5px,1.2vw,8px);margin:6px 0 4px;color:#ffd700;text-align:center;"></div>
+    <div style="text-align:center;"><button onclick="petPvPQuit()" style="background:#333;color:#aaa;border:1px solid #555;padding:4px 12px;font-family:'Press Start 2P',monospace;font-size:clamp(5px,1vw,7px);cursor:pointer;">✖ LARI (KALAH)</button></div>
+  </div>
+</div>
+
+<!-- Modal senarai pemain online untuk dicabar -->
+<div id="petPvPOnlineModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:760;flex-direction:column;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;padding:12px;">
+  <div style="background:#0d0d2a;border:4px solid #a855f7;box-shadow:0 0 40px rgba(168,85,247,0.3);padding:16px 18px;max-width:min(380px,92vw);width:100%;max-height:80vh;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="color:#a855f7;font-size:clamp(8px,1.8vw,12px);">⚔️ CABAR PEMAIN ONLINE</span>
+      <button onclick="petPvPCloseOnlineList()" style="background:#e52521;color:#fff;border:2px solid #fff;padding:4px 8px;font-family:'Press Start 2P',monospace;font-size:clamp(5px,1vw,7px);cursor:pointer;">✕</button>
+    </div>
+    <div id="petPvPOnlineList" style="overflow-y:auto;flex:1;min-height:60px;"></div>
   </div>
 </div>
 
@@ -53831,30 +55088,27 @@ window.petSystemInit = petSystemInit = function(scene){
     if(!_petInitDone && scene && smapActive) petSystemInit(scene);
     petSystemUpdate(_dt, now, scene);
 
-    // ── PVP Pet: check if near ANY online player ──
+    // ── PVP Pet: check if ANY player is online (tak perlu dekat lagi) ──
     const pvpBtn = document.getElementById('smapPetPvPBtn');
     if(pvpBtn){
       if(!smapActive){ pvpBtn.style.display='none'; }
       else {
-        const me = (playerProfile&&(playerProfile.username||playerProfile.name)||'').toUpperCase();
+        // FIX: guna smapGetPlayerName() supaya padan dengan key presence cache
+        // (dulu guna username||name — tak sepadan dengan key presence, jadi
+        // player leka dikesan sebagai "pemain lain" berdekatan diri sendiri).
+        const me = smapGetPlayerName();
         const cache = window._fbPresenceCache || {};
         const now2 = Date.now();
-        let nearPlayer = null;
-        const PVP_RADIUS = 10;
+        let anyOnline = false;
         Object.entries(cache).forEach(([name, p])=>{
           if(name === me) return;
-          if(!p || !p.x || !p.z) return;
-          if((now2 - (p.ts||0)) > 20000) return;
-          const dx = p.x - hx;
-          const dz = p.z - hz;
-          const dist = Math.sqrt(dx*dx + dz*dz);
-          if(dist < PVP_RADIUS){
-            nearPlayer = { name: name, display: p.who || name };
-          }
+          if(!p) return;
+          if((now2 - (p.ts||0)) > 20000) return; // online dalam 20s terakhir
+          anyOnline = true;
         });
-        if(nearPlayer && !_petPvPState && !_petPvPInvite){
+        if(anyOnline && !_petPvPState && !_petPvPInvite){
           pvpBtn.style.display = 'flex';
-          pvpBtn.onclick = function(){ petPvPSendInvite(nearPlayer.name, nearPlayer.display); };
+          pvpBtn.onclick = function(){ petPvPOpenOnlineList(); };
         } else {
           pvpBtn.style.display = 'none';
         }
@@ -72547,6 +73801,19 @@ function roomVoiceCleanup(){
 </div>
 <div id="soloEndOverlay">
   <div id="soloEndBox"></div>
+</div>
+<div id="examOverlay">
+  <div id="examQuizBox">
+    <div id="examQuizTag">📝 DEWAN EXAM</div>
+    <div id="examQuizProgress"></div>
+    <div id="examQuizText"></div>
+    <div id="examQuizOpts"></div>
+    <div id="examQuizFeedback"></div>
+    <button id="examQuitBtn" onclick="examQuit()">✖ KELUAR AWAL</button>
+  </div>
+</div>
+<div id="examEndOverlay">
+  <div id="examEndBox"></div>
 </div>
 </body>
 </html>

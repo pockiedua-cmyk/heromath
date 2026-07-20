@@ -4096,6 +4096,12 @@ function playSound(type){
         _psSeq(ctx,now,[440,660,880,1108],'sine',0.14,0.14,0.05);
         break;
       }
+      case 'footstep':{
+        const p=0.88+Math.random()*0.24;
+        _psOsc(ctx,now,'sine',95*p,55*p,0.08,0.045);
+        _psNoise(ctx,now,0.04,0.03,900,0,300);
+        break;
+      }
       case 'sfx_move':{
         _psOsc(ctx,now,'triangle',330,440,0.07,0.09);
         break;
@@ -4219,6 +4225,25 @@ function _bgmEngineStart(state,opts){
   state.active=true; state.timeout=null; state.nodes=[];
   const track=(n)=>{ state.nodes.push(n); return n; };
 
+  function birdChirp(t){
+    const base=1800+Math.random()*1400;
+    for(let i=0;i<2+Math.floor(Math.random()*2);i++){
+      const dt2=t+i*0.09;
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(base,dt2);
+      o.frequency.exponentialRampToValueAtTime(base*(1.3+Math.random()*0.4),dt2+0.05);
+      o.frequency.exponentialRampToValueAtTime(base*0.8,dt2+0.09);
+      g.gain.setValueAtTime(0.0001,dt2);
+      g.gain.linearRampToValueAtTime(vol*0.06,dt2+0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001,dt2+0.1);
+      o.connect(g); g.connect(bus);
+      _sendReverb(g,0.3);
+      o.start(dt2); o.stop(dt2+0.12);
+      track(o);track(g);
+    }
+  }
+
   function playPad(t,freqs,dur){
     freqs.forEach((f,i)=>{
       const o1=ctx.createOscillator(), o2=ctx.createOscillator(), g=ctx.createGain();
@@ -4303,6 +4328,8 @@ function _bgmEngineStart(state,opts){
     // Arpeggio pluck — pergerakan melodi lembut supaya dunia terasa "hidup", bukan kosong
     const arp=[chord[0]*2,chord[1]*2,chord[2]*2,chord[1]*2];
     arp.forEach((f,i)=>{ playPluck(t0+i*beat, f, beat*0.9, i===0?1:0.7); });
+    // Ambience luar — burung berkicau rawak (mood dunia terbuka sahaja) — dunia lebih hidup
+    if(mood==='world' && Math.random()<0.4){ birdChirp(t0+Math.random()*barDur*0.8); }
     barCount++;
     if(barCount%4===0) chordIdx++;
     state.timeout=setTimeout(scheduleBar, barDur*1000*0.98);
@@ -12780,6 +12807,7 @@ function smapBuild3D(){
     _zbMusicActive=false;
     _zbMusicNodes.forEach(n=>{try{if(n.stop)n.stop();if(n.disconnect)n.disconnect();}catch(e){}});
     _zbMusicNodes=[];
+    if(typeof _ziRainSoundUpdate==='function') _ziRainSoundUpdate('clear');
   }
   // Shared bullet geometry + per-tier materials (no new GPU objects per shot)
   const _bulletGeo=new THREE.SphereGeometry(0.06,4,4);
@@ -15146,8 +15174,43 @@ function smapBuild3D(){
   // ═══════════════════════════════════════════════
   var _ziWeatherEffects={accuracyMod:1,visibilityMod:1,zombieSpeedMod:1,buildingDmgMod:0};
 
+  // ── Bunyi hujan (loop) — sebelum ni cuma ada overlay visual, terus senyap ──
+  var _ziRainAudio={active:false,src:null,gain:null,filt:null,type:null};
+  function _ziRainSoundUpdate(type){
+    const isRain=(type==='rain'||type==='toxic_rain');
+    if(isRain && _ziRainAudio.active && _ziRainAudio.type===type) return;
+    if(!isRain && !_ziRainAudio.active) return;
+    if(_ziRainAudio.active){
+      try{
+        const g=_ziRainAudio.gain, ctx=_actx;
+        if(g&&ctx){ g.gain.setTargetAtTime(0.0001,ctx.currentTime,0.4); }
+        const src=_ziRainAudio.src, filt=_ziRainAudio.filt;
+        setTimeout(()=>{ try{ if(src&&src.stop)src.stop(); if(src&&src.disconnect)src.disconnect(); if(filt)filt.disconnect(); if(g)g.disconnect(); }catch(e){} },500);
+      }catch(e){}
+      _ziRainAudio={active:false,src:null,gain:null,filt:null,type:null};
+    }
+    if(isRain){
+      try{
+        const ctx=_audio(); if(!ctx) return;
+        const bus=_dryBus||ctx.destination;
+        const sz=ctx.sampleRate*2;
+        const buf=ctx.createBuffer(1,sz,ctx.sampleRate);
+        const d=buf.getChannelData(0);
+        for(let i=0;i<sz;i++) d[i]=Math.random()*2-1;
+        const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+        const filt=ctx.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=(type==='toxic_rain')?2600:3200; filt.Q.value=0.7;
+        const gain=ctx.createGain(); gain.gain.value=0.0001;
+        src.connect(filt); filt.connect(gain); gain.connect(bus);
+        src.start();
+        gain.gain.linearRampToValueAtTime((type==='toxic_rain')?0.06:0.08, ctx.currentTime+1.2);
+        _ziRainAudio={active:true,src:src,gain:gain,filt:filt,type:type};
+      }catch(e){}
+    }
+  }
+
   function _ziWeatherEffectTick(dt){
     var w=smZb.weatherType||'clear';
+    _ziRainSoundUpdate(w);
     switch(w){
       case 'rain':
         _ziWeatherEffects.accuracyMod=0.8;
@@ -20936,7 +20999,7 @@ function smapBuild3D(){
       const osc2=ctx.createOscillator(); osc2.type='square'; osc2.frequency.value=120;
       const filt=ctx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=400;
       const gain=ctx.createGain(); gain.gain.value=0.05;
-      osc.connect(filt); osc2.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+      osc.connect(filt); osc2.connect(filt); filt.connect(gain); gain.connect(_dryBus||ctx.destination);
       osc.start(); osc2.start();
       vehEngine.osc=osc; vehEngine.osc2=osc2; vehEngine.gain=gain; vehEngine.filter=filt; vehEngine.active=true;
     }catch(e){}
@@ -21707,8 +21770,15 @@ function smapBuild3D(){
       if(smHero.legR) smHero.legR.rotation.x=-ph*0.5;
       if(smHero.armL) smHero.armL.rotation.x=-ph*0.4;
       if(smHero.armR) smHero.armR.rotation.x=ph*0.4;
+      // ── Bunyi tapak kaki — silih berganti ikut kitaran jalan, elak dunia rasa senyap ──
+      const _fsSign=ph>=0?1:-1;
+      if(_fsSign!==smHeroState._fsLastSign){
+        smHeroState._fsLastSign=_fsSign;
+        playSound('footstep');
+      }
     } else {
       if(smHero.legL){smHero.legL.rotation.x=0;smHero.legR.rotation.x=0;}
+      smHeroState._fsLastSign=0;
     }
     // Swap GLB skin rig (static ↔ walking) to match movement — no-op if
     // no GLB skin equipped, or if this skin has no dedicated walk rig.
@@ -28639,6 +28709,7 @@ function shopBuy(itemId){
   if(!item) return;
   if((d.points||0)<item.price){
     document.getElementById('shopMsg').textContent='⚠ Mata tidak mencukupi!';
+    playSound('wrong');
     return;
   }
   d.points-=item.price;
@@ -28665,6 +28736,7 @@ function shopBuy(itemId){
   const hudEl=document.getElementById('hudPtsDisplay');
   if(hudEl) hudEl.textContent=d.points;
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'!';
+  playSound('coin');
   shopRender();
 }
 
@@ -28702,6 +28774,7 @@ function shopEquip(itemId,cat){
   if(typeof applyKafkaVisuals==='function') applyKafkaVisuals();
   if(typeof applyKiritoVisuals==='function') applyKiritoVisuals();
   document.getElementById('shopMsg').textContent='✅ Item dipakai!';
+  playSound('sfx_powerup');
   shopRender();
 }
 
@@ -28714,6 +28787,7 @@ function shopBuySkin(itemId){
   const rarePts=(d.owned&&d.owned['rare_coin'])||0;
   if(rarePts<item.price){
     document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi! Tonton iklan untuk dapatkan 🪙';
+    playSound('wrong');
     return;
   }
   d.owned=d.owned||{};
@@ -28721,6 +28795,7 @@ function shopBuySkin(itemId){
   d.owned[itemId]=1;
   shopSaveData(u,d);
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! 🌀';
+  playSound('coin');
   shopRender();
 }
 
@@ -28732,11 +28807,13 @@ function shopBuyGlbSkin(itemId){
   if(!item||!item.glbSkin) return;
   if(item.adminOnly && !(typeof isAdminUser==='function' && isAdminUser(u))){
     document.getElementById('shopMsg').textContent='🚫 Item ini khas untuk ADMIN sahaja!';
+    playSound('wrong');
     return;
   }
   const rarePts=(d.owned&&d.owned['rare_coin'])||0;
   if(rarePts<item.price){
     document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi!';
+    playSound('wrong');
     return;
   }
   d.owned=d.owned||{};
@@ -28744,6 +28821,7 @@ function shopBuyGlbSkin(itemId){
   d.owned[itemId]=1;
   shopSaveData(u,d);
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! Tekan PAKAI untuk guna.';
+  playSound('coin');
   shopRender();
 }
 
@@ -28767,6 +28845,7 @@ function shopEquipGlbSkin(itemId){
       if(g) glbRemoveSkin(g);
     });
     document.getElementById('shopMsg').textContent='✅ GLB Skin ditanggal.';
+    playSound('sfx_click');
     shopSaveData(u,d);
     shopRender();
   } else {
@@ -28781,12 +28860,14 @@ function shopEquipGlbSkin(itemId){
       if(data){
         applyCostume();
         document.getElementById('shopMsg').textContent='✅ GLB Skin dipakai: '+item.name+'! Model 3D aktif.';
+        playSound('sfx_powerup');
       } else {
         // Load failed — revert
         d.equipped['glb_skin']='';
         shopSaveData(u,d);
         applyCostume();
         document.getElementById('shopMsg').textContent='⚠️ Gagal muat GLB: fail '+GLB_SKINS[item.glbSkin].file+' tidak wujud! Letak fail .glb dalam folder skins/.';
+        playSound('wrong');
         shopRender();
       }
     });
@@ -28805,6 +28886,7 @@ function shopBuyPetRare(itemId){
   const rarePts=(d.owned&&d.owned['rare_coin'])||0;
   if(rarePts<item.price){
     document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi! Tonton iklan untuk dapatkan 🪙';
+    playSound('wrong');
     return;
   }
   const base=PET_DEFS.find(p=>p.id===item.petId);
@@ -28823,6 +28905,7 @@ function shopBuyPetRare(itemId){
   const rareEl=document.getElementById('shopRarePts');
   if(rareEl) rareEl.textContent=d.owned['rare_coin'];
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! Masuk ke beg pet 🐾';
+  playSound('coin');
   shopRender();
 }
 
@@ -28834,6 +28917,7 @@ function shopBuyVehicle(itemId){
   const rarePts=(d.owned&&d.owned['rare_coin'])||0;
   if(rarePts<item.price){
     document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi! Tonton iklan untuk dapatkan 🪙';
+    playSound('wrong');
     return;
   }
   d.owned=d.owned||{};
@@ -28841,6 +28925,7 @@ function shopBuyVehicle(itemId){
   d.owned[itemId]=1;
   shopSaveData(u,d);
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! 🏍️ Tekan butang KENDERAAN utk tunggang.';
+  playSound('coin');
   shopRender();
   if(typeof vehicleUpdateHudBtn==='function') vehicleUpdateHudBtn();
 }
@@ -28854,6 +28939,7 @@ function shopBuyMmoStone(itemId){
   const rarePts=(d.owned&&d.owned['rare_coin'])||0;
   if(rarePts<item.price){
     document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi! Tonton iklan untuk dapatkan 🪙';
+    playSound('wrong');
     return;
   }
   d.owned=d.owned||{};
@@ -28866,6 +28952,7 @@ function shopBuyMmoStone(itemId){
   mmorpgState[key]+=(item.qty||5);
   mmoSaveData();
   document.getElementById('shopMsg').textContent='✅ +'+(item.qty||5)+' '+item.name+' dimasukkan ke inventory!';
+  playSound('coin');
   shopRender();
 }
 
@@ -28878,6 +28965,7 @@ function shopBuyFurniture(itemId){
   const rarePts=(d.owned&&d.owned['rare_coin'])||0;
   if(rarePts<item.price){
     document.getElementById('shopMsg').textContent='⚠ Rare Coin tidak mencukupi!';
+    playSound('wrong');
     return;
   }
   d.owned=d.owned||{};
@@ -28886,6 +28974,7 @@ function shopBuyFurniture(itemId){
   shopSaveData(u,d);
   const zoneLabel=item.fType==='room'?'Bilik':'Rumah Guild';
   document.getElementById('shopMsg').textContent='✅ Berjaya dibeli: '+item.name+'! Pergi ke '+zoneLabel+' untuk letak.';
+  playSound('coin');
   shopRender();
 }
 
@@ -28936,12 +29025,14 @@ function shopBuyTopup(itemId){
       window.location.href = res.paymentUrl;
     } else {
       document.getElementById('shopMsg').textContent='⚠ Gagal cipta bil ToyyibPay. Cuba lagi.';
+      playSound('wrong');
       shopRender();
     }
     }).catch(err=>{
       console.error('Topup error:', err);
       const errMsg = (err.message||'').length > 150 ? (err.message||'').substring(0,150)+'...' : (err.message||'Unknown error');
       document.getElementById('shopMsg').textContent='⚠ Ralat: '+errMsg;
+      playSound('wrong');
       alert('Topup gagal: '+errMsg);
       shopRender();
     });
@@ -32057,6 +32148,7 @@ function shopUseInGame(itemId){
   if(!item){return;}
   if(!shopUseItem(itemId)){
     document.getElementById('shopMsg').textContent='⚠ Tiada stok!';
+    playSound('wrong');
     return;
   }
   shopClose();
@@ -34955,9 +35047,29 @@ setTimeout(_sifirAttachFbListener, 3500);
 window._examState={active:false,tingkatan:1,total:50,idx:0,answered:0,correct:0,curQ:null};
 
 function examStart(){
+  // FIX: sebelum ni, kalau window._examState.active tersekat 'true' tanpa
+  // overlay #examOverlay betul-betul terpapar (contoh: sesi lalu terganggu),
+  // baris "if(active) return" akan senyap terus — klik butang EXAM nampak
+  // macam "tak buat apa-apa" sebab tiada alert, tiada overlay, tiada apa-apa
+  // tanda. Sekarang check overlay betul-betul 'show' dulu; kalau active=true
+  // tapi overlay tak nampak, anggap state basi & reset supaya exam baru boleh
+  // start (self-heal) — bukan block selama-lamanya secara senyap.
+  const ovEl = document.getElementById('examOverlay');
+  const overlayReallyShowing = ovEl && ovEl.classList.contains('show');
+  if(window._examState.active && !overlayReallyShowing){
+    window._examState.active = false;
+  }
   if(window._examState.active) return;
   if(!examCanPlayToday()){
-    alert('📝 Anda sudah buat Dewan Exam hari ini!\nSila kembali esok untuk cuba lagi.');
+    // FIX: alert() asal boleh senyap (contoh dalam Android WebView tanpa
+    // onJsAlert) — klik nampak "tak buat apa-apa". Guna toast dalam-game
+    // (sama macam showPetNotification) supaya sentiasa nampak walau apa
+    // pun platform yang jalankan HTML ini.
+    if(typeof showPetNotification==='function'){
+      showPetNotification('📝', 'SUDAH BUAT HARI INI!', 'Sila kembali esok untuk cuba lagi.', '#ffd700');
+    } else {
+      alert('📝 Anda sudah buat Dewan Exam hari ini!\nSila kembali esok untuk cuba lagi.');
+    }
     return;
   }
   examMarkPlayedToday();
@@ -52984,20 +53096,37 @@ function petPvPQuit(){
 }
 
 // ── Firebase listener untuk invite masuk ──
+let _petPvPListenerActive = false; // FIX: elak attach listener berulang kali
 function petPvPInitListener(){
-  if(!window._fbPresenceDb || !window._fbRefFn || !window._fbOnValueModule) return;
-  // FIX: guna smapGetPlayerName() — sama sebab macam petPvPSendInvite() di atas.
+  // FIX: dulu kalau _fbOnValueModule (atau _fbPresenceDb/_fbRefFn) belum sedia
+  // masa fungsi ini dipanggil (500ms/1000ms lepas smap dibuka), fungsi terus
+  // "return" dan TAK PERNAH cuba lagi — jadi kalau Firebase SDK lambat load
+  // (device/rangkaian perlahan), device tu terus tak dapat dengar jemputan pet
+  // PvP buat selama-lamanya. Sekarang guna poll macam damInviteStartListen()
+  // supaya listener tetap di-attach sebaik saja Firebase sedia, walau lambat.
+  const ready = ()=> window._fbPresenceDb && window._fbRefFn && window._fbOnValueModule;
   const me = smapGetPlayerName();
   if(!me) return;
-  const invRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+me);
-  window._fbOnValueModule.onValue(invRef, snap=>{
-    const d = snap.val();
-    if(!d || d.status !== 'pending' || !d.from) return;
-    // Padam invite dari Firebase
-    try{ window._fbRemoveFn && window._fbRemoveFn(invRef); }catch(e){}
-    // Tunjukkan pop-up
-    petPvPReceiveInvite(d.from, d.fromDisplay || d.from, d.myPet);
-  });
+  const tryListen = ()=>{
+    if(!ready()) return;
+    if(_petPvPListenerActive) return; // elak double-subscribe bila dipanggil >1 kali
+    _petPvPListenerActive = true;
+    const invRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+me);
+    window._fbOnValueModule.onValue(invRef, snap=>{
+      const d = snap.val();
+      if(!d || d.status !== 'pending' || !d.from) return;
+      // Padam invite dari Firebase
+      try{ window._fbRemoveFn && window._fbRemoveFn(invRef); }catch(e){}
+      // Tunjukkan pop-up
+      petPvPReceiveInvite(d.from, d.fromDisplay || d.from, d.myPet);
+    });
+  };
+  if(ready()){ tryListen(); }
+  else {
+    const poll = setInterval(()=>{
+      if(ready()){ tryListen(); clearInterval(poll); }
+    }, 500);
+  }
 }
 
 // ── Butang cabar pet di peta sekolah (dipanggil bila dekat pemain lain) ──

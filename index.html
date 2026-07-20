@@ -162,7 +162,7 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 #soloQuizFeedback{margin-top:12px;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.7vw,11px);min-height:16px;}
 
 /* ── Dewan Exam — sesi peperiksaan ── */
-#examOverlay{display:none;position:fixed;inset:0;background:rgba(0,4,16,0.92);z-index:170;align-items:center;justify-content:center;padding:16px;}
+#examOverlay{display:none;position:fixed;inset:0;background:rgba(0,4,16,0.92);z-index:310;align-items:center;justify-content:center;padding:16px;}
 #examOverlay.show{display:flex;}
 #examQuizBox{border:5px solid #ffd700;background:#050b1f;padding:22px 22px;text-align:center;box-shadow:8px 8px 0 #0a1a3d;max-width:92vw;width:440px;}
 #examQuizTag{color:#ffd700;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.6vw,9px);margin-bottom:6px;letter-spacing:1px;}
@@ -173,7 +173,7 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 #examQuizOpts button:active{transform:scale(0.95);}
 #examQuizFeedback{margin-top:12px;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.7vw,11px);min-height:16px;}
 #examQuitBtn{margin-top:16px;background:#3a0000;border:2px solid #ff5555;color:#ff9999;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,8px);padding:8px 14px;border-radius:4px;cursor:pointer;}
-#examEndOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:160;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+#examEndOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:310;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
 #examEndOverlay.show{display:flex;}
 #examEndBox{border:5px solid #ffd700;background:#050b1f;padding:26px 30px;text-align:center;box-shadow:10px 10px 0 #0a1a3d;max-width:92vw;width:480px;max-height:90vh;overflow-y:auto;}
 #examEndBox h2{font-family:'Press Start 2P',monospace;font-size:clamp(12px,3vw,20px);margin-bottom:10px;color:#ffd700;}
@@ -1847,6 +1847,77 @@ window.addEventListener('error', function(e){
     }
     return true;
   };
+
+  // ── Zone Chat — Firebase-backed per-zone chat (cross-device sync) ──
+  const _fbZoneChatBuffer = {};       // {zoneId: [msgObj, ...]}
+  const _fbZoneChatListeners = {};    // {zoneId: true} — track active listeners
+  window._fbZoneChatBuffer = _fbZoneChatBuffer;
+
+  window._fbStartZoneChatListener = (zoneId) => {
+    if (!zoneId || _fbZoneChatListeners[zoneId]) return;
+    _fbZoneChatListeners[zoneId] = true;
+    const zRef = ref(db, 'zonechat/' + zoneId);
+    const zQ = query(zRef, limitToLast(50));
+    let _zFirstLoad = true;
+    if (!_fbZoneChatBuffer[zoneId]) _fbZoneChatBuffer[zoneId] = [];
+
+    onChildAdded(zQ, (snapshot) => {
+      const m = snapshot.val();
+      if (!m) return;
+      const key = snapshot.key;
+      if (_fbZoneChatBuffer[zoneId].find(x => x._zKey === key)) return;
+      _fbZoneChatBuffer[zoneId].push({ ...m, _zKey: key });
+      if (_fbZoneChatBuffer[zoneId].length > 100) _fbZoneChatBuffer[zoneId] = _fbZoneChatBuffer[zoneId].slice(-100);
+
+      // Merge into localStorage so smapRenderMsgs picks it up
+      if (typeof smapLoadChat === 'function' && typeof smapSaveChat === 'function') {
+        const local = smapLoadChat(zoneId);
+        if (!local.find(x => x._zKey === key)) {
+          local.push({ who: m.who, text: m.text, time: m.time, _zKey: key });
+          smapSaveChat(zoneId, local);
+        }
+      }
+
+      if (!_zFirstLoad) {
+        if (typeof smapRenderMsgs === 'function' && zoneId === smapCurrentZone) {
+          smapRenderMsgs();
+        }
+      }
+    });
+
+    // After initial load, allow render triggers
+    setTimeout(() => { _zFirstLoad = false; }, 1500);
+  };
+
+  window._fbSendZoneChat = (zone, who, text) => {
+    if (!window._fbReady || !zone) return false;
+    const t = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+    const msgObj = { who, text, time: t, ts: Date.now() };
+    let newRef;
+    try {
+      newRef = push(ref(db, 'zonechat/' + zone), msgObj);
+    } catch(e) {
+      return false;
+    }
+    // Optimistic echo — save to localStorage immediately
+    const key = newRef && newRef.key;
+    if (typeof smapLoadChat === 'function' && typeof smapSaveChat === 'function') {
+      const msgs = smapLoadChat(zone);
+      if (!msgs.find(x => x._zKey === key)) {
+        msgs.push({ who, text, time: t, _zKey: key });
+        smapSaveChat(zone, msgs);
+        if (typeof smapRenderMsgs === 'function') smapRenderMsgs(zone);
+      }
+    }
+    if (newRef && newRef.catch) {
+      newRef.catch(err => {
+        console.warn('Zone chat send failed:', err);
+      });
+    }
+    return true;
+  };
+
+  window._fbGetZoneMsgs = (zoneId) => _fbZoneChatBuffer[zoneId] || [];
 
   // ── Private Message (PM) System ──
   const pmRef = ref(db, 'pm');
@@ -22451,6 +22522,8 @@ function smapBuild3D(){
       if(zone){
         document.getElementById('smapChatZone').textContent=zdef?zdef.name:'—';
         smapRenderMsgs(zone);
+        // Start Firebase zone chat listener for this zone (cross-device sync)
+        if(window._fbStartZoneChatListener) window._fbStartZoneChatListener(zone);
       }
     }
 
@@ -23598,17 +23671,23 @@ function smapOpenChat(npc){
 
 async function smapSend(){
   if(!smapChatNPC){
-    // fallback: zone chat
+    // zone chat — push via Firebase for cross-device sync
     const zone=smapCurrentZone;
     if(!zone)return;
     const inp=document.getElementById('smapInput');
     const txt=inp.value.trim();
     if(!txt)return;
     const who=smapGetPlayerName();
-    const msgs=smapLoadChat(zone);
-    msgs.push({who,text:txt,time:new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})});
-    smapSaveChat(zone,msgs);
     inp.value='';
+    // Cuba Firebase dulu (dalam _fbSendZoneChat sudah ada optimistic echo ke localStorage)
+    if(window._fbSendZoneChat && window._fbSendZoneChat(zone, who, txt)){
+      return;
+    }
+    // Fallback: localStorage sahaja (offline)
+    const time=new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'});
+    const msgs=smapLoadChat(zone);
+    msgs.push({who,text:txt,time});
+    smapSaveChat(zone,msgs);
     smapRenderMsgs(zone);
     return;
   }

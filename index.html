@@ -3875,14 +3875,52 @@ let particles=[];
 // ── Player profile (set on login) ────────────────────────────────
 let playerProfile = {name:'', school:'', grade:'', email:'', phone:''};  // filled at login
 
-// ── Web Audio System ─────────────────────────────────────────────
+// ── Web Audio System (Enjin Bunyi Moden) ─────────────────────────
 const _AudioCtx=window.AudioContext||window.webkitAudioContext;
-let _actx=null;
-function _audio(){try{if(!_actx)_actx=new _AudioCtx();if(_actx.state==='suspended')_actx.resume();return _actx;}catch(e){return null;}}
-let _pbMusicNodes=null; // {nodes:[], timeout:null, active:false}
-// ── Enjin Sound TERKINI (berlapis: oscillator + noise + harmonic, bukan bip tunggal) ──
+let _actx=null, _dryBus=null, _reverbSend=null;
+function _makeImpulse(ctx,dur,decay){
+  try{
+    const sr=ctx.sampleRate, len=Math.max(1,Math.floor(sr*dur));
+    const buf=ctx.createBuffer(2,len,sr);
+    for(let ch=0;ch<2;ch++){
+      const d=buf.getChannelData(ch);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);
+    }
+    return buf;
+  }catch(e){return null;}
+}
+function _audio(){
+  try{
+    if(!_actx){
+      _actx=new _AudioCtx();
+      // Master chain: dryBus → soft-saturation (kehangatan analog) → compressor → output
+      const shaper=_actx.createWaveShaper();
+      const curve=new Float32Array(256);
+      for(let i=0;i<256;i++){ const x=i/255*2-1; curve[i]=Math.tanh(x*1.35); }
+      shaper.curve=curve; shaper.oversample='2x';
+      const comp=_actx.createDynamicsCompressor();
+      comp.threshold.value=-16; comp.knee.value=22; comp.ratio.value=3.2; comp.attack.value=0.004; comp.release.value=0.22;
+      const masterGain=_actx.createGain(); masterGain.gain.value=0.95;
+      shaper.connect(comp); comp.connect(masterGain); masterGain.connect(_actx.destination);
+      _dryBus=shaper;
+      // Reverb send selari — beri kedalaman ruang, elak bunyi kering/flat gaya retro
+      const conv=_actx.createConvolver();
+      conv.buffer=_makeImpulse(_actx,1.9,2.6);
+      const revGain=_actx.createGain(); revGain.gain.value=0.55;
+      conv.connect(revGain); revGain.connect(_dryBus);
+      _reverbSend=conv;
+    }
+    if(_actx.state==='suspended')_actx.resume();
+    return _actx;
+  }catch(e){return null;}
+}
+function _sendReverb(node,amt){
+  try{ const g=_actx.createGain(); g.gain.value=amt; node.connect(g); g.connect(_reverbSend); }catch(e){}
+}
+// ── Enjin Sound TERKINI (berlapis: oscillator + noise + harmonic + reverb, bukan bip tunggal) ──
 function _psOsc(ctx,now,t,f0,f1,dur,vol,delay,detune){
   delay=delay||0;
+  const bus=_dryBus||ctx.destination;
   const o=ctx.createOscillator(),g=ctx.createGain();
   o.type=t;if(detune)o.detune.value=detune;
   const st=now+delay;
@@ -3891,11 +3929,13 @@ function _psOsc(ctx,now,t,f0,f1,dur,vol,delay,detune){
   g.gain.setValueAtTime(0.0001,st);
   g.gain.exponentialRampToValueAtTime(vol,st+Math.min(0.012,dur*0.15));
   g.gain.exponentialRampToValueAtTime(0.0001,st+dur);
-  o.connect(g);g.connect(ctx.destination);
+  o.connect(g);g.connect(bus);
+  _sendReverb(g,Math.min(0.22,vol*0.28));
   o.start(st);o.stop(st+dur+0.02);
 }
 function _psNoise(ctx,now,dur,vol,lpFreq,delay,hpFreq){
   delay=delay||0;
+  const bus=_dryBus||ctx.destination;
   const sz=Math.max(1,Math.floor(ctx.sampleRate*dur));
   const buf=ctx.createBuffer(1,sz,ctx.sampleRate);
   const d=buf.getChannelData(0);
@@ -3908,7 +3948,8 @@ function _psNoise(ctx,now,dur,vol,lpFreq,delay,hpFreq){
   let node=src;
   if(lpFreq){const flt=ctx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=lpFreq;node.connect(flt);node=flt;}
   if(hpFreq){const hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=hpFreq;node.connect(hp);node=hp;}
-  node.connect(g);g.connect(ctx.destination);
+  node.connect(g);g.connect(bus);
+  _sendReverb(g,Math.min(0.18,vol*0.2));
   src.start(st);
 }
 function _psSeq(ctx,now,freqs,t,dur,vol,gap){
@@ -3958,24 +3999,31 @@ function playSound(type){
         break;
       }
       case 'coin':{
-        _psOsc(ctx,now,'sine',988,988,0.09,0.16,0);
-        _psOsc(ctx,now,'sine',1318,1318,0.14,0.16,0.07);
+        // Loceng/chime berlapis — bunyi "ka-ching" moden, bukan bip 8-bit
+        _psOsc(ctx,now,'sine',988,988,0.11,0.16,0);
+        _psOsc(ctx,now,'triangle',988*2.01,988*2.01,0.09,0.05,0,4);
+        _psOsc(ctx,now,'sine',1318,1318,0.16,0.17,0.06);
+        _psOsc(ctx,now,'sine',1976,1976,0.13,0.07,0.09);
         break;
       }
       case 'jump':{
-        _psOsc(ctx,now,'square',280,620,0.14,0.13);
-        _psOsc(ctx,now,'sine',560,900,0.08,0.05,0);
+        _psOsc(ctx,now,'triangle',280,640,0.16,0.15);
+        _psOsc(ctx,now,'sine',560,1000,0.1,0.06,0);
+        _psNoise(ctx,now,0.05,0.04,3000,0);
         break;
       }
       case 'wrong':{
-        // Dua ton berlanggar (dissonant) + noise rendah — lebih "tegas", bukan bip buzzer flat
-        _psOsc(ctx,now,'square',220,140,0.3,0.22);
-        _psOsc(ctx,now,'sawtooth',196,90,0.32,0.14,0.01);
-        _psNoise(ctx,now,0.1,0.1,500,0.02);
+        // Ton tegas + sub-thud — rasa "impak" moden, bukan buzzer flat
+        _psOsc(ctx,now,'sawtooth',180,90,0.28,0.2);
+        _psOsc(ctx,now,'sine',90,45,0.26,0.22,0.01);
+        _psNoise(ctx,now,0.12,0.1,600,0.02);
         break;
       }
       case 'correct':{
-        _psSeq(ctx,now,[523,659,784],'sine',0.18,0.18,0.08);
+        // Arpeggio loceng berlapis + kilauan atas — lebih "satisfying", bukan bip papan litar
+        _psSeq(ctx,now,[523,659,784],'sine',0.2,0.18,0.07);
+        _psOsc(ctx,now,'triangle',1046,1046,0.18,0.08,0.14);
+        _psOsc(ctx,now,'sine',1568,1568,0.22,0.06,0.18);
         break;
       }
       case 'enemydead':{
@@ -4141,124 +4189,159 @@ function playSound(type){
 }
 document.addEventListener('pointerdown',()=>{try{_audio();}catch(e){}},{once:true});
 
-// ── Generic Background Music ──
-let _bgmNodes=null;
-function startBGM(bpm=140,vol=1.0){
-  try{_audio();}catch(e){}
-  stopBGM();
-  const ctx=_actx; if(!ctx) return;
-  _bgmNodes={active:true,timeout:null,nodes:[]};
+// ── Enjin Muzik Latar Generatif (pad + bass + rhythm + arpeggio, berevolusi — bukan gelung retro) ──
+function _bgmNoiseHit(ctx,bus,t,dur,vol,filterType,filterFreq){
+  const sz=Math.max(1,Math.floor(ctx.sampleRate*dur));
+  const buf=ctx.createBuffer(1,sz,ctx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<sz;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/sz,2);
+  const src=ctx.createBufferSource();src.buffer=buf;
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  const f=ctx.createBiquadFilter();f.type=filterType||'highpass';f.frequency.value=filterFreq||6000;
+  src.connect(f);f.connect(g);g.connect(bus);
+  src.start(t);
+  return [src,g,f];
+}
+const _BGM_PROGRESSIONS={
+  // Frekuensi akar kord (Hz, daftar bawah) — susunan hangat & lapang utk explorasi
+  world:[[130.81,164.81,196.00],[146.83,174.61,220.00],[174.61,220.00,261.63],[196.00,246.94,293.66]],
+  // Susunan minor bertenaga utk mod aksi/laga
+  action:[[110.00,130.81,164.81],[123.47,146.83,196.00],[98.00,116.54,146.83],[110.00,138.59,164.81]]
+};
+function _bgmEngineStart(state,opts){
+  const ctx=_audio(); if(!ctx) return;
+  const bus=_dryBus||ctx.destination;
+  const bpm=Math.min(opts.bpm||126,138), vol=Math.min(opts.vol!=null?opts.vol:0.32,0.5), mood=opts.mood||'world';
   const beat=60/bpm;
-  let bar=0;
-  function sched(){
-    if(!_bgmNodes||!_bgmNodes.active) return;
-    const now=ctx.currentTime, off=0.05, t0=now+off;
+  const chords=_BGM_PROGRESSIONS[mood]||_BGM_PROGRESSIONS.world;
+  let chordIdx=0, barCount=0;
+  state.active=true; state.timeout=null; state.nodes=[];
+  const track=(n)=>{ state.nodes.push(n); return n; };
+
+  function playPad(t,freqs,dur){
+    freqs.forEach((f,i)=>{
+      const o1=ctx.createOscillator(), o2=ctx.createOscillator(), g=ctx.createGain();
+      o1.type='triangle'; o2.type='sine'; o2.detune.value=6;
+      o1.frequency.value=f; o2.frequency.value=f;
+      const filt=ctx.createBiquadFilter(); filt.type='lowpass';
+      const fBase=mood==='action'?1100:850, fPeak=mood==='action'?2100:1650;
+      filt.frequency.setValueAtTime(fBase,t);
+      filt.frequency.linearRampToValueAtTime(fPeak,t+dur*0.55);
+      filt.frequency.linearRampToValueAtTime(fBase*0.9,t+dur);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.linearRampToValueAtTime(vol*0.11*(i===0?1:0.7),t+dur*0.3);
+      g.gain.linearRampToValueAtTime(0.0001,t+dur);
+      o1.connect(filt); o2.connect(filt); filt.connect(g); g.connect(bus);
+      _sendReverb(g,0.4);
+      o1.start(t); o2.start(t); o1.stop(t+dur+0.05); o2.stop(t+dur+0.05);
+      track(o1);track(o2);track(g);track(filt);
+    });
+  }
+  function playSubBass(t,freq,dur){
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine'; o.frequency.value=freq/2;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol*0.3,t+0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(bus);
+    o.start(t); o.stop(t+dur+0.02);
+    track(o);track(g);
+  }
+  function playPluck(t,freq,dur,gainMul){
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine'; o.frequency.value=freq*2;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol*0.1*(gainMul||1),t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(bus);
+    _sendReverb(g,0.3);
+    o.start(t); o.stop(t+dur+0.02);
+    track(o);track(g);
+  }
+  function kick(t){
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(150,t);
+    o.frequency.exponentialRampToValueAtTime(45,t+0.11);
+    g.gain.setValueAtTime(vol*0.55,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+    o.connect(g); g.connect(bus);
+    o.start(t); o.stop(t+0.2);
+    track(o);track(g);
+  }
+  function snareClap(t){
+    _bgmNoiseHit(ctx,bus,t,0.14,vol*0.24,'highpass',1800).forEach(track);
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(190,t); o.frequency.exponentialRampToValueAtTime(90,t+0.1);
+    g.gain.setValueAtTime(vol*0.13,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+    o.connect(g); g.connect(bus); o.start(t); o.stop(t+0.12);
+    track(o);track(g);
+  }
+  function hat(t,open){
+    _bgmNoiseHit(ctx,bus,t,open?0.12:0.035,vol*(open?0.09:0.06),'highpass',8000).forEach(track);
+  }
+
+  function scheduleBar(){
+    if(!state.active) return;
+    const now=ctx.currentTime, t0=now+0.05;
+    const chord=chords[chordIdx%chords.length];
+    const barDur=beat*4;
+    // Pad — sustain lapang tiap 2 bar, bukan gelung pantas berulang
+    if(barCount%2===0) playPad(t0,chord,barDur*2*0.96);
+    // Bass line ikut corak rentak, bukan nota flat
+    const bassPattern=[1,0,0.6,0,0.8,0,0.6,0];
+    bassPattern.forEach((hit,i)=>{ if(hit>0) playSubBass(t0+i*beat/2,chord[0],beat*0.5*hit+0.15); });
+    // Bahagian rentak (kick/snare/hat)
     for(let i=0;i<8;i++){
       const t=t0+i*beat/2;
-      if(i%2===0) playSound('pb_kick');
-      if(i%2===1) playSound('pb_snare');
-      const hhSz=Math.floor(ctx.sampleRate*0.04);
-      const hhBuf=ctx.createBuffer(1,hhSz,ctx.sampleRate);
-      const hhD=hhBuf.getChannelData(0);
-      for(let j=0;j<hhSz;j++) hhD[j]=(Math.random()*2-1)*(1-j/hhSz);
-      const hhSrc=ctx.createBufferSource();hhSrc.buffer=hhBuf;
-      const hhG=ctx.createGain();
-      hhG.gain.setValueAtTime(0.06*vol,t);
-      hhG.gain.exponentialRampToValueAtTime(0.001,t+0.04);
-      const hhF=ctx.createBiquadFilter();hhF.type='highpass';hhF.frequency.value=8000;
-      hhSrc.connect(hhF);hhF.connect(hhG);hhG.connect(ctx.destination);
-      hhSrc.start(t); _bgmNodes.nodes.push(hhSrc,hhG,hhF);
-      if(i%2===0){
-        const o=ctx.createOscillator(),g=ctx.createGain();
-        o.type='triangle';
-        o.frequency.setValueAtTime([55,65,73,82,55,65,73,82][bar%8],t);
-        o.frequency.setValueAtTime([55,65,73,82,55,65,73,82][bar%8]*0.5,t+beat*0.3);
-        g.gain.setValueAtTime(0.10*vol,t);
-        g.gain.exponentialRampToValueAtTime(0.001,t+beat*0.5);
-        o.connect(g);g.connect(ctx.destination);
-        o.start(t);o.stop(t+beat*0.5);
-        _bgmNodes.nodes.push(o,g);
-      }
+      if(i%4===0) kick(t);
+      if(i%4===2) snareClap(t);
+      hat(t,i%4===3);
+      if(mood==='action' && i%2===1) hat(t+beat/4,false);
     }
-    bar++;
-    _bgmNodes.timeout=setTimeout(sched,beat*4*1000*0.9);
-  }
-  sched();
-}
-function stopBGM(){
-  if(_bgmNodes){
-    _bgmNodes.active=false;
-    if(_bgmNodes.timeout){ clearTimeout(_bgmNodes.timeout); _bgmNodes.timeout=null; }
-    if(_bgmNodes.nodes.length){
-      try{_bgmNodes.nodes.forEach(n=>{try{if(n.stop)n.stop();if(n.disconnect)n.disconnect();}catch(e){}});}catch(e){}
-      _bgmNodes.nodes=[];
-    }
-    _bgmNodes=null;
-  }
-}
-
-// ── Paintball Background Music ──
-function pbStartMusic(){
-  try{_audio();}catch(e){}
-  pbStopMusic();
-  const ctx=_actx;
-  if(!ctx) return;
-  _pbMusicNodes={active:true,timeout:null,nodes:[]};
-  const bpm=140, beat=60/bpm;
-  let bar=0;
-  function scheduleBar(){
-    if(!_pbMusicNodes||!_pbMusicNodes.active) return;
-    const now=ctx.currentTime, offset=0.05;
-    const start=now+offset;
-    const baseNotes=[55,65,73,82,55,65,73,82]; // simple bass line
-    for(let i=0;i<8;i++){
-      const t=start+i*beat/2;
-      // Kick: beats 0, 2, 4, 6
-      if(i%2===0) playSound('pb_kick');
-      // Snare: beats 1, 3, 5, 7
-      if(i%2===1) playSound('pb_snare');
-      // Hi-hat: every 8th note (use filtered noise)
-      const hhSz=Math.floor(ctx.sampleRate*0.04);
-      const hhBuf=ctx.createBuffer(1,hhSz,ctx.sampleRate);
-      const hhD=hhBuf.getChannelData(0);
-      for(let j=0;j<hhSz;j++) hhD[j]=(Math.random()*2-1)*(1-j/hhSz);
-      const hhSrc=ctx.createBufferSource();hhSrc.buffer=hhBuf;
-      const hhG=ctx.createGain();
-      hhG.gain.setValueAtTime(0.06,t);
-      hhG.gain.exponentialRampToValueAtTime(0.001,t+0.04);
-      const hhF=ctx.createBiquadFilter();hhF.type='highpass';hhF.frequency.value=8000;
-      hhSrc.connect(hhF);hhF.connect(hhG);hhG.connect(ctx.destination);
-      hhSrc.start(t);
-      _pbMusicNodes.nodes.push(hhSrc,hhG,hhF);
-      // Bass: every quarter note
-      if(i%2===0){
-        const o=ctx.createOscillator(),g=ctx.createGain();
-        o.type='triangle';
-        o.frequency.setValueAtTime(baseNotes[bar%8]+(i===0?0:0),t);
-        o.frequency.setValueAtTime(baseNotes[bar%8]*0.5,t+beat*0.3);
-        g.gain.setValueAtTime(0.10,t);
-        g.gain.exponentialRampToValueAtTime(0.001,t+beat*0.5);
-        o.connect(g);g.connect(ctx.destination);
-        o.start(t);o.stop(t+beat*0.5);
-        _pbMusicNodes.nodes.push(o,g);
-      }
-    }
-    bar++;
-    _pbMusicNodes.timeout=setTimeout(scheduleBar,beat*4*1000*0.9);
+    // Arpeggio pluck — pergerakan melodi lembut supaya dunia terasa "hidup", bukan kosong
+    const arp=[chord[0]*2,chord[1]*2,chord[2]*2,chord[1]*2];
+    arp.forEach((f,i)=>{ playPluck(t0+i*beat, f, beat*0.9, i===0?1:0.7); });
+    barCount++;
+    if(barCount%4===0) chordIdx++;
+    state.timeout=setTimeout(scheduleBar, barDur*1000*0.98);
   }
   scheduleBar();
 }
-
-function pbStopMusic(){
-  if(_pbMusicNodes){
-    _pbMusicNodes.active=false;
-    if(_pbMusicNodes.timeout){ clearTimeout(_pbMusicNodes.timeout); _pbMusicNodes.timeout=null; }
-    if(_pbMusicNodes.nodes.length){
-      try{_pbMusicNodes.nodes.forEach(n=>{try{if(n.stop)n.stop();if(n.disconnect)n.disconnect();}catch(e){}});}catch(e){}
-      _pbMusicNodes.nodes=[];
+function _bgmEngineStop(state){
+  if(state){
+    state.active=false;
+    if(state.timeout){ clearTimeout(state.timeout); state.timeout=null; }
+    if(state.nodes && state.nodes.length){
+      state.nodes.forEach(n=>{ try{ if(n.stop)n.stop(); if(n.disconnect)n.disconnect(); }catch(e){} });
+      state.nodes=[];
     }
-    _pbMusicNodes=null;
   }
+}
+
+// ── Muzik Latar Umum (dunia terbuka / platformer / mod lain) ──
+let _bgmState=null;
+function startBGM(bpm=140,vol=1.0){
+  stopBGM();
+  _bgmState={};
+  _bgmEngineStart(_bgmState,{bpm:bpm,vol:Math.min(vol,0.42),mood:'world'});
+}
+function stopBGM(){
+  _bgmEngineStop(_bgmState);
+  _bgmState=null;
+}
+
+// ── Muzik Latar Paintball (mod aksi — lebih tegang & bertenaga) ──
+let _pbMusicState=null;
+function pbStartMusic(){
+  pbStopMusic();
+  _pbMusicState={};
+  _bgmEngineStart(_pbMusicState,{bpm:140,vol:0.4,mood:'action'});
+}
+function pbStopMusic(){
+  _bgmEngineStop(_pbMusicState);
+  _pbMusicState=null;
 }
 
 // ── Math ─────────────────────────────────────────────────────────
@@ -11918,7 +12001,7 @@ function smapBuild3D(){
   }
 
   // ── PATHS (concrete walkways) ──
-  const pathMat=new THREE.MeshLambertMaterial({color:0xd4b896});
+  const pathMat=new THREE.MeshLambertMaterial({color:0xd4b896, polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2});
   function makePath(x,y,z,w,d){
     const m=new THREE.Mesh(new THREE.BoxGeometry(w,0.15,d),pathMat);
     m.position.set(x,0.08,z); m.receiveShadow=true; smScene.add(m);
@@ -19981,6 +20064,7 @@ function smapBuild3D(){
     smHeroState.x=0; smHeroState.z=140; smHeroState.facing=0;
     smHeroState.waypointX=null; smHeroState.waypointZ=null;
     if(window._smClearWaypoint) window._smClearWaypoint();
+    stopBGM();
     smZbMusicStart();
     _ziHideSchoolHud(true);
     // Phase 1: spawn vehicle near safe zone
@@ -21597,8 +21681,8 @@ function smapBuild3D(){
     if(_onZI&&sm3._switchToZI) sm3._switchToZI();
     if(!_onZI&&sm3._switchToSchool) sm3._switchToSchool();
     // Zombie island entry/exit detection
-    if(_onZI&&!smZb._wasOnZI){smZb._wasOnZI=true;smZbMusicStart();}
-    if(!_onZI&&smZb._wasOnZI){smZb._wasOnZI=false;smZbMusicStop();}
+    if(_onZI&&!smZb._wasOnZI){smZb._wasOnZI=true;stopBGM();smZbMusicStart();}
+    if(!_onZI&&smZb._wasOnZI){smZb._wasOnZI=false;smZbMusicStop();if(smapActive)startBGM(108,0.24);}
     // ── Floor Y detection ──
     const floorY=smGetFloorY(smHeroState.x,smHeroState.z);
     const _vs=window._vehState;
@@ -23949,6 +24033,7 @@ function smapOpen(){
   }
   playSound('correct');
   document.getElementById('schoolMapOverlay').classList.add('show');
+  setTimeout(()=>startBGM(108,0.24),300); // muzik ambient explorasi — dunia terasa hidup, bukan sunyi
   smapActive=true;
   smapCurrentZone=null;
   smapChatNPC=null;

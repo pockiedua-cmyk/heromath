@@ -22202,7 +22202,12 @@ function smapBuild3D(){
 
       // ── DEWAN EXAM — butang masuk bila dekat pintu ──
       {
-        const nearEXAM=(smHeroState.x>168&&smHeroState.x<192&&smHeroState.z>148&&smHeroState.z<174);
+        // FIX: zon asal (168-192,148-174) cuma ada margin 2-4 unit drpd dinding
+        // pejal bangunan (170-190,152-168) — jauh lebih nipis dari margin
+        // Menara Matematik (5 unit) & tak selesa bila hero pusing-pusing cari
+        // sudut yang betul. Lebarkan supaya senang dicapai dari mana-mana
+        // arah sebelum terlanggar dinding (tapak pulau TL: 165-195,145-175).
+        const nearEXAM=(smHeroState.x>166&&smHeroState.x<194&&smHeroState.z>146&&smHeroState.z<176);
         const examBtn=document.getElementById('smapExamBtn');
         if(examBtn){
           const canShow=nearEXAM&&!smapNearNPC&&!(window._examState&&window._examState.active)&&(typeof examCanPlayToday!=='function'||examCanPlayToday());

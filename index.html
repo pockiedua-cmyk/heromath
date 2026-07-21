@@ -3367,7 +3367,7 @@ setTimeout(()=>{
 
       <!-- ── GO KART INVITE TOAST ── -->
       <div id="gkInviteToast" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0a0a1a;border:4px solid #00b4ff;z-index:471;padding:20px 24px;text-align:center;max-width:min(360px,90vw);width:100%;box-shadow:8px 8px 0 #003a6a,0 0 30px rgba(0,180,255,0.3);font-family:'Press Start 2P',monospace;">
-        <div style="color:#00b4ff;font-size:clamp(9px,2vw,12px);margin-bottom:8px;">🏎️ JEMPUTAN GO KART</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="color:#00b4ff;font-size:clamp(9px,2vw,12px);">🏎️ JEMPUTAN GO KART</span><span onclick="gkInviteDecline()" style="cursor:pointer;color:#888;font-size:16px;padding:2px 6px;">✕</span></div>
         <div style="color:#ccc;font-size:clamp(5px,1.1vw,7px);margin-bottom:10px;">
           <strong id="gkInviteFrom" style="color:#ffd700;font-size:clamp(7px,1.5vw,10px;">???</strong>
           menjemput kamu masuk perlumbaan!
@@ -3653,7 +3653,7 @@ setTimeout(()=>{
 
 <!-- Incoming PVP invite toast -->
 <div id="pvpInviteToast" style="display:none;position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:#1a0028;border:3px solid #e52521;padding:10px 16px;text-align:center;z-index:600;min-width:220px;font-family:'Press Start 2P',monospace;">
-  <div style="color:#ffd700;font-size:clamp(7px,1.5vw,9px);margin-bottom:6px;">⚔️ CABARAN ARENA!</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="color:#ffd700;font-size:clamp(7px,1.5vw,9px);">⚔️ CABARAN ARENA!</span><span onclick="document.getElementById('pvpInviteToast').style.display='none'" style="cursor:pointer;color:#888;font-size:14px;padding:2px 6px;">✕</span></div>
   <div style="color:#fff;font-size:clamp(6px,1.3vw,8px);margin-bottom:8px;"><span id="pvpInviteFromName" style="color:#ff6b6b;">???</span> mencabar kamu ke arena!</div>
   <div style="display:flex;gap:6px;justify-content:center;">
     <button onclick="pvpAcceptInvite()" style="background:#00a651;color:#fff;border:2px solid #fff;padding:5px 12px;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.3vw,8px);cursor:pointer;">✔ TERIMA</button>
@@ -3799,6 +3799,7 @@ setTimeout(()=>{
 
   <!-- Incoming invite toast -->
   <div id="damInviteToast">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-weight:bold;">Dam</span><span onclick="damInviteDecline()" style="cursor:pointer;color:#888;font-size:14px;padding:2px 6px;">✕</span></div>
     <div id="damInviteToastMsg"><strong id="damInviteFromName">???</strong>mencabar kamu main Dam! Terima?</div>
     <div class="dam-toast-btns">
       <button id="damToastAccept" onclick="damInviteAccept()">✔ TERIMA</button>
@@ -3819,6 +3820,7 @@ setTimeout(()=>{
 
   <!-- Incoming futsal invite toast -->
   <div id="fsInviteToast">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-weight:bold;">Futsal</span><span onclick="futsalInviteDecline()" style="cursor:pointer;color:#888;font-size:14px;padding:2px 6px;">✕</span></div>
     <div id="fsInviteToastMsg"><strong id="fsInviteFromName">???</strong>mencabar kamu main Futsal 5v5! Terima?</div>
     <div class="dam-toast-btns">
       <button id="fsToastAccept" onclick="futsalInviteAccept()">✔ TERIMA</button>
@@ -3828,7 +3830,7 @@ setTimeout(()=>{
 
   <!-- Incoming 5v5 Online Room invite toast -->
   <div id="fol5vInviteToast" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#050d1a;border:3px solid #00b4ff;box-shadow:0 0 30px rgba(0,180,255,.5),8px 8px 0 #003a6a;padding:22px 26px;text-align:center;z-index:471;min-width:min(300px,88vw);font-family:'Press Start 2P',monospace;">
-    <div style="color:#00b4ff;font-size:clamp(8px,1.8vw,12px);margin-bottom:6px;">🌐 JEMPUTAN BILIK 5v5</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="color:#00b4ff;font-size:clamp(8px,1.8vw,12px);">🌐 JEMPUTAN BILIK 5v5</span><span onclick="fol5vInviteDecline()" style="cursor:pointer;color:#888;font-size:16px;padding:2px 6px;">✕</span></div>
     <div id="fol5vInviteMsg" style="color:#fff;font-size:clamp(7px,1.5vw,10px);margin-bottom:14px;line-height:1.8;">
       <strong id="fol5vInviteFrom" style="color:#ffd700;display:block;font-size:clamp(9px,2vw,14px);margin-bottom:6px;">???</strong>
       menjemput kamu masuk Bilik 5v5!
@@ -3842,7 +3844,7 @@ setTimeout(()=>{
 
   <!-- Incoming Guild Ship invite toast -->
   <div id="gsInviteToast" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0a1a2a;border:3px solid #ffd700;box-shadow:0 0 30px rgba(255,215,0,.5),8px 8px 0 #8a6000;padding:22px 26px;text-align:center;z-index:999;min-width:min(300px,88vw);font-family:'Press Start 2P',monospace;">
-    <div style="color:#ffd700;font-size:clamp(8px,1.8vw,12px);margin-bottom:6px;">⚓ JEMPUTAN KAPAL GUILD</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="color:#ffd700;font-size:clamp(8px,1.8vw,12px);">⚓ JEMPUTAN KAPAL GUILD</span><span onclick="gsInviteDecline()" style="cursor:pointer;color:#888;font-size:16px;padding:2px 6px;">✕</span></div>
     <div id="gsInviteMsgToast" style="color:#fff;font-size:clamp(7px,1.5vw,10px);margin-bottom:14px;line-height:1.8;">
       <strong id="gsInviteFrom" style="color:#ffd700;display:block;font-size:clamp(9px,2vw,14px);margin-bottom:6px;">???</strong>
       menjemput kamu naik Kapal Guild!
@@ -4480,6 +4482,402 @@ function genQ(lvl){
   if(t===3) return genQ_T3(lvl);
   if(t===4) return genQ_T4(lvl);
   return genQ_T5(lvl);
+}
+
+const EXAM_BANKS=[
+null, // 0
+[ // ═══ TINGKATAN 1 (13 bab) ═══
+  {name:'Nombor Nisbah',qs:[
+    ()=>{ const a=rand(1,7),b=rand(2,9),c=rand(1,7),d=b; return {text:`${a}/${b} + ${c}/${d} = ?\n(jawapan sebagai pecahan)` ,ans:(a+c),_frac:true,_den:d}; },
+    ()=>{ const a=rand(2,9),b=rand(1,7); const r=a*b; const n=rand(1,a-1)*b; return {text:`${n}/${r} = ?/${a}\nBilang yang kosong?`,ans:n/b}; },
+    ()=>{ const w=rand(1,3),n=rand(1,8),d=rand(2,8); return {text:`${w} ${n}/${d} = ?\n(tukar kepada pecahan tidak wajar)`,ans:w*d+n,_frac:true,_den:d}; },
+    ()=>{ const a=rand(2,8),b=rand(2,8); return {text:`${a}/${b} × ${b} = ?\nPecahan × penyebilang`,ans:a}; },
+    ()=>{ const a=rand(1,9),b=rand(2,9),c=rand(1,5),d=b; return {text:`${a}/${b} - ${c}/${d} = ?\n(jawapan sebagai pecahan)`,ans:a-c,_frac:true,_den:d}; },
+  ]},
+  {name:'Faktor Dan Gandaan',qs:[
+    ()=>{ const x=rand(3,12)*2; const fc=(function(n){let c=0;for(let i=1;i*i<=n;i++){if(n%i===0){c+=(i*i===n)?1:2;}}return c;})(x); return {text:`Berapakah bilangan faktor ${x}?`,ans:fc}; },
+    ()=>{ const a=rand(2,8),b=rand(3,7); const _gcd=function(x,y){while(y){[x,y]=[y,x%y];}return x;}; const lcm=a*b/_gcd(a,b); return {text:`KPR bagi ${a} dan ${b} = ?`,ans:lcm}; },
+    ()=>{ const a=rand(2,12),b=rand(2,12); const gcd=(function(g,x,y){while(y){g=x%100;x=y;y=g%y;}return x;})(0,Math.max(a,b),Math.min(a,b)); const realGcd=(function(a,b){while(b){[a,b]=[b,a%b];}return a;})(a,b); return {text:`FPB bagi ${a} dan ${b} = ?`,ans:realGcd}; },
+    ()=>{ const n=rand(2,15)*3; return {text:`${n} ialah gandaan bagi nombor?\nPilih: ${n/3}, ${n/3+1}, ${n/3+2}`,ans:n/3}; },
+    ()=>{ const a=rand(2,10),b=rand(2,10); return {text:`Faktor bersama ${a} dan ${b}:\n${a},${b} — FPB = ?`,ans:(function(a,b){while(b){[a,b]=[b,a%b];}return a;})(a,b)}; },
+  ]},
+  {name:'Kuasa Dua, Punca Kuasa Dua, Kuasa Tiga & Punca Kuasa Tiga',qs:[
+    ()=>{ const x=rand(2,12); return {text:`${x}² = ?`,ans:x*x}; },
+    ()=>{ const x=rand(2,10); return {text:`√${x*x} = ?`,ans:x}; },
+    ()=>{ const x=rand(2,6); return {text:`${x}³ = ?`,ans:x*x*x}; },
+    ()=>{ const x=rand(2,5); return {text:`∛${x*x*x} = ?`,ans:x}; },
+    ()=>{ const x=rand(3,11); return {text:`${x}² = ?\n${x}³ = ?\nJumlah = ?`,ans:x*x+x*x*x}; },
+  ]},
+  {name:'Nisbah, Kadar Dan Kadaran',qs:[
+    ()=>{ const a=rand(2,8),b=rand(2,8),m=rand(2,5); return {text:`Nisbah ${a}:${b}\n${a}×${m} : ${b}×${m} = ?`,ans:b*m}; },
+    ()=>{ const r=rand(2,8),t=rand(2,6); return {text:`Jika ${r} buku = ${t} orang,\n1 orang = ? buku (pecahan)`,ans:r,_frac:true,_den:t}; },
+    ()=>{ const a=rand(2,6),b=rand(2,6),k=rand(2,5); return {text:`${a}:${b} = ${a*k}:?\nCari nilai ?`,ans:b*k}; },
+    ()=>{ const x=rand(3,10),y=rand(2,8); const r=x/y; return {text:`Kadar: ${x} unit dalam ${y} jam.\n1 jam = ? unit`,ans:x,_frac:true,_den:y}; },
+    ()=>{ const a=rand(2,5),b=rand(3,8); return {text:`Nisbah mudah ${a*2}:${b*2} = ${a} : ?`,ans:b}; },
+  ]},
+  {name:'Ungkapan Algebra',qs:[
+    ()=>{ const a=rand(2,9),b=rand(1,12); return {text:`Ringkaskan: ${a}x + ${b}x = ?\n(jawapan sebagai ungkapan)`,ans:(a+b),_x:true}; },
+    ()=>{ const a=rand(2,8),x=rand(1,10),b=rand(1,12); return {text:`Jika x = ${x}, berapakah\n${a}x + ${b} = ?`,ans:a*x+b}; },
+    ()=>{ const a=rand(2,6),b=rand(1,10); return {text:`Kembangkan: ${a}(x + ${b})\n= ?x + ?\nPemalar = ?`,ans:a*b}; },
+    ()=>{ const a=rand(2,5),b=rand(1,8),x=rand(1,10); return {text:`${a}x - ${b} bila x = ${x}\n= ?`,ans:a*x-b}; },
+    ()=>{ const a=rand(3,8),b=rand(2,6),c=rand(1,5); return {text:`${a}x + ${b}x - ${c}x = ?x`,ans:a+b-c,_x:true}; },
+  ]},
+  {name:'Persamaan Linear',qs:[
+    ()=>{ const x=rand(2,25),a=rand(1,20); return {text:`x + ${a} = ${x+a}\nx = ?`,ans:x}; },
+    ()=>{ const x=rand(3,30),a=rand(2,15); return {text:`x - ${a} = ${x-a}\nx = ?`,ans:x}; },
+    ()=>{ const x=rand(2,20),a=rand(2,8); return {text:`${a}x = ${a*x}\nx = ?`,ans:x}; },
+    ()=>{ const x=rand(2,15),a=rand(2,5),b=rand(1,10); return {text:`${a}x + ${b} = ${a*x+b}\nx = ?`,ans:x}; },
+    ()=>{ const x=rand(3,20),a=rand(2,6),b=rand(1,10); return {text:`${a}x - ${b} = ${a*x-b}\nx = ?`,ans:x}; },
+  ]},
+  {name:'Ketaksamaan Linear',qs:[
+    ()=>{ const a=rand(1,10),b=rand(2,15); return {text:`x + ${a} > ${b}\nx > ?`,ans:b-a}; },
+    ()=>{ const x=rand(2,10),a=rand(2,5); return {text:`${a}x < ${a*x}\nx < ?`,ans:x}; },
+    ()=>{ const a=rand(1,8),b=rand(3,20); return {text:`x - ${a} ≤ ${b}\nx ≤ ?`,ans:a+b}; },
+    ()=>{ const x=rand(1,10),a=rand(2,4); return {text:`${a}x + 3 ≥ ${a*x+3}\nx ≥ ?`,ans:x}; },
+    ()=>{ const a=rand(2,6),b=rand(1,10); return {text:`${a}x > ${b}\nNilai minimum integer x = ?`,ans:Math.floor(b/a)+1}; },
+  ]},
+  {name:'Garis Dan Sudut',qs:[
+    ()=>{ const a=rand(30,80); return {text:`Sudut bersepadu bagi ${a}° = ?°`,ans:180-a}; },
+    ()=>{ const a=rand(20,70); return {text:`Sudut tegak lurus = 90°\nSudut pelengkap ${a}° = ?°`,ans:90-a}; },
+    ()=>{ const a=rand(30,80); return {text:`Sudut bertentangan bucu\n${a}° = ?°`,ans:a}; },
+    ()=>{ const a=rand(20,80); return {text:`Garis selari dipotong garis\ntransversal. Sudut dalam sepihak\n= ${a}°, sudut bertembung = ?°`,ans:180-a}; },
+    ()=>{ const a=rand(30,60); return {text:`Sudut terluar sesudut ${a}° = ?°`,ans:360-a}; },
+  ]},
+  {name:'Poligon Asas',qs:[
+    ()=>{ const n=rand(3,8); return {text:`Jumlah sudut dalam\npoligon ${n} sisi = ?°`,ans:(n-2)*180}; },
+    ()=>{ const n=rand(4,10); return {text:`Poligon ${n} sisi.\nJumlah sudut dalaman = ?°`,ans:(n-2)*180}; },
+    ()=>{ const n=rand(3,8); const ext=360/n; return {text:`Poligon ${n} sisi.\nSatu sudut luaran = ?°\n(jika poligon sekata)`,ans:Math.round(ext)}; },
+    ()=>{ const n=rand(5,10); return {text:`Poligon sekata ${n} sisi.\nSatu sudut dalaman = ?°`,ans:Math.round((n-2)*180/n)}; },
+    ()=>{ const n=rand(3,7); return {text:`Jumlah sudut luaran\npoligon ${n} sisi = ?°`,ans:360}; },
+  ]},
+  {name:'Perimeter Dan Luas',qs:[
+    ()=>{ const l=rand(4,15),w=rand(3,12); return {text:`Persegi: panjang=${l}cm, lebar=${w}cm\nLuas = ? cm²`,ans:l*w}; },
+    ()=>{ const s=rand(3,12); return {text:`Persegi sisi ${s}cm\nPerimeter = ? cm`,ans:4*s}; },
+    ()=>{ const a=rand(3,10),b=rand(2,8),h=rand(2,10); return {text:`Segi tiga: tapak=${a}cm, tinggi=${h}cm\nLuas = ? cm²`,ans:Math.round(a*h/2)}; },
+    ()=>{ const r=rand(2,10); return {text:`Bulatan jejari ${r}cm\nLuas = ? cm²\n(guna π = 3.14)`,ans:Math.round(3.14*r*r)}; },
+    ()=>{ const r=rand(2,8); return {text:`Bulatan jejari ${r}cm\nLilitan = ? cm\n(guna π = 3.14)`,ans:Math.round(2*3.14*r)}; },
+  ]},
+  {name:'Pengenalan Set',qs:[
+    ()=>{ const a=rand(1,10),b=rand(2,12),c=rand(3,15); return {text:`A = {${a},${b},${c},${b+2}}\nB = {${b},${c},${b+2},${c+3}}\nA ∩ B = ? (bilangan ahli)`,ans:3}; },
+    ()=>{ const a=rand(1,8),b=rand(3,12); return {text:`A = {1,2,...,${a*2}}\nB = {${a},...,${a+b}}\nA ∪ B mempunyai ? ahli`,ans:a+b}; },
+    ()=>{ const u=rand(5,15),x=rand(2,8); return {text:`U = {1,...,${u}}\nA = {1,...,${x}}\nA' (pelengkap) = ? ahli`,ans:u-x}; },
+    ()=>{ return {text:`U = {a,b,c,d,e}\nA = {a,b,c}\nA' = ?\nBilangan ahli A' = ?`,ans:2}; },
+    ()=>{ return {text:`A = {2,4,6,8,10}\nB = {1,3,5,7,9}\nA ∩ B = ? (bilangan ahli)`,ans:0}; },
+  ]},
+  {name:'Pengendalian Data',qs:[
+    ()=>{ const d=[]; for(let i=0;i<5;i++)d.push(rand(1,20)); const mean=d.reduce((a,b)=>a+b,0)/5; return {text:`Data: ${d.join(', ')}\nMin = ? (1dp)`,ans:Math.round(mean*10)/10,_dec:true}; },
+    ()=>{ const d=[]; for(let i=0;i<5;i++)d.push(rand(1,20)); d.sort((a,b)=>a-b); return {text:`Data: ${d.join(', ')}\nMedian = ?`,ans:d[2]}; },
+    ()=>{ const d=[3,5,3,7,3,8,5]; return {text:`Data: ${d.join(', ')}\nMod = ?`,ans:3}; },
+    ()=>{ const d=[10,20,30,40,50]; return {text:`Data: ${d.join(', ')}\nJulat = ?`,ans:40}; },
+    ()=>{ const d=[]; for(let i=0;i<6;i++)d.push(rand(2,18)); const mean=Math.round(d.reduce((a,b)=>a+b,0)/6*10)/10; return {text:`Data: ${d.join(', ')}\nPurata = ?`,ans:mean,_dec:true}; },
+  ]},
+  {name:'Teorem Pythagoras',qs:[
+    ()=>{ const a=rand(3,12),b=rand(4,16); const c=Math.round(Math.sqrt(a*a+b*b)); const c2=a*a+b*b; return {text:`Segi tiga sudut tegak:\nSisi 1 = ${a}, Sisi 2 = ${b}\nSisi miring = ?²\n?² = ?`,ans:c2}; },
+    ()=>{ const x=rand(3,10); return {text:`Sisi miring = ${x*5}, sisi satu = ${x*3}\nSisi kedua = ?`,ans:x*4}; },
+    ()=>{ const x=rand(2,8); return {text:`Sisi miring = ${x*5}, sisi satu = ${x*4}\nSisi kedua = ?`,ans:x*3}; },
+    ()=>{ const a=rand(5,15),b=rand(5,20); const c2=a*a+b*b; return {text:`a² + b² = c²\na=${a}, b=${b}\nc² = ?`,ans:c2}; },
+    ()=>{ const c=rand(10,25),a=rand(3,c-1); const b2=c*c-a*a; const b=Math.round(Math.sqrt(b2)); return {text:`c=${c}, a=${a}\nb² = ?`,ans:b2}; },
+  ]},
+],
+[ // ═══ TINGKATAN 2 (13 bab) ═══
+  {name:'Pola Dan Jujukan',qs:[
+    ()=>{ const a=rand(2,5),d=rand(1,8); return {text:`Urusan: ${a}, ${a+d}, ${a+2*d}, ...\nUkiran ke-4 = ?`,ans:a+3*d}; },
+    ()=>{ const a=rand(1,5),r=rand(2,4); return {text:`Urusan: ${a}, ${a*r}, ${a*r*r}, ...\nUkiran ke-4 = ?`,ans:a*r*r*r}; },
+    ()=>{ const a=rand(2,8),d=rand(1,5); return {text:`Urusan: ${a}, ${a+d}, ${a+2*d}\nUkiran ke-10 = ?`,ans:a+9*d}; },
+    ()=>{ const n=rand(3,10),d=rand(2,6); const a1=2; return {text:`Urusan aritmetik: a₁=${a1}, d=${d}\nUₙ = a₁ + (n-1)d\nU${n} = ?`,ans:a1+(n-1)*d}; },
+    ()=>{ const d=rand(1,5); return {text:`Urusan: 5, ${5+d}, ${5+2*d}, ...\nBeza kepleran = ?`,ans:d}; },
+  ]},
+  {name:'Pemfaktoran Dan Pecahan Algebra',qs:[
+    ()=>{ const a=rand(2,6),b=rand(1,8); return {text:`Faktorkan: ${a}x + ${a*b}\n= ${a}(x + ?)`,ans:b}; },
+    ()=>{ const a=rand(2,5); return {text:`Faktorkan: x² + ${a+1}x + ${a}\n= (x + 1)(x + ?)`,ans:a}; },
+    ()=>{ const a=rand(2,6),b=rand(1,8); return {text:`Ringkaskan: (${a}x + ${a*b}) / ${a}\n= x + ?`,ans:b}; },
+    ()=>{ const a=rand(2,5),b=rand(1,6); return {text:`Faktorkan: ${a}x² - ${a*b}\n= ${a}(x² - ?)\n= ${a}(x+?)(x-?)`,ans:b}; },
+    ()=>{ const a=rand(2,4),b=rand(1,5); return {text:`Ringkaskan: ${a*a}x/${a}\n= ?x`,ans:a}; },
+  ]},
+  {name:'Rumus Algebra',qs:[
+    ()=>{ const a=rand(2,8),b=rand(1,10),x=rand(1,10); return {text:`Jika T = ${a}s + ${b}\ns = ${x}, T = ?`,ans:a*x+b}; },
+    ()=>{ const r=rand(2,8),h=rand(3,12); return {text:`Isipadu kon: V = πr²h/3\nr = ${r}, h = ${h}, π = 3.14\nV = ?`,ans:Math.round(3.14*r*r*h/3)}; },
+    ()=>{ const u=rand(2,10),v=rand(1,8); return {text:`s = ut + ½at²\nu=${u}, t=${v*2}, a=${u}\ns = ?`,ans:u*v*2+u*v*v*2}; },
+    ()=>{ const l=rand(3,10),w=rand(2,8); return {text:`Perimeter: P = 2(l+w)\nl=${l}, w=${w}\nP = ?`,ans:2*(l+w)}; },
+    ()=>{ const a=rand(2,8),b=rand(2,8); return {text:`a² = b² + c²\nb=${b}, c=${a}\na² = ?`,ans:b*b+a*a}; },
+  ]},
+  {name:'Poligon',qs:[
+    ()=>{ const n=rand(5,10); return {text:`Poligon sekata ${n} sisi\nSatu sudut dalaman = ?°`,ans:Math.round((n-2)*180/n)}; },
+    ()=>{ const n=rand(4,10); return {text:`Poligon ${n} sisi\nBilangan pepenjuru = ?`,ans:n*(n-3)/2}; },
+    ()=>{ const n=rand(3,8); return {text:`Poligon sekata ${n} sisi\nSatu sudut luaran = ?°`,ans:Math.round(360/n)}; },
+    ()=>{ const ext=rand(20,60); const n=360/ext; return {text:`Sudut luaran = ${ext}°\nPoligon ${n} sisi (sekata)`,ans:n}; },
+    ()=>{ const n=rand(4,8); return {text:`Jumlah sudut luaran poligon\n${n} sisi = ?°`,ans:360}; },
+  ]},
+  {name:'Bulatan',qs:[
+    ()=>{ const a=rand(20,80); return {text:`Sudut di pusat = ${a*2}°\nSudut pada lilitan = ?°`,ans:a}; },
+    ()=>{ const a=rand(30,80); return {text:`Sudut selari = ${a}°\nSudut bertentangan = ?°`,ans:a}; },
+    ()=>{ const a=rand(20,70); return {text:`Sudut antara tangen dan\ncord = ${a}°\nSudut dalam bersebelahan = ?°`,ans:a}; },
+    ()=>{ const d=rand(4,16); return {text:`Bulatan jejari ${d/2}cm\nDiameter = ? cm`,ans:d}; },
+    ()=>{ const d=rand(4,16); const l=Math.round(3.14*d); return {text:`Lilitan = ${l}cm (π=3.14)\nDiameter = ? cm`,ans:d}; },
+  ]},
+  {name:'Bentuk Geometri 3 Dimensi',qs:[
+    ()=>{ const s=rand(2,8); return {text:`Kubus sisi ${s}cm\nIsipadu = ? cm³`,ans:s*s*s}; },
+    ()=>{ const l=rand(3,10),w=rand(2,8),h=rand(2,6); return {text:`Kotak ${l}×${w}×${h}cm\nIsipadu = ? cm³`,ans:l*w*h}; },
+    ()=>{ const r=rand(2,8),h=rand(3,10); return {text:`Silinder r=${r}cm, h=${h}cm\nIsipadu = ? cm³ (π=3.14)`,ans:Math.round(3.14*r*r*h)}; },
+    ()=>{ const s=rand(3,8); return {text:`Kubus sisi ${s}cm\nLuas permukaan = ? cm²`,ans:6*s*s}; },
+    ()=>{ const l=rand(3,8),w=rand(2,6),h=rand(2,5); return {text:`Kotak ${l}×${w}×${h}cm\nLuas permukaan = ? cm²`,ans:2*(l*w+l*h+w*h)}; },
+  ]},
+  {name:'Koordinat',qs:[
+    ()=>{ const x1=rand(1,10),y1=rand(1,10),x2=rand(1,10),y2=rand(1,10); return {text:`Titik A(${x1},${y1}) dan B(${x2},${y2})\nTitik tengah = (?, ?)\nTengah x = ?`,ans:(x1+x2)/2,_dec:true}; },
+    ()=>{ const x1=rand(0,8),y1=rand(0,8),x2=rand(0,8),y2=rand(0,8); const dx=x2-x1,dy=y2-y1; const d=Math.round(Math.sqrt(dx*dx+dy*dy)*10)/10; return {text:`A(${x1},${y1}), B(${x2},${y2})\nJarak AB = ? (1dp)`,ans:d,_dec:true}; },
+    ()=>{ const x1=rand(1,10),y1=rand(1,10),x2=rand(1,10),y2=rand(1,10); return {text:`A(${x1},${y1}), B(${x2},${y2})\nMidpoint x = ?`,ans:(x1+x2)/2,_dec:true}; },
+    ()=>{ const m=rand(2,8); return {text:`Garis lurus gradient ${m}\nMelalui (0,1)\nApabila x=3, y=?`,ans:3*m+1}; },
+    ()=>{ const x=rand(1,10),y=rand(1,10); return {text:`Titik (${x},${y})\nJarak dari sumbu-x = ?`,ans:y}; },
+  ]},
+  {name:'Graf Fungsi',qs:[
+    ()=>{ const a=rand(2,6),b=rand(1,8),x=rand(1,6); return {text:`f(x) = ${a}x + ${b}\nf(${x}) = ?`,ans:a*x+b}; },
+    ()=>{ const a=rand(2,5),b=rand(1,10); const x=-b/a; return {text:`f(x) = ${a}x + ${b}\nf(x) = 0, x = ?`,ans:x,_dec:true}; },
+    ()=>{ const a=rand(1,5),b=rand(1,10); return {text:`f(x) = ${a}x²\nf(3) = ?`,ans:a*9}; },
+    ()=>{ const a=rand(2,6),b=rand(-5,5); return {text:`f(x) = ${a}x + ${b}\nf(0) = ?`,ans:b}; },
+    ()=>{ const a=rand(2,5); return {text:`f(x) = ${a}x\nf(4) - f(2) = ?`,ans:a*2}; },
+  ]},
+  {name:'Laju Dan Pecutan',qs:[
+    ()=>{ const d=rand(10,100),t=rand(2,10); return {text:`Jarak ${d}km, masa ${t} jam\nLaju = ? km/j`,ans:d/t}; },
+    ()=>{ const v=rand(10,80),t=rand(2,8); return {text:`Laju ${v}km/j, masa ${t} jam\nJarak = ? km`,ans:v*t}; },
+    ()=>{ const d=rand(20,200),v=rand(10,50); return {text:`Jarak ${d}km, laju ${v}km/j\nMasa = ? jam`,ans:d/v}; },
+    ()=>{ const u=rand(5,20),a=rand(1,10),t=rand(2,6); return {text:`Pecutan: v = u + at\nu=${u}, a=${a}, t=${t}\nv = ? km/j`,ans:u+a*t}; },
+    ()=>{ const u=rand(5,20),a=rand(1,10),t=rand(2,5); return {text:`s = ut + ½at²\nu=${u}, a=${a}, t=${t}\ns = ?`,ans:u*t+Math.round(0.5*a*t*t)}; },
+  ]},
+  {name:'Kecerunan Garis Lurus',qs:[
+    ()=>{ const x1=rand(0,5),y1=rand(0,5),x2=rand(6,12),y2=rand(6,12); return {text:`A(${x1},${y1}), B(${x2},${y2})\nGradient = ?`,ans:(y2-y1)/(x2-x1),_dec:true}; },
+    ()=>{ const m=rand(2,8),x1=rand(1,5); return {text:`Gradient = ${m}\nMelalui (${x1},${m*x1+2})\nApabila x=0, y-intercept = ?`,ans:2}; },
+    ()=>{ const x1=rand(1,5),y1=rand(1,5); return {text:`A(${x1},${y1}), B(${x1+3},${y1+6})\nGradient = ?`,ans:2}; },
+    ()=>{ const m=rand(-5,-1); return {text:`Garis gradient ${m}\nAdakah ia menaik atau menurun?\n(negatif = menurun = ?)`,ans:m}; },
+    ()=>{ const m=rand(2,6); return {text:`Garis selari gradient = ?\nGradient asal = ${m}`,ans:m}; },
+  ]},
+  {name:'Transformasi Isometri',qs:[
+    ()=>{ return {text:`Bayang cerminan Titik (3,4)\ndalam cermin berbanding sumbu-x\n= (?, ?)\nJawab: y = ?`,ans:-4}; },
+    ()=>{ return {text:`Bayang cerminan Titik (5,2)\ndalam cermin x = 3\nx baru = ?`,ans:1}; },
+    ()=>{ return {text:`Bayang cerminan Titik (4,6)\nsumbu-x → y baharu = ?`,ans:-6}; },
+    ()=>{ return {text:`Pusingan 90° lawan jam\ntentang asal: Titik (3,0)\n= (?, ?)\ny baru = ?`,ans:3}; },
+    ()=>{ return {text:`Pembarisan (translation)\nT: (x,y)→(x+2,y-3)\nTitik (1,5) → ?\ny baru = ?`,ans:2}; },
+  ]},
+  {name:'Sukatan Kecenderungan Memusat',qs:[
+    ()=>{ const d=[]; for(let i=0;i<6;i++)d.push(rand(1,20)); const mean=Math.round(d.reduce((a,b)=>a+b,0)/6*10)/10; return {text:`Data: ${d.join(', ')}\nPurata = ? (1dp)`,ans:mean,_dec:true}; },
+    ()=>{ const d=[2,5,5,8,10]; return {text:`Data: ${d.join(', ')}\nMedian = ?`,ans:5}; },
+    ()=>{ const d=[3,7,7,9,4,7,8]; return {text:`Data: ${d.join(', ')}\nMod = ?`,ans:7}; },
+    ()=>{ const d=[10,20,30,40,50]; return {text:`Data: ${d.join(', ')}\nJulat = ?`,ans:40}; },
+    ()=>{ const d=[]; for(let i=0;i<5;i++)d.push(rand(3,25)); d.sort((a,b)=>a-b); return {text:`Data: ${d.join(', ')}\nMedian = ?`,ans:d[2]}; },
+  ]},
+  {name:'Kebarangkalian Mudah',qs:[
+    ()=>{ const t=rand(5,20),s=rand(1,t-1); return {text:`Beg ada ${t} bola: ${s} merah, ${t-s} biru\nP(merah) = ?\n(ni/bil)`,ans:s,_frac:true,_den:t}; },
+    ()=>{ return {text:`Adil dice 1-6.\nP(nombor genap) = ?\n(ni/6)`,ans:3,_frac:true,_den:6}; },
+    ()=>{ const n=rand(4,12); return {text:`Duit ${n} keping.\nP(kepala) = ?\n(ni/bil)`,ans:Math.round(n/2),_frac:true,_den:n}; },
+    ()=>{ const t=rand(8,20),s=rand(2,Math.floor(t/2)); return {text:`Beg ${t} bola: ${s} merah, ${t-s} hijau\nP(hijau) = ?`,ans:t-s,_frac:true,_den:t}; },
+    ()=>{ const cards=rand(5,12); return {text:`Beg ${cards} kad: ${Math.floor(cards/2)} merah, ${cards-Math.floor(cards/2)} biru\nP(merah) = ?`,ans:Math.floor(cards/2),_frac:true,_den:cards}; },
+  ]},
+],
+[ // ═══ TINGKATAN 3 (9 bab) ═══
+  {name:'Indeks',qs:[
+    ()=>{ const a=rand(2,5),x=rand(2,5),y=rand(1,4); return {text:`${a}^${x} × ${a}^${y} = ?\n${a}^(x+y) = ?`,ans:Math.pow(a,x+y)}; },
+    ()=>{ const a=rand(2,5),x=rand(3,6),y=rand(1,x-1); return {text:`${a}^${x} ÷ ${a}^${y} = ?`,ans:Math.pow(a,x-y)}; },
+    ()=>{ const a=rand(2,4),x=rand(2,4); return {text:`(${a}^${x})^${rand(2,3)} = ?\n= ${a}^?`,ans:Math.pow(a,x*rand(2,3))}; },
+    ()=>{ const a=rand(2,5); return {text:`${a}^0 = ?`,ans:1}; },
+    ()=>{ const a=rand(2,5),x=rand(1,4); return {text:`${a}^${x} = ?`,ans:Math.pow(a,x)}; },
+  ]},
+  {name:'Bentuk Piawai',qs:[
+    ()=>{ const a=rand(1,9),e=rand(1,6); return {text:`${a} × 10^${e}\n= ? (nombor sebenar)`,ans:a*Math.pow(10,e)}; },
+    ()=>{ const e=rand(2,5),a=rand(1,9); const n=a*Math.pow(10,e); return {text:`${n} dalam bentuk piawai\n= ${a} × 10^?`,ans:e}; },
+    ()=>{ const a=rand(2,9),e=rand(-3,-1); return {text:`${a} × 10^${e}\n= ? (desimal)`,ans:a*Math.pow(10,e),_dec:true}; },
+    ()=>{ const a=rand(3,9),e=rand(2,5); return {text:`${a} × 10^${e}\n= ? (nombor biasa)`,ans:a*Math.pow(10,e)}; },
+    ()=>{ const x=rand(2,8),e=rand(1,4); const n=x*Math.pow(10,e); return {text:`${n} dalam bentuk piawai\n= ${x} × 10^?`,ans:e}; },
+  ]},
+  {name:'Matematik Pengguna: Simpanan & Pelaburan, Kredit & Hutang',qs:[
+    ()=>{ const p=rand(1000,10000),r=rand(2,8),t=rand(1,5); const si=p*r*t/100; return {text:`Wang RM${p} disimpan ${t} tahun\nKadar faedah mudah ${r}% setahun\nFaedah = ? RM`,ans:si}; },
+    ()=>{ const p=rand(1000,8000),r=rand(2,6),t=rand(2,5); const ci=Math.round(p*Math.pow(1+r/100,t)); return {text:`RM${p} dalamakaun ${r}% faedah\nkompaun ${t} tahun\nJumlah = ? RM`,ans:ci}; },
+    ()=>{ const p=rand(500,5000),r=rand(1,5),t=rand(1,3); const si=p*r*t/100; return {text:`Pinjaman RM${p}\nFaedah mudah ${r}% × ${t} tahun\nJumlah bayar = ? RM`,ans:p+si}; },
+    ()=>{ const hp=rand(200,2000),dp=rand(50,500),m=rand(6,24); const bal=hp-dp; const installment=Math.round(bal/m); return {text:`Harga HP RM${hp}\nBayaran muka RM${dp}\nBayar ${m} bulan\nSekali bayar = ? RM`,ans:installment}; },
+    ()=>{ const p=rand(1000,5000),r=rand(3,8),t=rand(1,4); return {text:`Simpanan RM${p}\n${r}% faedah mudah, ${t} tahun\nJumlah akhir = ? RM`,ans:p+p*r*t/100}; },
+  ]},
+  {name:'Lukisan Berskala',qs:[
+    ()=>{ const sk=rand(1,5),dl=rand(2,20); return {text:`Skala 1:${sk*10}\nJarak sebenar ${dl}m\nJarak pada lukisan = ? cm`,ans:dl*100/(sk*10)}; },
+    ()=>{ const sk=rand(2,10),sl=rand(1,15); return {text:`Skala 1:${sk*100}\nPada lukisan = ${sl}cm\nSebenar = ? cm`,ans:sl*sk*100}; },
+    ()=>{ const sk=rand(1,5),dl=rand(10,50); return {text:`Peta skala 1:${sk*1000}\nJarak sebenar ${dl}km\nJarak pada peta = ? cm`,ans:dl*100000/(sk*1000)}; },
+    ()=>{ const w=rand(3,12),sk=rand(2,8); return {text:`Lebar sebenar ${w}m\nSkala 1:${sk*100}\nLebar lukisan = ? cm`,ans:w*100/(sk*100)}; },
+    ()=>{ const p=rand(5,20),sk=rand(1,5); return {text:`Panjang sebenar ${p}m\nSkala 1:${sk*100}\nPanjang lukisan = ? cm`,ans:p*100/(sk*100)}; },
+  ]},
+  {name:'Nisbah Trigonometri',qs:[
+    ()=>{ const a=rand(3,12),h=rand(5,15); return {text:`Segi tiga sudut tegak\nSisi bertentangan = ${a}\nHipotenus = ${h}\nsin θ = ?`,ans:a,_frac:true,_den:h}; },
+    ()=>{ const a=rand(4,12),h=rand(6,15); return {text:`Sisi bertentangan = ${a}\nHipotenus = ${h}\ncos θ = ?`,ans:Math.round(Math.sqrt(h*h-a*a)),_frac:true,_den:h}; },
+    ()=>{ const o=rand(3,10),a=rand(3,10); return {text:`Opposite = ${o}, Adjacent = ${a}\ntan θ = ?`,ans:o,_frac:true,_den:a}; },
+    ()=>{ const denom=rand(4,10); const sinv=rand(1,denom-1); const v=sinv/denom; const deg=Math.round(Math.asin(v)*180/Math.PI); return {text:`sin θ = ${sinv}/${denom}\nθ ≈ ?°`,ans:deg}; },
+    ()=>{ const o=rand(3,8),a=rand(4,12); const t=o/a; return {text:`Opposite = ${o}\nAdjacent = ${a}\ntan θ = ${o}/${a}`,ans:o,_frac:true,_den:a}; },
+  ]},
+  {name:'Sudut Dan Tangen Bagi Bulatan',qs:[
+    ()=>{ const a=rand(20,80); return {text:`Sudut antara tangen dan\nradien = 90°\nSudut pada pusat = ${a*2}°\nSudut pada lilitan = ?°`,ans:a}; },
+    ()=>{ const a=rand(20,70); return {text:`Sudut dalam selang yang\ntidak mengandungi pusat = ${a}°\nSudut di pusat = ?°`,ans:2*a}; },
+    ()=>{ const a=rand(30,80); return {text:`Sudut antara dua tangen\ndari titik luar = ${a}°\nSudut di pusat = ?°`,ans:180-a}; },
+    ()=>{ const d=rand(4,16); return {text:`Bulatan jejari ${d/2}cm\nTangen = ? cm dari pusat`,ans:d/2}; },
+    ()=>{ const a=rand(15,45); return {text:`Sudut sepermukaan = ${a}°\nSudut sepusat = ?°`,ans:a*2}; },
+  ]},
+  {name:'Pelan Dan Dongakan',qs:[
+    ()=>{ return {text:`Bentuk: Kubus\nPelan (view dari atas): ?\nJawapan: Segi empat sama`,ans:4}; },
+    ()=>{ const l=rand(3,10),w=rand(2,8),h=rand(2,6); return {text:`Kotak ${l}×${w}×${h}cm\nPelan = ? × ? cm\nLuas pelan = ? cm²`,ans:l*w}; },
+    ()=>{ const r=rand(2,6),h=rand(3,10); return {text:`Silinder jejari ${r}cm, tinggi ${h}cm\nLuas permukaan = 2πr(r+h)\n= ? cm²\n(gunakan π=3.14)`,ans:Math.round(2*3.14*r*(r+h))}; },
+    ()=>{ const r=rand(2,6),h=rand(3,10); return {text:`Kon jejari ${r}cm, tinggi ${h}cm\nDongakan = ?\n(segi tiga)`,ans:h}; },
+    ()=>{ const r=rand(2,6); return {text:`Bola jejari ${r}cm\nIsipadu = (4/3)πr³\n= ? cm³\n(gunakan π=3.14)`,ans:Math.round(4/3*3.14*r*r*r)}; },
+  ]},
+  {name:'Lokus Dalam Dua Dimensi',qs:[
+    ()=>{ const d=rand(3,10); const r=rand(1,5); return {text:`Lokus titik P yang jaraknya\ntetap ${d}cm dari pusat O\nJika OP = ${d}cm, r = ?`,ans:d}; },
+    ()=>{ const x=rand(1,10),a=rand(1,8),b=rand(1,8); const sol=(a*x+b>0)?Math.round((-b-x*a)/a):Math.round((-b-x*a)/-a); return {text:`Persamaan garis lurus\ny = ${a}x + ${b}\nJika y = ${a*x+b}, x = ?`,ans:x}; },
+    ()=>{ const x1=rand(1,5),x2=rand(6,12); const mid=Math.round((x1+x2)/2); return {text:`Titik A(${x1},0) dan B(${x2},0)\nGarisan tengah = titik (?,0)\nSumbu x tengah = ?`,ans:mid}; },
+    ()=>{ const r=rand(3,8); const d=rand(1,r-1); return {text:`Bulatan jejari ${r}cm\nTitik P berjarak ${d}cm dari pusat\nAdakah P dalam bulatan?\n(1=ya, 0=tidak)`,ans:1}; },
+    ()=>{ const r=rand(2,8); return {text:`Lokus titik pada jarak ${r}cm\ndari titik A(${rand(1,5)},${rand(1,5)})\n= bulatan jejari ?`,ans:r}; },
+  ]},
+  {name:'Garis Lurus',qs:[
+    ()=>{ const m=rand(2,8),c=rand(-5,5); return {text:`y = ${m}x + ${c}\ny-intercept = ?`,ans:c}; },
+    ()=>{ const x1=rand(1,5),y1=rand(1,5),x2=rand(6,12),y2=rand(6,12); return {text:`A(${x1},${y1}), B(${x2},${y2})\nGradient = ?`,ans:(y2-y1)/(x2-x1),_dec:true}; },
+    ()=>{ const m=rand(2,6); return {text:`Garis selari y = ${m}x + 3\nGradient = ?`,ans:m}; },
+    ()=>{ const m=rand(2,6); return {text:`Garis tebus lurus y = ${m}x + 1\nGradient = ?`,ans:Math.round(-100/m)/100,_dec:true}; },
+    ()=>{ const m=rand(1,5),c=rand(-3,8),x=rand(1,6); return {text:`y = ${m}x + ${c}\nApabila x = ${x}, y = ?`,ans:m*x+c}; },
+  ]},
+],
+[ // ═══ TINGKATAN 4 (10 bab) ═══
+  {name:'Fungsi Dan Persamaan Kuadratik',qs:[
+    ()=>{ const x1=rand(1,6),x2=rand(1,8); const b=-(x1+x2),c=x1*x2; return {text:`x² + (${b})x + ${c} = 0\nPenyelesaian: x = ? dan ?\nJumlah punca = ?`,ans:-b}; },
+    ()=>{ const a=rand(1,5),b=rand(-8,8),c=rand(-10,10); const disc=b*b-4*a*c; return {text:`f(x) = ${a}x² + ${b}x + ${c}\nDiscriminant = b²-4ac = ?`,ans:disc}; },
+    ()=>{ const a=rand(1,5),b=rand(1,10),c=rand(1,5); const v=-b/(2*a); return {text:`f(x) = ${a}x² + ${b}x + ${c}\nNilai minimum di x = ?`,ans:v,_dec:true}; },
+    ()=>{ const x1=rand(2,6),x2=rand(2,6); return {text:`(x - ${x1})(x - ${x2}) = 0\nx² - ?x + ? = 0\nJumlah punca = ?`,ans:x1+x2}; },
+    ()=>{ const x1=rand(1,5),x2=rand(1,5); return {text:`Punca: x = ${x1}, x = ${x2}\nProduk punca = ?`,ans:x1*x2}; },
+  ]},
+  {name:'Asas Nombor',qs:[
+    ()=>{ const d=rand(1,5),p=rand(0,3); const n=d*Math.pow(2,p); return {text:`${n} ÷ 2^${p} = ?\n(nilai t tempat binari)`,ans:d}; },
+    ()=>{ return {text:`1011 (binari) = ?\n(dalam nombor perpuluhan)`,ans:11}; },
+    ()=>{ const n=rand(10,50); const b=n.toString(2); const ones=b.split('').filter(c=>c==='1').length; return {text:`${n} dalam binari = ${b}\nBilangan '1' = ?`,ans:ones}; },
+    ()=>{ return {text:`11010 (binari) = ?\n(dalam perpuluhan)`,ans:26}; },
+    ()=>{ return {text:`FF (heksadesimal) = ?\n(dalam perpuluhan)`,ans:255}; },
+  ]},
+  {name:'Penaakulan Logik',qs:[
+    ()=>{ const p=Math.random()>0.5?1:0; const q=Math.random()>0.5?1:0; return {text:`p = ${p?'Betul':'Salah'}\nq = ${q?'Betul':'Salah'}\np ∧ q = ?\n(1=Betul, 0=Salah)`,ans:p&&q?1:0}; },
+    ()=>{ const p=Math.random()>0.5?1:0; const q=Math.random()>0.5?1:0; return {text:`p = ${p?'Betul':'Salah'}\nq = ${q?'Betul':'Salah'}\np ∨ q = ?\n(1=Betul, 0=Salah)`,ans:p||q?1:0}; },
+    ()=>{ const x=rand(1,15); return {text:`p: x > 3\nq: x < 10\nx = ${x}\np ∧ q = ?\n(1=Betul, 0=Salah)`,ans:(x>3&&x<10)?1:0}; },
+    ()=>{ const n=rand(1,20); const isEven=n%2===0; const isPos=n>0; return {text:`p: nombor genap\nq: nombor positif\nn = ${n}\np ∨ q = ?\n(1=Betul, 0=Salah)`,ans:(isEven||isPos)?1:0}; },
+    ()=>{ const p=Math.random()>0.5?1:0; const q=Math.random()>0.5?1:0; const negP=p===0?1:0; const negQ=q===0?1:0; return {text:`p → q\np = ${p?'Betul':'Salah'}\nq = ${q?'Betul':'Salah'}\nKontrapositif (~q → ~p)\n= ? (1=Betul, 0=Salah)`,ans:(negQ&&negP)||(q===0&&p===0)||(q===1)?1:0}; },
+  ]},
+  {name:'Operasi Set',qs:[
+    ()=>{ const u=[];for(let i=1;i<=12;i++)u.push(i); const a=[1,3,5,7,9,11]; const b=[2,4,6,8,10,12]; return {text:`U={1..12}\nA={genap}, B={1,2,3,4}\nA ∩ B = ? (bilangan)`,ans:2}; },
+    ()=>{ return {text:`A = {1,2,3,4}\nB = {3,4,5,6}\nA ∪ B = ? (bilangan ahli)`,ans:6}; },
+    ()=>{ return {text:`A = {a,b,c,d}\nA' jika U = {a,b,c,d,e,f}\nA' = ? (bilangan)`,ans:2}; },
+    ()=>{ return {text:`A = {1,2,3}\nB = {2,3,4}\n(A ∪ B)' jika U = {1..6}\n= ? (bilangan)`,ans:3}; },
+    ()=>{ const a=rand(2,5),b=rand(2,5); const inter=[...new Set(Array.from({length:12},(_,i)=>i+1).filter(x=>x<=a*2&&x%2===0&&x<=b*2))]; const c=Math.min(a,b); return {text:`U = {1,2,...,12}\nA = {genap ≤ ${a*2}}\nB = {genap ≤ ${b*2}}\nBilangan A ∩ B = ?`,ans:c}; },
+  ]},
+  {name:'Rangkaian Dalam Teori Graf',qs:[
+    ()=>{ return {text:`Graf lengkap K₄\nBilangan bucu = ?\nBilangan sisi = ?\nSisi = ?`,ans:6}; },
+    ()=>{ return {text:`Graf K₃ (segitiga)\nBilangan sisi = ?`,ans:3}; },
+    ()=>{ return {text:`Setiap bucu dalam graf\nmempunyai darjah 2.\nBilangan bucu = 4\nBilangan sisi = ?`,ans:4}; },
+    ()=>{ return {text:`Graf mempunyai 5 bucu\ndan 8 sisi.\nJumlah darjah = ?`,ans:16}; },
+    ()=>{ return {text:`Graf K₅\nBilangan sisi = ?`,ans:10}; },
+  ]},
+  {name:'Ketaksamaan Linear Dlm 2 Pemboleh Ubah',qs:[
+    ()=>{ const a=rand(1,5),b=rand(1,5),c=rand(5,15); const x=rand(0,3),y=rand(0,3); const val=a*x+b*y; return {text:`${a}x + ${b}y ≤ ${c}\nAdakah (${x},${y}) penyelesaian?\n${a}×${x} + ${b}×${y} = ${val} ≤ ${c}?\n(1=Ya, 0=Tidak)`,ans:val<=c?1:0}; },
+    ()=>{ const a=rand(1,5),b=rand(1,5),c=rand(5,15); const x=rand(2,6),y=rand(2,6); const val=a*x+b*y; return {text:`${a}x + ${b}y > ${c}\nAdakah (${x},${y}) penyelesaian?\n${a}×${x} + ${b}×${y} = ${val} > ${c}?\n(1=Ya, 0=Tidak)`,ans:val>c?1:0}; },
+    ()=>{ return {text:`x ≥ 0, y ≥ 0\nx + y ≤ 6\nBilangan titik integer\npositif = ?`,ans:28}; },
+    ()=>{ return {text:`x + 2y ≤ 8\nx ≥ 0, y ≥ 0\nJika y = 2, x maks = ?`,ans:4}; },
+    ()=>{ return {text:`3x + y ≤ 12\nx ≥ 1, y ≥ 1\nx = 1, y maks = ?`,ans:9}; },
+  ]},
+  {name:'Graf Gerakan',qs:[
+    ()=>{ const d=rand(10,60),t=rand(2,8); return {text:`Graf jarak-masa mendatar\nJarak ${d}km, masa ${t}jam\nLaju = ? km/j`,ans:d/t}; },
+    ()=>{ const v=rand(10,80),t=rand(2,6); return {text:`Graf laju-masa\nLaju ${v}m/s, masa ${t}s\nJarak (luas) = ? m`,ans:v*t}; },
+    ()=>{ const u=rand(5,20),a=rand(1,10),t=rand(2,5); return {text:`v = u + at\nu=${u}, a=${a}, t=${t}\nv = ? m/s`,ans:u+a*t}; },
+    ()=>{ const d=rand(20,100),t=rand(2,8); const v=d/t; return {text:`Graf laju-masa: segi tepat\nv = ${v}m/s, t = ${t}s\nJarak = ? m`,ans:d}; },
+    ()=>{ const s=rand(10,50); return {text:`Objek pegun, bergerak ${s}m\nKemudian pegun lagi\nJarak maks = ? m`,ans:s}; },
+  ]},
+  {name:'Sukatan Serakan Data Tak Terkumpul',qs:[
+    ()=>{ const d=[]; for(let i=0;i<7;i++)d.push(rand(1,30)); d.sort((a,b)=>a-b); const range=d[6]-d[0]; return {text:`Data: ${d.join(', ')}\nJulat = ?`,ans:range}; },
+    ()=>{ const d=[4,7,9,10,15]; return {text:`Data: ${d.join(', ')}\nMedian = ?`,ans:9}; },
+    ()=>{ const d=[2,4,4,7,9,10,14]; const mean=d.reduce((a,b)=>a+b,0)/7; const vari=Math.round(d.reduce((s,v)=>s+(v-mean)*(v-mean),0)/7*10)/10; return {text:`Data: ${d.join(', ')}\nVarians = ? (1dp)`,ans:vari,_dec:true}; },
+    ()=>{ const d=[5,8,12,15,20]; return {text:`Data: ${d.join(', ')}\nQ1 = ?\nQ3 = ?\nIQR = Q3-Q1 = ?`,ans:15-8}; },
+    ()=>{ const d=[3,6,9,12,18]; return {text:`Data: ${d.join(', ')}\nJulat = ?`,ans:15}; },
+  ]},
+  {name:'Kebarangkalian Peristiwa Bergabung',qs:[
+    ()=>{ const pA=rand(2,5),pB=rand(2,5); return {text:`P(A) = 1/${pA}, P(B) = 1/${pB}\nP(A ∪ B) jika bebas = ?\n(ni/bil)`,ans:pA+pB-1,_frac:true,_den:pA*pB}; },
+    ()=>{ return {text:`P(A) = 0.3, P(B) = 0.4\nP(A ∩ B) = 0.1\nP(A ∪ B) = ?`,ans:0.6,_dec:true}; },
+    ()=>{ return {text:`P(A) = 1/3, P(B) = 1/4\nP(A ∩ B) = 1/12\nP(A ∪ B) = ?\n(ni/bil)`,ans:6,_frac:true,_den:12}; },
+    ()=>{ return {text:`A dan B peristiwa bebas\nP(A) = 1/2, P(B) = 1/3\nP(A ∩ B) = ?\n(ni/bil)`,ans:1,_frac:true,_den:6}; },
+    ()=>{ const p=rand(1,5); return {text:`P(A) = ${p}/10\nP(A') = ?`,ans:10-p,_frac:true,_den:10}; },
+  ]},
+  {name:'Matematik Pengguna: Pengurusan Kewangan',qs:[
+    ()=>{ const hp=rand(1000,5000),dp=rand(100,1000),r=rand(3,8),m=rand(6,24); const bal=hp-dp; const interest=Math.round(bal*r/100); const total=bal+interest; const inst=Math.round(total/m); return {text:`HP RM${hp}, muka RM${dp}\nFaedah ${r}% × ${m} bulan\nBayar ansuran = ? RM/sebulan`,ans:inst}; },
+    ()=>{ const income=rand(2000,8000),tax=rand(5,15); const taxAmt=Math.round(income*tax/100); return {text:`Gaji RM${income}/bulan\nCukai ${tax}%\nCukai = ? RM/bulan`,ans:taxAmt}; },
+    ()=>{ const budget=rand(1000,3000),spent=rand(500,2000); return {text:`Bajet RM${budget}\nBelanja RM${spent}\nBaki = ? RM`,ans:budget-spent}; },
+    ()=>{ const p=rand(500,5000),r=rand(1,5),t=rand(1,3); const interest=p*r*t/100; return {text:`Simpanan RM${p}\nFaedah mudah ${r}% × ${t} tahun\nJumlah = ? RM`,ans:p+interest}; },
+    ()=>{ const hp=rand(100,500),disc=rand(10,30); const price=Math.round(hp*(100-disc)/100); return {text:`Harga asal RM${hp}\nDiskaun ${disc}%\nHarga selepas diskaun = ? RM`,ans:price}; },
+  ]},
+],
+[ // ═══ TINGKATAN 5 (8 bab) ═══
+  {name:'Ubahan',qs:[
+    ()=>{ const k=rand(2,10),x=rand(2,8); return {text:`y berubah terus dengan x\ny = ${k}x\nJika x = ${x}, y = ?`,ans:k*x}; },
+    ()=>{ const k=rand(2,8),y=rand(4,20); return {text:`y berubahsongsang dengan x\ny = ${k}/x\nJika x = ${k}, y = ?`,ans:1}; },
+    ()=>{ const k=rand(2,8),x1=rand(2,5),x2=rand(6,12); const y1=k*x1,y2=k*x2; return {text:`y = ${k}x\nx=${x1} → y=${y1}\nx=${x2} → y=?`,ans:y2}; },
+    ()=>{ const k=rand(3,12),y=rand(2,8); const x=k/y; return {text:`y berubahsongsang x\ny = ${k}/x\nJika y = ${y}, x = ?`,ans:x}; },
+    ()=>{ const a=rand(2,6),b=rand(2,6),x=rand(1,10); return {text:`y = ${a}x + ${b}\ny berubah langsung + pemalar\nJika x=${x}, y = ?`,ans:a*x+b}; },
+  ]},
+  {name:'Matriks',qs:[
+    ()=>{ return {text:`A = [1 2]\n    [3 4]\nB = [5 6]\n    [7 8]\nA + B = ?\nUnsur (1,1) = ?`,ans:6}; },
+    ()=>{ return {text:`A = [2 3]\n    [1 4]\n2A = ?\nUnsur (1,2) = ?`,ans:6}; },
+    ()=>{ const a=rand(1,5),b=rand(1,5),c=rand(1,5),d=rand(1,5); return {text:`A = [${a} ${b}]\n    [${c} ${d}]\nDet A = ad - bc\n= ${a}×${d} - ${b}×${c} = ?`,ans:a*d-b*c}; },
+    ()=>{ return {text:`A = [3 1]\n    [2 4]\nDet A = ad - bc\n= (3×4) - (1×2) = ?`,ans:10}; },
+    ()=>{ return {text:`[1 2] + [4 5]\n[3 4]   [6 7]\nUnsur (2,1) = ?`,ans:9}; },
+  ]},
+  {name:'Matematik Pengguna: Insurans',qs:[
+    ()=>{ const v=rand(5000,50000),r=rand(1,3); const premium=Math.round(v*r/100); return {text:`Nilai kenderaan RM${v}\nKadar insurans ${r}%\nPremium = ? RM`,ans:premium}; },
+    ()=>{ const prem=rand(200,1000),yr=rand(3,10); const total=prem*yr; return {text:`Premium RM${prem}/tahun\n${yr} tahun\nJumlah = ? RM`,ans:total}; },
+    ()=>{ const v=rand(10000,80000),rate=rand(1,4); return {text:`Nilai RM${v}\nInsurans ${rate}%\nBayaran = ? RM`,ans:v*rate/100}; },
+    ()=>{ const prem=rand(100,500); return {text:`Premium bulanan RM${prem}\nPremium tahunan = ? RM`,ans:prem*12}; },
+    ()=>{ const claim=rand(500,5000),deduct=rand(100,500); return {text:`Tuntutan RM${claim}\nPenolakan RM${deduct}\nBayaran insurans = ? RM`,ans:claim-deduct}; },
+  ]},
+  {name:'Matematik Pengguna: Percukaian',qs:[
+    ()=>{ const income=rand(2000,8000),tax=rand(5,15); const taxAmt=Math.round(income*tax/100); return {text:`Pendapatan RM${income}\nCukai ${tax}%\nJumlah cukai = ? RM`,ans:taxAmt}; },
+    ()=>{ const income=rand(3000,10000),rate=rand(5,20); const tax=Math.round(income*rate/100); const net=income-tax; return {text:`Gaji RM${income}\nCukai ${rate}%\nPendapatan bersih = ? RM`,ans:net}; },
+    ()=>{ const bracket=rand(1,5); const rates=[0,1,5,10,15,25]; const rate=rates[bracket]; const income=rand(1000,5000); return {text:`Kadar cukai ${rate}%\nPendapatan RM${income}\nCukai = ? RM`,ans:Math.round(income*rate/100)}; },
+    ()=>{ const gross=rand(3000,8000),relief=rand(500,3000); const taxable=gross-relief; const rate=rand(5,15); const tax=Math.round(taxable*rate/100); return {text:`Gaji RM${gross}\nPelepasan RM${relief}\nCukai ${rate}%\nJumlah cukai = ? RM`,ans:tax}; },
+    ()=>{ const tax=rand(100,1000),rate=rand(2,10); const income=Math.round(tax*100/rate); return {text:`Cukai RM${tax}\nKadar ${rate}%\nPendapatan kasar = ? RM`,ans:income}; },
+  ]},
+  {name:'Kekongruenan, Pembesaran & Gabungan Transformasi',qs:[
+    ()=>{ const s=rand(2,5); return {text:`Pembesaran skala ${s}\nTitik (2,3) → (?, ?)\nx baru = ?`,ans:2*s}; },
+    ()=>{ return {text:`Bayang cerminan titik (4, -2)\ndalam sumbu-y\n= (?, ?)\nx baru = ?`,ans:-4}; },
+    ()=>{ const s=rand(2,4); return {text:`Pembesaran skala ${s}\ntentang asal\nTitik (3, 1) → (?, ?)\ny baru = ?`,ans:s}; },
+    ()=>{ return {text:`Pusingan 90° CW\ntentang asal\nTitik (-2, 3) → (?, ?)\nx baru = ?`,ans:3}; },
+    ()=>{ const a=rand(2,5),b=rand(1,3); return {text:`Gabungan:\n1) Pembarisan (x+${a}, y-${b})\n2) Pembesaran skala 2\nTitik (1,3) → (?, ?)\nx = ?`,ans:(1+a)*2}; },
+  ]},
+  {name:'Nisbah & Graf Fungsi Trigonometri',qs:[
+    ()=>{ const a=rand(2,6); return {text:`y = ${a}sin x\nAmplitud = ?`,ans:a}; },
+    ()=>{ const p=rand(2,6); return {text:`y = sin ${p}x\nTempoh = 360°/${p} = ?°`,ans:360/p}; },
+    ()=>{ const a=rand(2,5),p=rand(2,4); return {text:`y = ${a}cos ${p}x\nTempoh = 360°/${p} = ?°`,ans:360/p}; },
+    ()=>{ return {text:`y = sin x\nPada x = 90°, y = ?`,ans:1}; },
+    ()=>{ const a=rand(2,6),p=rand(2,5),d=rand(1,5); return {text:`y = ${a}sin ${p}x + ${d}\nNilai minimum = ?`,ans:d-a}; },
+  ]},
+  {name:'Sukatan Serakan Data Terkumpul',qs:[
+    ()=>{ const intervals=[[1,3],[4,6],[7,9]]; const freq=[5,8,3]; const total=freq.reduce((a,b)=>a+b,0); const mean=Math.round((2*5+5*8+8*3)/total*10)/10; return {text:`Class: 1-3(f=5), 4-6(f=8), 7-9(f=3)\nPurata = ? (1dp)`,ans:mean,_dec:true}; },
+    ()=>{ return {text:`Data terkumpul:\n10-19: 5 orang\n20-29: 8 orang\n30-39: 7 orang\nJumlah = ?`,ans:20}; },
+    ()=>{ const classes=[[10,20],[20,30],[30,40]]; const freq=[3,5,2]; const total=10; return {text:`10-20(f=3), 20-30(f=5), 30-40(f=2)\nPurata = ?`,ans:Math.round((15*3+25*5+35*2)/total)}; },
+    ()=>{ const f=[4,6,10,5,3]; const n=f.reduce((a,b)=>a+b,0); let cum=0,medClass=0; for(let i=0;i<f.length;i++){cum+=f[i];if(cum>=Math.ceil(n/2)){medClass=i+1;break;}} return {text:`5 kelas, n=${n}\nKelas median ialah kelas ke-?`,ans:medClass}; },
+    ()=>{ const classes=[[5,10],[10,15],[15,20]]; const freq=[2,6,4]; const total=12; return {text:`5-10(f=2), 10-15(f=6), 15-20(f=4)\nPurata = ?`,ans:Math.round((7.5*2+12.5*6+17.5*4)/total*10)/10,_dec:true}; },
+  ]},
+  {name:'Pemodelan Matematik',qs:[
+    ()=>{ const a=rand(2,6),b=rand(1,10); return {text:`x + y = ${a+b}\nx - y = ${a-b}\nCari x = ?`,ans:a}; },
+    ()=>{ const x=rand(2,10),y=rand(1,8); return {text:`2x + y = ${2*x+y}\nx + y = ${x+y}\nx = ?`,ans:x}; },
+    ()=>{ const a=rand(2,5),b=rand(1,8),total=rand(10,30); const x=total-a-b; return {text:`Ali=${a}, Abu=${b}\nJumlah = ${total}\nSiti = ?`,ans:total-a-b}; },
+    ()=>{ const l=rand(5,15),w=rand(3,10); return {text:`Perimeter persegi panjang\n= ${2*(l+w)} cm\nPanjang = ${l} cm\nLebar = ? cm`,ans:w}; },
+    ()=>{ const price=rand(2,10),qty=rand(3,8),total=rand(20,100); return {text:`Beli ${qty} buku\nHarga sebuku RM${price}\nJumlah RM${total}\nBaki = ? RM`,ans:total-price*qty}; },
+  ]},
+],
+];
+
+function genQExam(lvl,ting){
+  const bank=EXAM_BANKS[ting];
+  if(!bank) return genQ_T5(lvl);
+  const idx=Math.min(lvl-1,bank.length-1);
+  const chapter=bank[idx<0?0:idx];
+  const pool=chapter.qs;
+  const q=pool[rand(0,pool.length-1)]();
+  q.opts=makeOpts(q.ans,lvl<=2?5:8);
+  return q;
 }
 
 function makeOpts(ans, spread){
@@ -6781,12 +7179,14 @@ function _base_openQ(target,ttype){
   if(isBoss){hpEl.textContent='BOS HP: '+'❤'.repeat(Math.min(target.hp,10))+' ('+target.hp+'/'+target.maxHp+')';}
   else if(target.maxHp>1){hpEl.textContent='HP: '+'❤'.repeat(target.hp)+'/'+target.maxHp;}
   else{hpEl.textContent='';}
-  const q=genQ(level);
-  window._currentQ=q;
-  // badge jenis soalan berdasarkan tingkatan
-  const topicNames = {1:'📐 PERSAMAAN LINEAR', 2:'🔢 ALGEBRA', 3:'📐 TRIGONOMETRI', 4:'📊 FUNGSI KUADRATIK', 5:'🎲 KEBARANGKALIAN'};
   const t = getPlayerTingkatan();
-  const badge = (topicNames[t]||'📚') + ' — ';
+  const tBank=EXAM_BANKS[t]||EXAM_BANKS[1];
+  const bab=rand(1,tBank.length);
+  const q=genQExam(bab,t);
+  window._currentQ=q;
+  // badge jenis soalan berdasarkan bab sebenar
+  const chapter=tBank[bab-1];
+  const badge = 'T'+t+' '+chapter.name+' — ';
   document.getElementById('qhead').textContent=(isBoss?'👹 SERANG BOS! ':target.maxHp>1?'🛡️ MUSUH KEBAL! ':'')+badge+'JAWAB BETUL!';
   document.getElementById('qtext').innerHTML=q.text.replace(/\n/g,'<br>');
   const btns=document.getElementById('qbtns');btns.innerHTML='';
@@ -8216,6 +8616,19 @@ function authStartGame(profile){
       shopSyncRareCoinFromFirebase(profile.username||profile.name);
     }
   }, 2000);
+  // ── Start invite listeners ASAP so invites work from ANY scene ──
+  setTimeout(()=>{
+    if(typeof bossInviteStartListen==='function') bossInviteStartListen();
+    if(typeof pvpInviteStartListen==='function') pvpInviteStartListen();
+    if(typeof gkInviteStartListen==='function') gkInviteStartListen();
+    if(typeof damInviteStartListen==='function') damInviteStartListen();
+    if(typeof futsalInviteStartListen==='function') futsalInviteStartListen();
+    if(typeof fol5vInviteStartListen==='function') fol5vInviteStartListen();
+    if(typeof mobaInviteStartListen==='function') mobaInviteStartListen();
+    if(typeof pbInviteStartListen==='function') pbInviteStartListen();
+    if(typeof chessInviteStartListen==='function') chessInviteStartListen();
+    if(typeof gsInviteStartListen==='function') gsInviteStartListen();
+  }, 1500);
   // ── Sync SEMUA data shop (points, owned, equipped) dari Firebase ──
   setTimeout(()=>{
     if(typeof shopSyncFullFromFirebase==='function'){
@@ -9688,16 +10101,13 @@ function soloTowerMonsterName(floor){
 // progress Menara Solo kekal berasingan sepenuhnya drpd Menara Matematik).
 function soloFloorTingkatan(floor){ return Math.min(5,Math.max(1,Math.ceil(floor/10))); }
 function soloFloorBab(floor){ const b=floor%10; return b===0?10:b; }
-function soloGenQuestionForFloor(floor){
-  const bab=soloFloorBab(floor);
-  const t=soloFloorTingkatan(floor);
-  if(t===1) return genQ_T1(bab);
-  if(t===2) return genQ_T2(bab);
-  if(t===3) return genQ_T3(bab);
-  if(t===4) return genQ_T4(bab);
-  return genQ_T5(bab);
-}
 
+function soloGenQuestionForFloor(floor){
+  const t=getPlayerTingkatan();
+  const tBank=EXAM_BANKS[t]||EXAM_BANKS[1];
+  const bab=((floor-1)%tBank.length)+1;
+  return genQExam(bab,t);
+}
 // ══════════════════════════════════════════════════════════════════════
 // ── BOSS MENARA — "VOIDMAW, PEMAKAN CAHAYA" ─────────────────────────────
 // Monster asli dibina 100% guna geometri Three.js terbina-dalam (Lathe/
@@ -10489,7 +10899,11 @@ function soloShowKillQuiz(en){
   soloTower.quizActive=true;
   const q=soloGenQuestionForFloor(soloTower.floor);
   const tagEl=document.getElementById('soloQuizTag');
-  if(tagEl) tagEl.textContent='💀 PUKULAN MAUT — TINGKATAN '+soloFloorTingkatan(soloTower.floor)+' BAB '+soloFloorBab(soloTower.floor);
+  const playerT=getPlayerTingkatan();
+  const tBank=EXAM_BANKS[playerT]||EXAM_BANKS[1];
+  const tagBab=((soloTower.floor-1)%tBank.length)+1;
+  const chapter=tBank[tagBab-1];
+  if(tagEl) tagEl.textContent='💀 PUKULAN MAUT — T'+playerT+' '+(chapter?chapter.name:'BAB '+tagBab);
   const textEl=document.getElementById('soloQuizText');
   if(textEl) textEl.textContent=q.text;
   const fbEl=document.getElementById('soloQuizFeedback');
@@ -11890,8 +12304,60 @@ function smapBuild3D(){
     const flag=new THREE.Mesh(new THREE.PlaneGeometry(0.7,0.45),new THREE.MeshLambertMaterial({color:0x00e5ff,emissive:0x00e5ff,emissiveIntensity:1.2,side:THREE.DoubleSide}));
     flag.position.set(0.4,6.2,-0.5); g.add(flag);
     g.userData.flag=flag; g.userData.sail=sail;
+    // ── Hero clone sitting at edge of boat ──
+    var _boatHero=null;
+    try{
+      _boatHero=makeMario();
+      _boatHero.scale.set(0.55,0.55,0.55);
+      _boatHero.position.set(1.3,1.2,-1.5);
+      _boatHero.rotation.y=Math.PI/2;
+      g.add(_boatHero);
+      g.userData.boatHero=_boatHero;
+    }catch(e){}
+    // ── Pelampung (bobber) in water ──
+    var _bobber=new THREE.Group();
+    var _bobStk=new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.35,4),new THREE.MeshLambertMaterial({color:0xffffff}));
+    _bobStk.position.y=0.18; _bobber.add(_bobStk);
+    var _bobTop=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,6),new THREE.MeshLambertMaterial({color:0xff2200,emissive:0xff2200,emissiveIntensity:0.3}));
+    _bobTop.position.y=0.42; _bobber.add(_bobTop);
+    var _bobBot=new THREE.Mesh(new THREE.SphereGeometry(0.05,6,5),new THREE.MeshLambertMaterial({color:0xffffff}));
+    _bobBot.position.y=0.02; _bobber.add(_bobBot);
+    _bobber.position.set(3.0,-0.1,-1.5);
+    _bobber.visible=false;
+    g.add(_bobber);
+    g.userData.bobber=_bobber;
+    // ── Fishing rod in hero hand ──
+    var _boatRod=null;
+    try{
+      _boatRod=smBuildBoatRod();
+      _boatRod.position.set(0,0,0);
+      _boatRod.rotation.set(0,0,-0.2);
+      _boatRod.scale.set(1.8,1.8,1.8);
+      if(_boatHero){
+        var _rHand=new THREE.Group();
+        _rHand.position.set(0.3,0.3,0.1);
+        _rHand.add(_boatRod);
+        _boatHero.add(_rHand);
+        g.userData.boatRod=_boatRod;
+        g.userData.boatRodHand=_rHand;
+      }
+    }catch(e){}
     smScene.add(g);
     return g;
+  }
+  function smBuildBoatRod(){
+    var rg=new THREE.Group();
+    var hm=new THREE.MeshLambertMaterial({color:0x8a6a3a});
+    var handle=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.045,0.22,6),hm);
+    handle.rotation.x=Math.PI/2; rg.add(handle);
+    var rm=new THREE.MeshLambertMaterial({color:0x6a5a3a});
+    var rod=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.028,1.0,6),rm);
+    rod.rotation.x=-0.6; rod.position.set(0,0.1,0.42); rg.add(rod);
+    var tm=new THREE.MeshLambertMaterial({color:0x5a4a2a});
+    var tip=new THREE.Mesh(new THREE.CylinderGeometry(0.005,0.012,0.5,4),tm);
+    tip.rotation.x=-0.45; tip.position.set(0,0.14,0.95); rg.add(tip);
+    rg.userData={rodBody:rod,rodTip:tip};
+    return rg;
   }
 
   function smMakeSeaMonster(){
@@ -12098,28 +12564,55 @@ function smapBuild3D(){
     }
   }
 
-  // ── PATHS (concrete walkways) ──
-  const pathMat=new THREE.MeshLambertMaterial({color:0xd4b896, polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2});
-  function makePath(x,y,z,w,d){
-    const m=new THREE.Mesh(new THREE.BoxGeometry(w,0.15,d),pathMat);
-    m.position.set(x,0.08,z); m.receiveShadow=true; smScene.add(m);
-  }
-  makePath(0,0,0,12,80);   // main vertical path
-  makePath(0,0,0,80,12);   // main horizontal path
-  makePath(-30,0,-20,8,30); // e-sport arena side path
-  makePath(30,0,-20,8,30);  // perp side path
-  makePath(-30,0,20,8,30);  // padang side path
-  makePath(30,0,20,8,30);   // dewan side path
-  makePath(0,0,36,8,10);    // kedai side path
-  // Laluan ke Arena PVP
-  makePath(30,0,14,52,8);   // laluan mendatar dari pusat ke arah kanan (z=14)
-  makePath(55,0,44,8,62);   // laluan menegak ke selatan menuju arena
-  // ── Sambungan ke setiap bangunan ──
-  makePath(0,0,-45,7,18);        // Portal → N-S utama (bertindan z:-40..-36, berhenti sebelum Paintball)
-  makePath(28,0,-38,56,6);       // N-S utama → Papan Catur (x:0..56)
-  makePath(-42,0,8,16,10);       // E-W utama → Billboard & Arena Master (elak pokok di z:0)
-  makePath(66,0,12,20,7);        // Jalan #8/#9 → Litar Go Kart
-  makePath(16,0,-19,7,34);       // Celah Paintball & Perpustakaan → E-W utama (sampai z:-36)
+  // ── PATHS (canvas texture — main arteries + branch roads to buildings) ──
+  // Design: Main Street E-W at z=-5 (just north of Paintball z=-8),
+  // Central Avenue N-S at x=17 (east of Paintball/Kedai/Guild House),
+  // 12 branch roads from arteries to each building entrance.
+  // NO border strokes. NO building-to-building roads. NO pet zone overlap.
+  (function(){
+    var S=2048, WH=110;
+    var c=document.createElement('canvas'); c.width=S; c.height=S;
+    var x=c.getContext('2d');
+    x.fillStyle='#4a9e2a'; x.fillRect(0,0,S,S);
+    function w2p(wx,wz){ return [(wx+WH)/(WH*2)*S, (wz+WH)/(WH*2)*S]; }
+    function rd(cx,cz,w,d,col){
+      x.fillStyle=col||'#d4b896';
+      var p1=w2p(cx-w/2,cz-d/2), p2=w2p(cx+w/2,cz+d/2);
+      x.fillRect(p1[0],p1[1],p2[0]-p1[0],p2[1]-p1[1]);
+    }
+    // ══ JALAN UTAMA (main arteries) ══
+    rd(20,-5,154,6);           // Main Street E-W: z=-5, x:-57..+97, d=6 (z:-8..-2, touches Paintball)
+    rd(17,-21,4,142);          // Central Avenue N-S: x=17, z:-92..+50, w=4 (x:15..19)
+    // ══ CABANG JALAN → BANGUNAN (branch roads to buildings) ══
+    // [1] E-Sport Arena (-32,-26) + Dam Board (-32,28) — shared vertical at x=-32
+    rd(-32,-1,8,32);           // z:-17..15, x:-36..-28
+    // [2] Arena Master (32,-26) — vertical from Main St north
+    rd(32,-11.5,8,13);         // z:-18..-5, x:28..36
+    // [3] Kedai/Shop (0,38) — vertical from Main St north
+    rd(0,14.5,8,39);           // z:-5..34, x:-4..4
+    // [4] Menara Matematik (32,28) — NORTH entrance portal at z=20.5, x=32
+    rd(26,17,16,4);            // x:18..34, z:15..19 (road in front of north entrance)
+    // [5] Papan Catur (68,-26) — vertical from Main St north
+    rd(68,-9,8,8);             // z:-13..-5, x:64..72
+    // [6] Go Kart (90,9) — short from Main St north
+    rd(85,-3,8,4);             // z:-5..-1, x:81..89
+    // [7] Billboard + Arena NPC (-50,2) — from Main St, west of billboard
+    rd(-58,1.5,8,13);          // z:-5..8, x:-62..-54 (west of billboard x:-53..-47)
+    // [8] Guild House (0,-56) — route east of Paintball, then west
+    rd(16,-31.2,4,44.4);       // x=16, z:-53.4..-9, x:14..18 (reaches building north)
+    rd(8,-51,20,4);            // x:-2..18, z:-53..-49 (connects road 9 to Guild House)
+    // [9] PVP/Futsal (70,72) — long vertical from Main St north
+    rd(70,19,8,48);            // z:-5..43, x:66..74
+    // [10] Dewan Guild (30,-84) — SOUTH entrance at z=-76, x=26..34
+    rd(25,-72,14,4);           // x:18..32, z:-74..-70 (road in front of south entrance)
+    // ══ PLANE ══
+    var tex=new THREE.CanvasTexture(c);
+    tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter;
+    var mat=new THREE.MeshLambertMaterial({map:tex, polygonOffset:true, polygonOffsetFactor:2, polygonOffsetUnits:2});
+    var plane=new THREE.Mesh(new THREE.PlaneGeometry(WH*2,WH*2),mat);
+    plane.rotation.x=-Math.PI/2; plane.position.y=0.26;
+    plane.receiveShadow=true; smScene.add(plane);
+  })();
 
   // ══════════════════════════════════════════════════
   //  RUMPUT 3D CANTIK — InstancedMesh, statik
@@ -13211,11 +13704,13 @@ function smapBuild3D(){
   }
   function smZbTickFloats(){
     const now=performance.now();
-    const _activeScene=sm3._lastOnZI&&sm3.ziScene?sm3.ziScene:smScene;
     for(let i=_ftActive.length-1;i>=0;i--){
       const f=_ftActive[i];
       const el=(now-f.start)/1000;
-      if(el>1.2){_activeScene.remove(f.sp);const cv=f.sp.material.map.image;_ftPool.push({sp:f.sp,ctx:cv.getContext('2d'),tex:f.sp.material.map});_ftActive.splice(i,1);}
+      if(el>1.2){
+        if(f.sp.parent) f.sp.parent.remove(f.sp);
+        const cv=f.sp.material.map.image;_ftPool.push({sp:f.sp,ctx:cv.getContext('2d'),tex:f.sp.material.map});_ftActive.splice(i,1);
+      }
       else{f.sp.position.y=f.sy+el*2;f.sp.material.opacity=1-el/1.2;}
     }
   }
@@ -19493,15 +19988,6 @@ function smapBuild3D(){
     bR.position.set(PVP_CX+23+row*1.2,0.5+row*0.55,PVP_CZ); smScene.add(bR);
   }
 
-  // ── Laluan masuk gelanggang futsal ──
-  const pvpPathMat=new THREE.MeshLambertMaterial({color:0x546e7a});
-  const pvpPath=new THREE.Mesh(new THREE.BoxGeometry(13,0.18,46),pvpPathMat);
-  pvpPath.position.set(PVP_CX,0.09,PVP_CZ-46); smScene.add(pvpPath);
-  // Sempadan laluan putih
-  const pvpPathBorder1=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,46),pvpSignRimMat);
-  pvpPathBorder1.position.set(PVP_CX-6.9,0.15,PVP_CZ-46); smScene.add(pvpPathBorder1);
-  const pvpPathBorder2=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.3,46),pvpSignRimMat);
-  pvpPathBorder2.position.set(PVP_CX+6.9,0.15,PVP_CZ-46); smScene.add(pvpPathBorder2);
 
   // Simpan glow ring untuk animasi
   sm3.pvpRing=pvpRing;
@@ -21145,7 +21631,7 @@ function smapBuild3D(){
   // ══════════════════════════════════════════════════════════════════
   //  SISTEM BOT MEMANCING — belayar keliling laut Peta Sekolah
   // ══════════════════════════════════════════════════════════════════
-  var _smBoat={active:false,x:0,z:0,heading:0,speed:0,mesh:null,fishing:false};
+  var _smBoat={active:false,x:0,z:0,heading:0,speed:0,mesh:null,fishing:false,_rodAnim:'idle',_rodT:0};
   // Titik jeti (padan dengan makeJetty() di atas) — tempat naik/turun bot
   var SMAP_BOAT_DOCKS=[
     {x:0,z:-108},{x:240,z:6},{x:-240,z:6},{x:0,z:-216},
@@ -21182,12 +21668,22 @@ function smapBuild3D(){
       smZbFloatingText(smHeroState.x,3,smHeroState.z,'🚤 Pergi ke jeti dahulu utk naik bot!','#ffaa44');
       return;
     }
-    _smBoat.x=smHeroState.x; _smBoat.z=smHeroState.z;
     _smBoat.heading=smHeroState.facing||0; _smBoat.speed=0; _smBoat.fishing=false;
+    _smBoat._rodAnim='idle'; _smBoat._rodT=0;
     if(!_smBoat.mesh){ _smBoat.mesh=smMakeBoat(); }
     else if(_smBoat.mesh.parent!==smScene){ smScene.add(_smBoat.mesh); }
     _smBoat.mesh.visible=true;
+    if(_smBoat.mesh.userData.bobber) _smBoat.mesh.userData.bobber.visible=false;
     _smBoat.active=true;
+    var _dock=smNearestBoatDock(smHeroState.x,smHeroState.z);
+    if(_dock){
+      var _ddx=_dock.x,_ddz=_dock.z;
+      var _dlen=Math.sqrt(_ddx*_ddx+_ddz*_ddz)||1;
+      _smBoat.x=_dock.x+_ddx/_dlen*12;
+      _smBoat.z=_dock.z+_ddz/_dlen*12;
+    } else {
+      _smBoat.x=smHeroState.x; _smBoat.z=smHeroState.z;
+    }
     if(smHero) smHero.visible=false;
     smBoatUpdateHudBtn();
     smZbFloatingText(smHeroState.x,3,smHeroState.z,'⛵ Naik bot! Gerak utk belayar, 🎣 utk memancing','#66ccff');
@@ -21208,6 +21704,7 @@ function smapBuild3D(){
       smHeroState.z=dock.z+Math.sin(ang)*4;
     }
     if(smHero) smHero.visible=true;
+    if(_smBoat.mesh&&_smBoat.mesh.userData.bobber) _smBoat.mesh.userData.bobber.visible=false;
     smBoatUpdateHudBtn();
     const fishBtn=document.getElementById('smapBoatFishBtn');
     if(fishBtn) fishBtn.style.display='none';
@@ -21218,16 +21715,24 @@ function smapBuild3D(){
   function smBoatFish(){
     if(!_smBoat.active||_smBoat.fishing) return;
     _smBoat.fishing=true; _smBoat.speed=0;
-    smZbFloatingText(smHeroState.x,3,smHeroState.z,'🎣 Melabuh pancing...','#88ddff');
+    _smBoat._rodAnim='cast'; _smBoat._rodT=0;
+    // Show pelampung
+    if(_smBoat.mesh&&_smBoat.mesh.userData.bobber){
+      _smBoat.mesh.userData.bobber.visible=true;
+      _smBoat.mesh.userData.bobber._jiggle=0;
+    }
+    smZbFloatingText(_smBoat.x,3.5,_smBoat.z,'🎣 Melabuh pancing...','#88ddff');
     const fishBtn=document.getElementById('smapBoatFishBtn');
     if(fishBtn){ fishBtn.style.pointerEvents='none'; fishBtn.style.opacity='0.5'; }
     const waitMs=1200+Math.random()*1200;
     setTimeout(function(){
       if(!_smBoat.active){ // pemain dah turun bot semasa menunggu
         _smBoat.fishing=false;
+        _smBoat._rodAnim='idle'; _smBoat._rodT=0;
         if(fishBtn){ fishBtn.style.pointerEvents='all'; fishBtn.style.opacity='1'; }
         return;
       }
+      _smBoat._rodAnim='wait'; _smBoat._rodT=0;
       smZbFloatingText(_smBoat.x,3.5,_smBoat.z,'🐟 Ada renjatan! Jawab soalan!','#ffee66');
       smFishShowQ();
     }, waitMs);
@@ -21311,6 +21816,11 @@ function smapBuild3D(){
   function smFishFinish(){
     document.getElementById('smFishQ').classList.remove('show');
     smZb.qActive=false; smFishQuiz=null; _smBoat.fishing=false;
+    _smBoat._rodAnim='idle'; _smBoat._rodT=0;
+    // Hide pelampung
+    if(_smBoat.mesh&&_smBoat.mesh.userData.bobber){
+      _smBoat.mesh.userData.bobber.visible=false;
+    }
     const fishBtn=document.getElementById('smapBoatFishBtn');
     if(fishBtn){ fishBtn.style.pointerEvents='all'; fishBtn.style.opacity='1'; }
   }
@@ -21325,11 +21835,12 @@ function smapBuild3D(){
       document.getElementById('smFishQR').textContent='✅ Betul!';
       document.getElementById('smFishQR').style.color='#44ff44';
       if(typeof smZbSfx==='function') smZbSfx('correct');
+      _smBoat._rodAnim='pull'; _smBoat._rodT=0;
       setTimeout(function(){
         const wasActive=_smBoat.active;
         const bx=_smBoat.x,bz=_smBoat.z;
         smFishFinish();
-        if(!wasActive) return; // pemain dah turun bot semasa menjawab
+        if(!wasActive) return;
         const fishList=[
           {n:'🐟 Ikan Kembung',v:8},{n:'🐠 Ikan Puyu-Puyu',v:10},{n:'🦑 Sotong Kurita',v:14},
           {n:'🐡 Ikan Buntal',v:18},{n:'🦐 Udang Gergasi',v:16},{n:'🐋 Ikan Emas Legenda',v:40}
@@ -21339,11 +21850,13 @@ function smapBuild3D(){
         if(typeof shopAddPoints==='function') shopAddPoints(pick.v);
         smZbFloatingText(bx,3.5,bz,'✅ Betul! Dapat '+pick.n+'! +'+pick.v+' mata','#66ff99');
         if(typeof playSound==='function') playSound('coin');
+        _smBoat._rodAnim='idle'; _smBoat._rodT=0;
       },600);
     } else {
       document.getElementById('smFishQR').textContent='❌ Salah! Jawapan: '+quiz.a+' — Ikan terlepas!';
       document.getElementById('smFishQR').style.color='#ff4444';
       if(typeof smZbSfx==='function') smZbSfx('wrong');
+      _smBoat._rodAnim='release'; _smBoat._rodT=0;
       setTimeout(function(){
         const wasActive=_smBoat.active;
         const bx=_smBoat.x,bz=_smBoat.z;
@@ -21623,8 +22136,6 @@ function smapBuild3D(){
   function smGetFloorY(hx,hz){
     // Futsal / Arena PVP floor: cover keseluruhan padang futsal (FS_CX=70,FS_CZ=72,HW/HD=21)
     if(hx>=38&&hx<=92&&hz>=40&&hz<=94) return 0.3;
-    // Laluan merah ke arena: pvpPath y=0.09, ketebalan=0.18 → permukaan = 0.18
-    if(hx>=(PVP_CX-4.5)&&hx<=(PVP_CX+4.5)&&hz>=(PVP_CZ-31)&&hz<=(PVP_CZ-17)) return 0.18;
     return 0; // lantai biasa (ground permukaan = 0)
   }
 
@@ -21895,7 +22406,7 @@ function smapBuild3D(){
       vehEngineUpdate(speedFrac);
     }
 
-    // ── Bot memancing: mesh follow + goyang lembut atas air ──
+    // ── Bot memancing: mesh follow + goyang lembut atas air + rod anim ──
     if(_smBoat.mesh){
       const bob=Math.sin(ts*0.0022)*0.12;
       const roll=Math.sin(ts*0.0016)*0.045;
@@ -21903,6 +22414,63 @@ function smapBuild3D(){
       _smBoat.mesh.rotation.set(0,_smBoat.heading,roll);
       if(_smBoat.mesh.userData.flag) _smBoat.mesh.userData.flag.rotation.y=Math.sin(ts*0.006)*0.3;
       if(_smBoat.mesh.userData.sail) _smBoat.mesh.userData.sail.rotation.y=Math.sin(ts*0.003)*0.06;
+      // ── Fishing rod animation ──
+      var _rHand=_smBoat.mesh.userData.boatRodHand;
+      var _rod=_smBoat.mesh.userData.boatRod;
+      if(_rHand){
+        var ra=_smBoat._rodAnim;
+        _smBoat._rodT+=dt;
+        if(ra==='idle'){
+          _rHand.rotation.x=Math.sin(ts*0.0015)*0.08;
+          _rHand.rotation.z=-0.2+Math.sin(ts*0.002)*0.04;
+        } else if(ra==='cast'){
+          var ct=Math.min(_smBoat._rodT/0.5,1);
+          _rHand.rotation.x=-1.2*ct;
+          _rHand.rotation.z=-0.2;
+          if(ct>=1){_smBoat._rodAnim='wait';_smBoat._rodT=0;}
+        } else if(ra==='wait'){
+          _rHand.rotation.x=-1.2+Math.sin(ts*0.003)*0.06;
+          _rHand.rotation.z=-0.2+Math.sin(ts*0.004)*0.03;
+        } else if(ra==='pull'){
+          var pt=Math.min(_smBoat._rodT/0.6,1);
+          _rHand.rotation.x=-1.2-0.8*Math.sin(pt*Math.PI);
+          _rHand.rotation.z=-0.2+0.3*Math.sin(pt*Math.PI*2);
+        } else if(ra==='release'){
+          var rt=Math.min(_smBoat._rodT/0.4,1);
+          _rHand.rotation.x=-0.5+0.5*rt;
+          _rHand.rotation.z=-0.2;
+          if(rt>=1){_smBoat._rodAnim='idle';_smBoat._rodT=0;}
+        }
+        // Rod tip flex on pull
+        if(_rod&&_rod.userData.rodTip){
+          if(ra==='pull') _rod.userData.rodTip.rotation.x=-0.45+Math.sin(ts*0.025)*0.35;
+          else if(ra==='wait') _rod.userData.rodTip.rotation.x=-0.45+Math.sin(ts*0.008)*0.05;
+          else _rod.userData.rodTip.rotation.x=-0.45;
+        }
+      }
+      // ── Hero walk anim when sailing ──
+      var _bh=_smBoat.mesh.userData.boatHero;
+      if(_bh){
+        if(_smBoat.fishing){
+          // fishing pose — slight lean toward rod
+          _bh.rotation.z=Math.sin(ts*0.001)*0.03;
+          _bh.rotation.x=-0.15;
+        } else if(Math.abs(_smBoat.speed)>1){
+          _bh.rotation.z=Math.sin(ts*0.008)*0.05;
+          _bh.rotation.x=0;
+        } else {
+          _bh.rotation.z=0;
+          _bh.rotation.x=0;
+        }
+      }
+      // ── Pelampung (bobber) animasi atas air ──
+      var _bb=_smBoat.mesh.userData.bobber;
+      if(_bb&&_bb.visible){
+        var _bBob=Math.sin(ts*0.003)*0.04;
+        if(_smBoat._rodAnim==='pull') _bBob=Math.sin(ts*0.03)*0.12;
+        _bb.position.y=-0.15+_bBob;
+        _bb.rotation.z=Math.sin(ts*0.002)*0.1;
+      }
     }
 
     // ── Presence broadcast (OPTIMASI: throttled ~3s, skip jika tak bergerak) ──
@@ -22034,11 +22602,13 @@ function smapBuild3D(){
     // ── Flag wave ──
     if(sm3.flagCloth) sm3.flagCloth.rotation.z=Math.sin(ts*0.003)*0.08;
 
+    // ── Floating text tick (school map + zombie island) ──
+    smZbTickFloats();
+    smZbRevertFlashes();
+
     // ── Zombie combat cooldown tick ──
     if(_onZI){
       if(smZb.cooldown>0)smZb.cooldown-=dt;
-      smZbTickFloats();
-      smZbRevertFlashes(); // flash revert without setTimeout
       smZbUpdateHud();
       // ── Survival tick: hunger + thirst + stamina ──
       smZbHero.hunger=Math.max(0,smZbHero.hunger-dt*0.35);
@@ -26629,13 +27199,7 @@ function gsInviteStartListen(){
       // Jemputan basi (lebih 40s) — abaikan & bersihkan
       if(!d.ts||Date.now()-d.ts>40000){gsCleanInvite(me);return;}
       // Jangan ganggu jika sedang dalam permainan lain aktif
-      if(typeof _pbRunning!=='undefined'&&_pbRunning)return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp')return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive)return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running)return;
-      if(typeof _m!=='undefined'&&_m&&_m.phase==='game')return;
-      if(typeof sm3!=='undefined'&&sm3._ziActive)return;
-      if(GS.active)return; // sudah dalam kapal
+      if(_isAnyGameActive())return;
       _gsPendingFrom=d.from;
       _gsPendingRoom=d.roomId||null;
       var toast=document.getElementById('gsInviteToast');
@@ -26648,7 +27212,7 @@ function gsInviteStartListen(){
           _gsPendingFrom=null;_gsPendingRoom=null;
           gsCleanInvite(me);
         }
-      },25000);
+      },15000);
     });
   };
   if(window._fbOnValueFn){tryListen();}
@@ -35184,11 +35748,15 @@ function examNextQuestion(){
   if(!st.active) return;
   if(st.idx>=st.total){ examFinish(true); return; }
   st.idx++;
-  const bab=rand(1,10); // campuran rawak semua bab tingkatan pemain
-  const q=genQ(bab);
+  // ── Soalan mengikut tingkatan pelajar SAHAJA ──
+  const pickT=st.tingkatan;
+  const tBank=EXAM_BANKS[pickT]||EXAM_BANKS[1];
+  const bab=rand(1,tBank.length);
+  const chapter=tBank[bab-1];
+  const q=genQExam(bab,pickT);
   st.curQ=q;
   document.getElementById('examQuizProgress').textContent='SOALAN '+st.idx+' / '+st.total+'   ✅ '+st.correct;
-  document.getElementById('examQuizText').textContent='📖 TINGKATAN '+st.tingkatan+'  (Bab '+bab+')\n\n'+q.text;
+  document.getElementById('examQuizText').textContent='📖 TINGKATAN '+pickT+'  —  '+chapter.name+'  (Bab '+bab+'/'+tBank.length+')\n\n'+q.text;
   const optsEl=document.getElementById('examQuizOpts');
   optsEl.innerHTML='';
   const fb=document.getElementById('examQuizFeedback'); fb.textContent='';
@@ -37095,12 +37663,7 @@ function chessInviteStartListen(){
     _chessInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
     const d=snap.val();
     if(!d||d.status!=='pending') return;
-    // Block invitation when player is in any active game
-    if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-    if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-    if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-    if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
-    if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return;
+    if(_isAnyGameActive()) return;
     _chessPendingInviteFrom=d.from;
     _chessPendingRoomId=d.roomId||null;
     const toast=document.getElementById('chessInviteToast');
@@ -37112,7 +37675,7 @@ function chessInviteStartListen(){
       t.id='chessInviteToast';
       t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);border:3px solid #fff;border-radius:12px;padding:12px 20px;z-index:9999;font-family:Press Start 2P,monospace;text-align:center;max-width:320px;';
       t.innerHTML=`
-        <div style="font-size:clamp(6px,1.2vw,9px);color:#fff;margin-bottom:8px;">♔ Jemputan Catur!</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:clamp(6px,1.2vw,9px);color:#fff;">♔ Jemputan Catur!</span><span onclick="chessInviteDecline()" style="cursor:pointer;color:#888;font-size:14px;padding:2px 6px;">✕</span></div>
         <div style="font-size:clamp(7px,1.4vw,10px);color:#fff;margin-bottom:10px;" id="chessInviteFrom">${d.fromDisplay||d.from}</div>
         <div style="display:flex;gap:10px;justify-content:center;">
           <button onclick="chessInviteAccept()" style="background:#00aa44;color:#fff;border:2px solid #00ff66;padding:6px 16px;font-family:Press Start 2P,monospace;font-size:clamp(5px,1vw,7px);cursor:pointer;border-radius:6px;">✅ TERIMA</button>
@@ -37127,7 +37690,7 @@ function chessInviteStartListen(){
         document.getElementById('chessInviteToast')?.classList.remove('show');
         _chessPendingInviteFrom=null; _chessPendingRoomId=null;
       }
-    },25000);
+    },15000);
   });
   };
   if(window._fbOnValueModule){ tryListen(); }
@@ -37983,11 +38546,7 @@ function damInviteStartListen(){
       if(!d || d.status !== 'pending') return;
       // Invite basi (lebih 40s) — abaikan & bersihkan supaya tak muncul semula bila listener re-sync/reconnect
       if(!d.ts||Date.now()-d.ts>40000){ _damCleanInvite(me); return; }
-      if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
-      if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return;
+      if(_isAnyGameActive()) return;
       _damPendingInviteFrom = d.from;
       _damPendingRoomId = d.roomId || null;
       document.getElementById('damInviteFromName').textContent = (d.fromDisplay||d.from) + ' ';
@@ -37998,7 +38557,7 @@ function damInviteStartListen(){
           _damPendingInviteFrom = null; _damPendingRoomId = null;
           _damCleanInvite(me); // buang rekod basi supaya tak "hantu" muncul lagi
         }
-      }, 25000);
+      }, 15000);
     });
   };
   if(window._fbOnValueModule){ tryListen(); }
@@ -39053,10 +39612,7 @@ function pvpStartInviteListen(){
     _pvpInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
       if(!d||d.status!=='pending') return;
-      if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
+      if(_isAnyGameActive()) return;
       _pvpPendingFrom=d.from;
       _pvpPendingRoomId=d.roomId||null;
       document.getElementById('pvpInviteFromName').textContent=(d.fromDisplay||d.from)+' ';
@@ -39066,7 +39622,7 @@ function pvpStartInviteListen(){
           document.getElementById('pvpInviteToast').style.display='none';
           _pvpPendingFrom=null;
         }
-      },25000);
+      },15000);
     });
   };
   if(window._fbOnValueModule){ tryListen(); }
@@ -43201,6 +43757,24 @@ function gkEnd(){
   _gk=null;
 }
 
+// ── Universal game-active guard — all invite listeners use this ──
+function _isAnyGameActive(){
+  try{
+    if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return true;
+    if(typeof smapActive!=='undefined'&&smapActive&&typeof sm3!=='undefined'&&sm3._ziActive) return true;
+    if(typeof _gk!=='undefined'&&_gk&&_gk.running) return true;
+    if(typeof GS!=='undefined'&&GS&&GS.active) return true;
+    if(typeof _pbRunning!=='undefined'&&_pbRunning) return true;
+    if(typeof chessMode!=='undefined'&&chessMode==='pvp') return true;
+    if(typeof _pvpActive!=='undefined'&&_pvpActive) return true;
+    if(typeof _fss!=='undefined'&&_fss&&_fss.running) return true;
+    if(typeof mmoBattle!=='undefined'&&mmoBattle&&mmoBattle.active) return true;
+    if(typeof mmoDungeonActive!=='undefined'&&mmoDungeonActive) return true;
+    if(typeof _bossCoopActive!=='undefined'&&_bossCoopActive) return true;
+  }catch(e){}
+  return false;
+}
+
 // ═════════════════════════════════════════════════════════════════
 //  GO KART ONLINE — Room, Invite, Sync
 // ═════════════════════════════════════════════════════════════════
@@ -43232,13 +43806,7 @@ function gkInviteStartListen(){
       if(!d||d.status!=='pending') return;
       // Invite basi (lebih 40s) — abaikan & bersihkan supaya tak muncul semula bila listener re-sync/reconnect
       if(!d.ts||Date.now()-d.ts>40000){ _gkCleanInvite(me); return; }
-      if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
-      if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return;
-      if(typeof sm3!=='undefined'&&sm3._ziActive) return;
-      if(_gk&&_gk.running) return;
+      if(_isAnyGameActive()) return;
       _gkPendingFrom=d.from;
       _gkPendingRoom=d.roomId||null;
       document.getElementById('gkInviteFrom').textContent=(d.fromDisplay||d.from);
@@ -43252,7 +43820,7 @@ function gkInviteStartListen(){
           _gkPendingFrom=null;_gkPendingRoom=null;
           _gkCleanInvite(me); // buang rekod basi supaya tak "hantu" muncul lagi
         }
-      },25000);
+      },15000);
     });
   };
   if(window._fbOnValueModule){tryListen();}
@@ -44783,11 +45351,7 @@ function futsalInviteStartListen(){
       if(!d || d.status !== 'pending') return;
       // Invite basi (lebih 40s) — abaikan & bersihkan supaya tak muncul semula bila listener re-sync/reconnect
       if(!d.ts||Date.now()-d.ts>40000){ _fsCleanInvite(me); return; }
-      if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
-      if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return;
+      if(_isAnyGameActive()) return;
       _fsPendingInviteFrom = d.from;
       _fsPendingRoomId = d.roomId || null;
       document.getElementById('fsInviteFromName').textContent = (d.fromDisplay||d.from) + ' ';
@@ -44801,7 +45365,7 @@ function futsalInviteStartListen(){
           _fsPendingInviteFrom = null; _fsPendingRoomId = null;
           _fsCleanInvite(me); // buang rekod basi supaya tak "hantu" muncul lagi
         }
-      }, 25000);
+      }, 15000);
     });
   };
   if(window._fbOnValueModule){ tryListen(); }
@@ -44983,12 +45547,7 @@ function fol5vInviteStartListen(){
       if(!d||d.status!=='pending') return;
       // Invite basi (lebih 40s) — abaikan & bersihkan supaya tak muncul semula bila listener re-sync/reconnect
       if(!d.ts||Date.now()-d.ts>40000){ _fol5vCleanInvite(me); return; }
-      if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
-      if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return;
-      if(typeof sm3!=='undefined'&&sm3._ziActive) return;
+      if(_isAnyGameActive()) return;
       _fol5vPendingFrom = d.from;
       _fol5vPendingRoom = d.roomId || null;
       const toast = document.getElementById('fol5vInviteToast');
@@ -45001,7 +45560,7 @@ function fol5vInviteStartListen(){
           _fol5vPendingFrom=null; _fol5vPendingRoom=null;
           _fol5vCleanInvite(me); // buang rekod basi supaya tak "hantu" muncul lagi
         }
-      }, 25000);
+      }, 15000);
     });
   };
   if(window._fbOnValueModule){ tryListen(); }
@@ -48274,11 +48833,7 @@ window.mobaInviteStartListen = function(){
     _mobaInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
       if(!d||d.status!=='pending') return;
-      if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
-      if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return;
+      if(_isAnyGameActive()) return;
       _mobaInvitePendingFrom = d.from;
       _mobaInvitePendingRoomId = d.roomId||null;
       const toast = document.getElementById('mobaInviteToast');
@@ -48288,14 +48843,14 @@ window.mobaInviteStartListen = function(){
         if(toast.parentElement!==document.body) document.body.appendChild(toast);
         toast.classList.add('show');
       }
-      // Auto-dismiss after 25s
+      // Auto-dismiss after 15s
       setTimeout(()=>{
         if(_mobaInvitePendingFrom === d.from){
           const t=document.getElementById('mobaInviteToast');
           if(t) t.classList.remove('show');
           _mobaInvitePendingFrom = null;
         }
-      }, 25000);
+      }, 15000);
     });
   };
   if(window._fbOnValueModule){ tryListen(); }
@@ -51010,6 +51565,7 @@ setInterval(_mobaProxPatch, 50); // poll every 50ms when smap active
 
 <!-- MOBA Invite Toast (incoming invite) -->
 <div id="mobaInviteToast">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-weight:bold;">MOBA</span><span onclick="mobaInviteDecline()" style="cursor:pointer;color:#888;font-size:14px;padding:2px 6px;">✕</span></div>
   <div id="mobaInviteToastMsg">
     <strong id="mobaInviteFrom">???</strong>
     menjemput kamu ke Arena MOBA!
@@ -55591,6 +56147,7 @@ let _pbJoyX=0, _pbJoyY=0, _pbJoyActive=false, _pbJoyPtrId=null;
 let _pbScoped=false, _pbCrosshairEl=null, _pbFPGun=null, _pbFPGunQ=null, _pbQEl=null, _pbQActive=false;
 let _pbLastFrameTime=0;
 let _pbHeadless=false;
+let _pbMouseTrack=null;
 let _pbW=0, _pbH=0; // tracked dimensions for resize handling
 let _pbLookTouchId=null, _pbLookLastX=0, _pbLookLastY=0; // mobile touch-look
 let _pbResizeFn=null; // resize handler reference for cleanup
@@ -55840,11 +56397,7 @@ function pbInviteStartListen(){
     _pbInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
       if(!d||d.status!=='pending') return;
-      if(typeof _pbRunning!=='undefined'&&_pbRunning) return;
-      if(typeof chessMode!=='undefined'&&chessMode==='pvp') return;
-      if(typeof _pvpActive!=='undefined'&&_pvpActive) return;
-      if(typeof window._fss!=='undefined'&&window._fss&&window._fss.running) return;
-      if(typeof _m!=='undefined'&&_m&&_m.phase==='game') return;
+      if(_isAnyGameActive()) return;
       // Ignore stale 'pending' events from invites already accepted/declined
       if(d.from && d.from===_pbProcessedInviteFrom && Date.now()-_pbProcessedInviteTs<60000) return;
       _pbPendingInviteFrom=d.from;
@@ -55859,7 +56412,7 @@ function pbInviteStartListen(){
         t.id='pbInviteToast';
         t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.9);border:3px solid #ffd700;border-radius:12px;padding:12px 20px;z-index:9999;font-family:Press Start 2P,monospace;text-align:center;max-width:320px;';
         t.innerHTML=`
-          <div style="font-size:clamp(6px,1.2vw,9px);color:#ffd700;margin-bottom:8px;">🔫 Jemputan Paintball!</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:clamp(6px,1.2vw,9px);color:#ffd700;">🔫 Jemputan Paintball!</span><span onclick="pbInviteDecline()" style="cursor:pointer;color:#888;font-size:14px;padding:2px 6px;">✕</span></div>
           <div style="font-size:clamp(7px,1.4vw,10px);color:#fff;margin-bottom:10px;" id="pbInviteFrom">${d.fromDisplay||d.from}</div>
           <div style="display:flex;gap:10px;justify-content:center;">
             <button onclick="pbInviteAccept()" style="background:#00aa44;color:#fff;border:2px solid #00ff66;padding:6px 16px;font-family:Press Start 2P,monospace;font-size:clamp(5px,1vw,7px);cursor:pointer;border-radius:6px;">✅ TERIMA</button>
@@ -55874,7 +56427,7 @@ function pbInviteStartListen(){
           if(t) t.remove();
           _pbPendingInviteFrom=null; _pbPendingRoomId=null;
         }
-      },25000);
+      },15000);
     });
   };
   if(window._fbOnValueModule) tryListen();
@@ -56313,6 +56866,7 @@ function pbCleanupAll(){
   const qe=document.getElementById('pbKillQ'); if(qe) qe.style.display='none';
   pbStopMusic();
   _pbJoyActive=false; _pbJoyX=0; _pbJoyY=0; _pbJoyPtrId=null;
+  _pbMouseTrack=null;
   if(_pbAnimId){ cancelAnimationFrame(_pbAnimId); _pbAnimId=null; }
   // Remove paintball key & mouse listeners
   if(window._pbKeyHandlers){
@@ -56378,7 +56932,7 @@ function paintballInit(){
   // ── Crosshair ──
   _pbCrosshairEl=document.createElement('div');
   _pbCrosshairEl.id='pbCrosshairCS';
-  _pbCrosshairEl.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none;z-index:21;';
+  _pbCrosshairEl.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none;z-index:21;transition:none;';
   // CS-style crosshair: 4 lines forming a + with a gap in center
   _pbCrosshairEl.innerHTML='<div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:7px;background:rgba(0,255,0,0.85);border-radius:1px;"></div>'+
     '<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:2px;height:7px;background:rgba(0,255,0,0.85);border-radius:1px;"></div>'+
@@ -57208,24 +57762,30 @@ function paintballInit(){
   }
   function _pbMouseMove(e){
     if(!_pbRunning||!_pbHero||!_pbMyPlayer||!_pbMyPlayer.alive) return;
-    if(document.pointerLockElement!==_pbOvEl) return;
-    _pbHeroRotY-=e.movementX*0.005;
+    if(e.target.closest('#pbShootBtn,#pbScopeBtn,#pbJoy,#pbHud,#pbScoreboard,#pbEndOverlay')) return;
+    // Move crosshair to mouse position
+    if(_pbCrosshairEl){
+      _pbCrosshairEl.style.left=e.clientX+'px';
+      _pbCrosshairEl.style.top=e.clientY+'px';
+    }
+    if(_pbMouseTrack===null){ _pbMouseTrack={x:e.clientX,y:e.clientY}; return; }
+    const dx=e.clientX-_pbMouseTrack.x, dy=e.clientY-_pbMouseTrack.y;
+    _pbMouseTrack.x=e.clientX; _pbMouseTrack.y=e.clientY;
+    if(Math.abs(dx)<1&&Math.abs(dy)<1) return;
+    _pbHeroRotY-=dx*0.004;
     _pbHero.rotation.y=_pbHeroRotY;
-    _pbAimPitch-=e.movementY*0.005;
+    _pbAimPitch-=dy*0.004;
     if(_pbAimPitch>1.2)_pbAimPitch=1.2;
     if(_pbAimPitch<-1.2)_pbAimPitch=-1.2;
   }
   function _pbMouseDown(e){
     if(e.target.closest('#pbShootBtn,#pbScopeBtn,#pbJoy')) return;
+    if(_pbMouseTrack===null) _pbMouseTrack={x:e.clientX,y:e.clientY};
     if(e.button===0) pbShoot();
     else if(e.button===2) pbToggleScope();
   }
   function _pbCtx(e){ e.preventDefault(); }
-  function _pbLockClick(){
-    if(!_pbRunning) return;
-    if(document.pointerLockElement!==_pbOvEl)
-      _pbOvEl.requestPointerLock();
-  }
+  function _pbLockClick(){}
   document.addEventListener('keydown',_pbKeyDown);
   document.addEventListener('keyup',_pbKeyUp);
   document.addEventListener('mousemove',_pbMouseMove);
@@ -57236,6 +57796,7 @@ function paintballInit(){
 
   _pbLastShot=0;
   _pbAimPitch=0; // sudut tegak scope (atas/bawah)
+  _pbMouseTrack=null;
   _pbTimeLeft=500;
   _pbTeamScore=[0,0];
   _pbTeamKills=[0,0];
@@ -57760,8 +58321,14 @@ function pbShoot(){
   const bMat=new THREE.MeshBasicMaterial({color:0xff8800});
   const bullet=new THREE.Mesh(new THREE.SphereGeometry(0.10,6,6),bMat);
 
-  // ▸ Crosshair aim target via raycast (camera → crosshair → world)
-  const camDir=new THREE.Vector3(0,0,-1).applyQuaternion(_pbCamera.quaternion);
+  // ▸ Crosshair aim target via raycast (camera → crosshair screen pos → world)
+  var _aimVec=new THREE.Vector2();
+  if(_pbMouseTrack){
+    _aimVec.set((_pbMouseTrack.x/window.innerWidth)*2-1, -(_pbMouseTrack.y/window.innerHeight)*2+1);
+  }
+  var _aimRC=new THREE.Raycaster();
+  _aimRC.setFromCamera(_aimVec,_pbCamera);
+  const camDir=_aimRC.ray.direction.clone();
   const rayOrigin=_pbCamera.position.clone();
   const maxRange=100;
   let hitDist=maxRange;
@@ -64032,8 +64599,8 @@ function mmorpgOpenWorld(){
       const len=Math.sqrt(dx*dx+dz*dz);
       if(len<0.5)continue;
       const r=new THREE.Mesh(new THREE.BoxGeometry(len+0.3,0.06,width),
-        new THREE.MeshLambertMaterial({color:0xbbaa88}));
-      r.position.set((pts[i].x+pts[i+1].x)/2,-0.05,(pts[i].z+pts[i+1].z)/2);
+        new THREE.MeshLambertMaterial({color:0xbbaa88, polygonOffset:true, polygonOffsetFactor:1, polygonOffsetUnits:1}));
+      r.position.set((pts[i].x+pts[i+1].x)/2,0.12,(pts[i].z+pts[i+1].z)/2);
       r.rotation.y=-Math.atan2(dz,dx);
       terrainGroup.add(r);
     }
@@ -69913,7 +70480,7 @@ function bossInviteStartListen(){
     _bossInviteListener=window._fbOnValueModule.onValue(ref,(snap)=>{
       const d=snap.val();
       if(!d||d.status!=='pending')return;
-      if(mmoBattle.active||mmoDungeonActive||_bossCoopActive||_pvpActive||(typeof _m!=='undefined'&&_m&&_m.phase==='game')){
+      if(_isAnyGameActive()){
         try{window._fbSetFn(ref,{status:'declined',from:d.from,fromDisplay:d.fromDisplay,bossId:d.bossId,bossName:d.bossName,ts:Date.now()});}catch(e){}
         return;
       }
@@ -69925,11 +70492,12 @@ function bossInviteStartListen(){
         document.body.appendChild(toast);
       }
       toast.style.display='block';
-      toast.innerHTML='<div style="color:#ff8844;font-size:13px;margin-bottom:8px;">⚔️ BOSS INVITE</div>'+
+      toast.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="color:#ff8844;font-size:13px;">⚔️ BOSS INVITE</span><span id="bossToastClose" style="cursor:pointer;color:#888;font-size:16px;padding:2px 6px;">✕</span></div>'+
         '<div style="color:#ddd;font-size:11px;margin-bottom:6px;"><strong>'+(d.fromDisplay||d.from)+'</strong> ajak kamu lawan <span style="color:#ffaa44;">'+(d.bossName||'Boss')+'</span>!</div>'+
         '<div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">'+
         '<button id="bossToastAccept" style="padding:6px 18px;border:1px solid #44dd44;border-radius:6px;background:#251;color:#44dd44;font:bold 11px monospace;cursor:pointer;">✔ TERIMA</button>'+
         '<button id="bossToastDecline" style="padding:6px 18px;border:1px solid #ff4444;border-radius:6px;background:#522;color:#ff4444;font:bold 11px monospace;cursor:pointer;">✖ TOLAK</button></div>';
+      document.getElementById('bossToastClose').onclick=function(){toast.style.display='none';};
       document.getElementById('bossToastAccept').onclick=function(){
         toast.style.display='none';
         bossInviteAccept(d);
@@ -69938,7 +70506,7 @@ function bossInviteStartListen(){
         toast.style.display='none';
         try{window._fbSetFn(ref,{status:'declined',from:d.from,fromDisplay:d.fromDisplay,bossId:d.bossId,bossName:d.bossName,ts:Date.now()});}catch(e){}
       };
-      setTimeout(()=>{if(toast.style.display!=='none')toast.style.display='none';},25000);
+      setTimeout(()=>{if(toast.style.display!=='none')toast.style.display='none';},15000);
     });
     }catch(e){}
   };
@@ -71869,32 +72437,33 @@ function pvpInviteStartListen(){
       _pvpInviteListener=window._fbOnValueModule.onValue(ref,(snap)=>{
         const d=snap.val();
         if(!d||d.status!=='pending')return;
-      if(mmoBattle.active||mmoDungeonActive||_bossCoopActive||_pvpActive||(typeof _m!=='undefined'&&_m&&_m.phase==='game')){
+        if(_isAnyGameActive()){
           try{window._fbSetFn(ref,{status:'declined',from:d.from,fromDisplay:d.fromDisplay,ts:Date.now()});}catch(e){}
           return;
         }
-        let toast=document.getElementById('bossInviteToast');
+        let toast=document.getElementById('pvpInviteToast2');
         if(!toast){
           toast=document.createElement('div');
-          toast.id='bossInviteToast';
+          toast.id='pvpInviteToast2';
           toast.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:rgba(10,0,20,0.95);border:2px solid #ff6644;border-radius:12px;padding:16px 24px;text-align:center;font-family:monospace;display:none;';
           document.body.appendChild(toast);
         }
         toast.style.display='block';
-        toast.innerHTML='<div style="color:#ff6644;font-size:13px;margin-bottom:8px;">⚔ CABARAN PVP</div>'+
+        toast.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="color:#ff6644;font-size:13px;">⚔ CABARAN PVP</span><span id="pvpToast2Close" style="cursor:pointer;color:#888;font-size:16px;padding:2px 6px;">✕</span></div>'+
           '<div style="color:#ddd;font-size:11px;margin-bottom:6px;"><strong>'+(d.fromDisplay||d.from)+'</strong> mencabar anda!</div>'+
           '<div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">'+
-          '<button id="pvpToastAccept" style="padding:6px 18px;border:1px solid #44dd44;border-radius:6px;background:#251;color:#44dd44;font:bold 11px monospace;cursor:pointer;">✔ TERIMA</button>'+
-          '<button id="pvpToastDecline" style="padding:6px 18px;border:1px solid #ff4444;border-radius:6px;background:#522;color:#ff4444;font:bold 11px monospace;cursor:pointer;">✖ TOLAK</button></div>';
-        document.getElementById('pvpToastAccept').onclick=function(){
+          '<button id="pvpToast2Accept" style="padding:6px 18px;border:1px solid #44dd44;border-radius:6px;background:#251;color:#44dd44;font:bold 11px monospace;cursor:pointer;">✔ TERIMA</button>'+
+          '<button id="pvpToast2Decline" style="padding:6px 18px;border:1px solid #ff4444;border-radius:6px;background:#522;color:#ff4444;font:bold 11px monospace;cursor:pointer;">✖ TOLAK</button></div>';
+        document.getElementById('pvpToast2Close').onclick=function(){toast.style.display='none';};
+        document.getElementById('pvpToast2Accept').onclick=function(){
           toast.style.display='none';
           pvpInviteAccept(d);
         };
-        document.getElementById('pvpToastDecline').onclick=function(){
+        document.getElementById('pvpToast2Decline').onclick=function(){
           toast.style.display='none';
           try{window._fbSetFn(ref,{status:'declined',from:d.from,fromDisplay:d.fromDisplay,ts:Date.now()});}catch(e){}
         };
-        setTimeout(()=>{if(toast.style.display!=='none')toast.style.display='none';},25000);
+        setTimeout(()=>{if(toast.style.display!=='none')toast.style.display='none';},15000);
       });
     }catch(e){}
   };

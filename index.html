@@ -27159,6 +27159,7 @@ function gsInviteStartListen(){
   var me=gsMyKey();
   var invRef=window._fbRefFn(window._fbPresenceDb,'gs_invites/'+me);
   var tryListen=function(){
+    if(!window._fbReady)return;
     if(!window._fbOnValueFn)return;
     if(_gsInviteListener)return;
     _gsInviteListener=window._fbOnValueFn(invRef,function(snap){
@@ -27183,9 +27184,9 @@ function gsInviteStartListen(){
       },15000);
     });
   };
-  if(window._fbOnValueFn){tryListen();}
+  if(window._fbReady){tryListen();}
   else{
-    var poll=setInterval(function(){if(window._fbOnValueFn){tryListen();clearInterval(poll);}},500);
+    var poll=setInterval(function(){if(window._fbReady){tryListen();clearInterval(poll);}},500);
   }
 }
 
@@ -37646,6 +37647,7 @@ function chessInviteStartListen(){
   const invRef=window._fbRefFn(window._fbPresenceDb,'chess_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     if(_chessInviteListener) return;
     _chessInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
     const d=snap.val();
@@ -37680,10 +37682,10 @@ function chessInviteStartListen(){
     },15000);
   });
   };
-  if(window._fbOnValueModule){ tryListen(); }
+  if(window._fbReady){ tryListen(); }
   else {
     const poll = setInterval(()=>{
-      if(window._fbOnValueModule){ tryListen(); clearInterval(poll); }
+      if(window._fbReady){ tryListen(); clearInterval(poll); }
     },500);
   }
 }
@@ -38527,6 +38529,7 @@ function damInviteStartListen(){
   const invRef = window._fbRefFn(window._fbPresenceDb,'dam_invites/'+me);
   const tryListen = ()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     if(_damInviteListener) return;
     _damInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
@@ -38547,10 +38550,10 @@ function damInviteStartListen(){
       }, 15000);
     });
   };
-  if(window._fbOnValueModule){ tryListen(); }
+  if(window._fbReady){ tryListen(); }
   else {
     const poll = setInterval(()=>{
-      if(window._fbOnValueModule){ tryListen(); clearInterval(poll); }
+      if(window._fbReady){ tryListen(); clearInterval(poll); }
     }, 500);
   }
 }
@@ -39596,6 +39599,7 @@ function pvpStartInviteListen(){
   const invRef=window._fbRefFn(window._fbPresenceDb,'pvp_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     _pvpInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
       if(!d||d.status!=='pending') return;
@@ -39612,8 +39616,8 @@ function pvpStartInviteListen(){
       },15000);
     });
   };
-  if(window._fbOnValueModule){ tryListen(); }
-  else{ const p=setInterval(()=>{ if(window._fbOnValueModule){ tryListen(); clearInterval(p); } },500); }
+  if(window._fbReady){ tryListen(); }
+  else{ const p=setInterval(()=>{ if(window._fbReady){ tryListen(); clearInterval(p); } },500); }
 }
 
 // Also start listening globally once logged in
@@ -43787,6 +43791,7 @@ function gkInviteStartListen(){
   const invRef=window._fbRefFn(window._fbPresenceDb,'gk_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     if(_gkInviteListener) return;
     _gkInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
@@ -43810,8 +43815,8 @@ function gkInviteStartListen(){
       },15000);
     });
   };
-  if(window._fbOnValueModule){tryListen();}
-  else{const p=setInterval(()=>{if(window._fbOnValueModule){tryListen();clearInterval(p);}},500);}
+  if(window._fbReady){tryListen();}
+  else{const p=setInterval(()=>{if(window._fbReady){tryListen();clearInterval(p);}},500);}
 }
 
 function gkInviteAccept(){
@@ -45332,6 +45337,7 @@ function futsalInviteStartListen(){
   const invRef = window._fbRefFn(window._fbPresenceDb,'futsal_invites/'+me);
   const tryListen = ()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     if(_fsInviteListener) return;
     _fsInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
@@ -45355,10 +45361,10 @@ function futsalInviteStartListen(){
       }, 15000);
     });
   };
-  if(window._fbOnValueModule){ tryListen(); }
+  if(window._fbReady){ tryListen(); }
   else {
     const poll = setInterval(()=>{
-      if(window._fbOnValueModule){ tryListen(); clearInterval(poll); }
+      if(window._fbReady){ tryListen(); clearInterval(poll); }
     }, 500);
   }
 }
@@ -45528,6 +45534,7 @@ function fol5vInviteStartListen(){
   const invRef = window._fbRefFn(window._fbPresenceDb,'fol5v_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     if(_fol5vInviteListener) return;
     _fol5vInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
@@ -45550,9 +45557,9 @@ function fol5vInviteStartListen(){
       }, 15000);
     });
   };
-  if(window._fbOnValueModule){ tryListen(); }
+  if(window._fbReady){ tryListen(); }
   else{
-    const poll=setInterval(()=>{ if(window._fbOnValueModule){ tryListen(); clearInterval(poll); } },500);
+    const poll=setInterval(()=>{ if(window._fbReady){ tryListen(); clearInterval(poll); } },500);
   }
 }
 
@@ -48816,6 +48823,7 @@ window.mobaInviteStartListen = function(){
   const invRef = window._fbRefFn(window._fbPresenceDb, 'moba_invites/'+me);
   const tryListen = ()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     if(_mobaInviteListener) return;
     _mobaInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
@@ -48840,10 +48848,12 @@ window.mobaInviteStartListen = function(){
       }, 15000);
     });
   };
-  if(window._fbOnValueModule){ tryListen(); }
+  if(window._fbReady){ tryListen(); }
   else{
-    const poll=setInterval(()=>{ if(window._fbOnValueModule){ tryListen(); clearInterval(poll); } },500);
+    const poll=setInterval(()=>{ if(window._fbReady){ tryListen(); clearInterval(poll); } },500);
   }
+}
+
 };
 
 window.mobaInviteAccept = function(){
@@ -56394,6 +56404,7 @@ function pbInviteStartListen(){
   const invRef=window._fbRefFn(window._fbPresenceDb,'pb_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
+    if(!window._fbReady) return;
     if(_pbInviteListener) return;
     _pbInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
@@ -56431,10 +56442,10 @@ function pbInviteStartListen(){
       },15000);
     });
   };
-  if(window._fbOnValueModule) tryListen();
+  if(window._fbReady) tryListen();
   else{
     const poll=setInterval(()=>{
-      if(window._fbOnValueModule){tryListen();clearInterval(poll);}
+      if(window._fbReady){tryListen();clearInterval(poll);}
     },500);
   }
 }
@@ -70483,6 +70494,7 @@ function bossInviteStartListen(){
   if(_bossInviteListener)return;
   const tryListen=()=>{
     if(!window._fbOnValueModule)return;
+    if(!window._fbReady)return;
     if(_bossInviteListener)return;
     try{
     const ref=window._fbRefFn(window._fbPresenceDb,'boss_invites/'+me);
@@ -70519,8 +70531,8 @@ function bossInviteStartListen(){
     });
     }catch(e){}
   };
-  if(window._fbOnValueModule)tryListen();
-  else{const p=setInterval(()=>{if(window._fbOnValueModule){tryListen();clearInterval(p);}},500);}
+  if(window._fbReady)tryListen();
+  else{const p=setInterval(()=>{if(window._fbReady){tryListen();clearInterval(p);}},500);}
 }
 
 // ── Co-op Boss Battle System ──
@@ -72440,6 +72452,7 @@ function pvpInviteStartListen(){
   if(_pvpInviteListener)return;
   const tryListen=()=>{
     if(!window._fbOnValueModule)return;
+    if(!window._fbReady)return;
     if(_pvpInviteListener)return;
     try{
       const ref=window._fbRefFn(window._fbPresenceDb,'pvp_invites/'+me);
@@ -72476,8 +72489,8 @@ function pvpInviteStartListen(){
       });
     }catch(e){}
   };
-  if(window._fbOnValueModule)tryListen();
-  else{const p=setInterval(()=>{if(window._fbOnValueModule){tryListen();clearInterval(p);}},500);}
+  if(window._fbReady)tryListen();
+  else{const p=setInterval(()=>{if(window._fbReady){tryListen();clearInterval(p);}},500);}
 }
 
 // ── MMORPG Data Save/Load (Firebase + localStorage) ──

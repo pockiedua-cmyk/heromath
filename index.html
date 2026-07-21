@@ -1684,6 +1684,7 @@ window.addEventListener('error', function(e){
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getDatabase, ref, push, set, remove, get, onValue, onChildAdded, query, limitToLast, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   // ── GANTI nilai di bawah dengan Firebase project kamu ──
   const firebaseConfig = {
@@ -1699,6 +1700,17 @@ window.addEventListener('error', function(e){
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
+  const auth = getAuth(app);
+
+  // ── Sign in secara anonymous SEBELUM apa-apa baca/tulis Firebase ──
+  // Ini perlu supaya Security Rules 'auth != null' berfungsi.
+  try {
+    await signInAnonymously(auth);
+  } catch (authErr) {
+    console.error('[Firebase] Anonymous sign-in gagal:', authErr.message);
+    window._fbAuthError = true;
+  }
+
   const worldRef = ref(db, 'worldchat');
 
   // Expose to global scope for use in non-module code
@@ -1783,38 +1795,24 @@ window.addEventListener('error', function(e){
     window._fbPresenceCacheMMO = snapshot.val() || {};
   });
 
-  // Listen for new messages and update UI
-  const recentQ = query(worldRef, limitToLast(50)); // OPTIMASI: 50 mesej terkini cukup
-  let _fbFirstLoad = true;
-  let _fbLocalMsgs = []; // buffer messages received from Firebase
+  // Listen for messages using onValue (fires with COMPLETE dataset on every change)
+  // More reliable than onChildAdded for cross-device sync — eliminates stale buffer drift
+  const recentQ = query(worldRef, limitToLast(50));
+  let _fbLocalMsgs = [];
 
-  onChildAdded(recentQ, (snapshot) => {
-    const m = snapshot.val();
-    if (!m) return;
-    // Avoid duplicates — store by key
-    const key = snapshot.key;
-    if (_fbLocalMsgs.find(x => x._key === key)) return;
-    _fbLocalMsgs.push({ ...m, _key: key });
-    // Keep last 200
-    if (_fbLocalMsgs.length > 100) _fbLocalMsgs = _fbLocalMsgs.slice(-100); // OPTIMASI: buffer 100 cukup
+  onValue(recentQ, (snapshot) => {
+    const data = snapshot.val() || {};
+    _fbLocalMsgs = Object.entries(data).map(([key, val]) => ({ ...val, _key: key }));
+    _fbLocalMsgs.sort((a, b) => (a._key > b._key ? 1 : a._key < b._key ? -1 : 0));
+    if (_fbLocalMsgs.length > 100) _fbLocalMsgs = _fbLocalMsgs.slice(-100);
 
-    if (!_fbFirstLoad) {
-      // New message arrived — update UI if visible
-      if (typeof smapRenderWorldMsgs === 'function') smapRenderWorldMsgs();
-      // Badge if tab not active
-      const badge = document.getElementById('worldUnreadBadge');
-      if (badge && window._smapWorldTabActive === false) {
-        badge.style.display = 'inline-block';
-        badge.textContent = (parseInt(badge.textContent) || 0) + 1;
-      }
+    if (typeof smapRenderWorldMsgs === 'function') smapRenderWorldMsgs();
+    const badge = document.getElementById('worldUnreadBadge');
+    if (badge && window._smapWorldTabActive === false) {
+      badge.style.display = 'inline-block';
+      badge.textContent = (parseInt(badge.textContent) || 0) + 1;
     }
   });
-
-  // After initial load, mark done
-  setTimeout(() => {
-    _fbFirstLoad = false;
-    if (typeof smapRenderWorldMsgs === 'function') smapRenderWorldMsgs();
-  }, 1500);
 
   // Expose msgs buffer + send function
   window._fbGetWorldMsgs = () => _fbLocalMsgs;
@@ -1822,33 +1820,35 @@ window.addEventListener('error', function(e){
     if (!window._fbReady) return false;
     const t = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
     const msgObj = { who, text, time: t, ts: Date.now() };
-    let newRef;
-    try{
-      newRef = push(worldRef, msgObj);
-    }catch(e){
-      return false; // gagal terus hantar — biar smapWorldSend() guna fallback localStorage
-    }
-    // FIX: papar mesej sendiri SERTA-MERTA (optimistic echo) — jangan tunggu
-    // Firebase round-trip (onChildAdded) sebab kalau baca-balik lambat/gagal,
-    // mesej sendiri tak pernah keluar walaupun berjaya dihantar.
-    const key = newRef && newRef.key;
-    if (key && !_fbLocalMsgs.find(x => x._key === key)) {
-      _fbLocalMsgs.push({ ...msgObj, _key: key });
-      if (_fbLocalMsgs.length > 100) _fbLocalMsgs = _fbLocalMsgs.slice(-100);
+    // Optimistic echo — show message INSTANTLY on sender's screen
+    const tempKey = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    _fbLocalMsgs.push({ ...msgObj, _key: tempKey });
+    if (_fbLocalMsgs.length > 100) _fbLocalMsgs = _fbLocalMsgs.slice(-100);
+    if (typeof smapRenderWorldMsgs === 'function') smapRenderWorldMsgs();
+    // Write to Firebase — onValue will fire and REPLACE temp with real key
+    try {
+      const newRef = push(worldRef, msgObj);
+      if (newRef && newRef.catch) {
+        newRef.catch(err => {
+          console.warn('World chat send FAILED:', err);
+          // Remove the optimistic echo on failure
+          _fbLocalMsgs = _fbLocalMsgs.filter(m => m._key !== tempKey);
+          if (typeof smapRenderWorldMsgs === 'function') smapRenderWorldMsgs();
+          const el = document.getElementById('smapWorldMsgs');
+          if (el) el.insertAdjacentHTML('beforeend',
+            '<div class="smap-msg sys">⚠ Mesej gagal hantar — semak sambungan internet.</div>');
+        });
+      }
+    } catch(e) {
+      console.warn('World chat push error:', e);
+      _fbLocalMsgs = _fbLocalMsgs.filter(m => m._key !== tempKey);
       if (typeof smapRenderWorldMsgs === 'function') smapRenderWorldMsgs();
-    }
-    // Jika write sebenar ke Firebase gagal (contoh: permission denied), maklumkan pengguna
-    if(newRef && newRef.catch){
-      newRef.catch(err=>{
-        console.warn('World chat send failed:', err);
-        const el = document.getElementById('smapWorldMsgs');
-        if(el) el.innerHTML += '<div class="smap-msg sys">⚠ Mesej mungkin tidak sampai ke server (semak sambungan internet).</div>';
-      });
+      return false;
     }
     return true;
   };
 
-  // ── Zone Chat — Firebase-backed per-zone chat (cross-device sync) ──
+  // ── Zone Chat — Firebase-backed per-zone chat (onValue for cross-device sync) ──
   const _fbZoneChatBuffer = {};       // {zoneId: [msgObj, ...]}
   const _fbZoneChatListeners = {};    // {zoneId: true} — track active listeners
   window._fbZoneChatBuffer = _fbZoneChatBuffer;
@@ -1858,62 +1858,30 @@ window.addEventListener('error', function(e){
     _fbZoneChatListeners[zoneId] = true;
     const zRef = ref(db, 'zonechat/' + zoneId);
     const zQ = query(zRef, limitToLast(50));
-    let _zFirstLoad = true;
     if (!_fbZoneChatBuffer[zoneId]) _fbZoneChatBuffer[zoneId] = [];
 
-    onChildAdded(zQ, (snapshot) => {
-      const m = snapshot.val();
-      if (!m) return;
-      const key = snapshot.key;
-      if (_fbZoneChatBuffer[zoneId].find(x => x._zKey === key)) return;
-      _fbZoneChatBuffer[zoneId].push({ ...m, _zKey: key });
-      if (_fbZoneChatBuffer[zoneId].length > 100) _fbZoneChatBuffer[zoneId] = _fbZoneChatBuffer[zoneId].slice(-100);
+    onValue(zQ, (snapshot) => {
+      const data = snapshot.val() || {};
+      _fbZoneChatBuffer[zoneId] = Object.entries(data).map(([key, val]) => ({ ...val, _zKey: key }));
+      _fbZoneChatBuffer[zoneId].sort((a, b) => (a._zKey > b._zKey ? 1 : a._zKey < b._zKey ? -1 : 0));
 
-      // Merge into localStorage so smapRenderMsgs picks it up
-      if (typeof smapLoadChat === 'function' && typeof smapSaveChat === 'function') {
-        const local = smapLoadChat(zoneId);
-        if (!local.find(x => x._zKey === key)) {
-          local.push({ who: m.who, text: m.text, time: m.time, _zKey: key });
-          smapSaveChat(zoneId, local);
-        }
-      }
-
-      if (!_zFirstLoad) {
-        if (typeof smapRenderMsgs === 'function' && zoneId === smapCurrentZone) {
-          smapRenderMsgs();
-        }
+      if (typeof smapRenderMsgs === 'function' && zoneId === smapCurrentZone) {
+        smapRenderMsgs();
       }
     });
-
-    // After initial load, allow render triggers
-    setTimeout(() => { _zFirstLoad = false; }, 1500);
   };
 
   window._fbSendZoneChat = (zone, who, text) => {
     if (!window._fbReady || !zone) return false;
     const t = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
     const msgObj = { who, text, time: t, ts: Date.now() };
-    let newRef;
-    try {
-      newRef = push(ref(db, 'zonechat/' + zone), msgObj);
-    } catch(e) {
-      return false;
-    }
-    // Optimistic echo — save to localStorage immediately
-    const key = newRef && newRef.key;
-    if (typeof smapLoadChat === 'function' && typeof smapSaveChat === 'function') {
-      const msgs = smapLoadChat(zone);
-      if (!msgs.find(x => x._zKey === key)) {
-        msgs.push({ who, text, time: t, _zKey: key });
-        smapSaveChat(zone, msgs);
-        if (typeof smapRenderMsgs === 'function') smapRenderMsgs(zone);
-      }
-    }
-    if (newRef && newRef.catch) {
-      newRef.catch(err => {
-        console.warn('Zone chat send failed:', err);
-      });
-    }
+    const newKey = push(ref(db, 'zonechat/' + zone)).key;
+    if (!newKey) return false;
+    set(ref(db, 'zonechat/' + zone + '/' + newKey), msgObj).then(() => {
+      console.log('Zone chat sent OK:', zone, newKey);
+    }).catch(err => {
+      console.warn('Zone chat send FAILED:', err);
+    });
     return true;
   };
 
@@ -2342,8 +2310,10 @@ setTimeout(()=>{
     <div class="shop-grid" id="shopGridSpecial"></div>
     <div class="shop-section-title">🌀 SKIN ISTIMEWA <span style="font-size:0.75em;color:#ffd700">(dibeli dengan 🪙 Rare Coin)</span></div>
     <div class="shop-grid" id="shopGridSkin"></div>
-    <div class="shop-section-title">🎨 GLB SKIN 3D <span style="font-size:0.75em;color:#ffd700">(Model 3D penuh — letak fail .glb dalam folder skins/)</span></div>
+    <div class="shop-section-title">🎨 GLB SKIN 3D <span style="font-size:0.75em;color:#ffd700">(Model 3D penuh — letak fail .fbx dalam folder skins/)</span></div>
     <div class="shop-grid" id="shopGridGlbSkin"></div>
+    <div id="shopGirlSkinsNote" style="display:none;font-size:clamp(5px,1vw,7px);color:#f472b6;padding:4px 8px;margin-bottom:6px;">👧 GIRL SKINS — Skin FBX khusus perempuan! Pilih jantina "Perempuan" dalam profil untuk nampak skin ini.</div>
+    <div id="shopBoySkinsNote" style="display:none;font-size:clamp(5px,1vw,7px);color:#60a5fa;padding:4px 8px;margin-bottom:6px;">👦 BOY SKINS — Skin FBX khusus lelaki! Pilih jantina "Lelaki" dalam profil untuk nampak skin ini.</div>
     <div class="shop-section-title">🏍️ KENDERAAN SEKOLAH <span style="font-size:0.75em;color:#ffd700">(100 Rare Coin — boleh naik & bawa keliling peta sekolah!)</span></div>
     <div class="shop-grid" id="shopGridVehicle"></div>
     <div class="shop-section-title">🪙 BATU BERLIAN MMORPG <span style="font-size:0.75em;color:#ffd700">(🪙 Rare Coin)</span></div>
@@ -2635,6 +2605,14 @@ setTimeout(()=>{
           <option value="Tingkatan 3">Tingkatan 3</option>
           <option value="Tingkatan 4">Tingkatan 4</option>
           <option value="Tingkatan 5">Tingkatan 5</option>
+        </select>
+      </div>
+      <div class="login-field">
+        <label>⚧ JANTINA</label>
+        <select class="school-select" id="regGender">
+          <option value="">-- Pilih Jantina --</option>
+          <option value="lelaki">👦 Lelaki (Boy)</option>
+          <option value="perempuan">👧 Perempuan (Girl)</option>
         </select>
       </div>
       <div class="login-err" id="regErr"></div>
@@ -3946,7 +3924,7 @@ let cameraShake=0;
 let particles=[];
 
 // ── Player profile (set on login) ────────────────────────────────
-let playerProfile = {name:'', school:'', grade:'', email:'', phone:''};  // filled at login
+let playerProfile = {name:'', school:'', grade:'', email:'', phone:'', gender:''};  // filled at login
 
 // ── Web Audio System (Enjin Bunyi Moden) ─────────────────────────
 const _AudioCtx=window.AudioContext||window.webkitAudioContext;
@@ -8014,12 +7992,14 @@ function doRegister(){
   if(!name){err.textContent='⚠ Sila masukkan nama penuh!';return;}
   if(!school){err.textContent='⚠ Sila cari dan pilih sekolah dari senarai!';return;}
   if(!grade){err.textContent='⚠ Sila pilih tahun/tingkatan!';return;}
+  const gender=document.getElementById('regGender').value;
+  if(!gender){err.textContent='⚠ Sila pilih jantina!';return;}
 
   const users=authLoadUsers();
   if(users[username]){err.textContent='⚠ Username sudah digunakan! Cuba lain.';return;}
 
   const newUser = {
-    username, name, school, grade, email,
+    username, name, school, grade, email, gender,
     hash:simpleHash(password),
     remember:true,
     createdAt:new Date().toLocaleDateString('ms-MY')
@@ -8068,7 +8048,7 @@ function doLogin(){
   authSaveUsers(users);
 
   // Save session
-  const profile={name:user.name,school:user.school,grade:user.grade,username,email:user.email||''};
+  const profile={name:user.name,school:user.school,grade:user.grade,username,email:user.email||'',gender:user.gender||''};
   if(remember) authSaveSession(profile);
   else authClearSession();
 
@@ -8555,7 +8535,7 @@ function _initSessionTracking(userKey){
       _clearOnlinePresence();
       authClearSession();
       window._mySessionToken = null;
-      playerProfile = {name:'',school:'',grade:'',email:''};
+      playerProfile = {name:'',school:'',grade:'',email:'',gender:''};
       document.getElementById('mainMenuScreen').classList.remove('show');
       showLogin();
       alert(msg);
@@ -8571,7 +8551,7 @@ function _clearSessionNode(userKey){
 
 function authStartGame(profile){
   const _savedProf=(typeof profLoad==='function'?profLoad():{});
-  playerProfile={name:profile.name,school:profile.school,grade:getAdjustedTingkatan(profile.grade,profile.createdAt),username:profile.username||profile.name,email:profile.email||'',phone:profile.phone||''};
+  playerProfile={name:profile.name,school:profile.school,grade:getAdjustedTingkatan(profile.grade,profile.createdAt),username:profile.username||profile.name,email:profile.email||'',phone:profile.phone||'',gender:profile.gender||''};
   _lastSavedName=profile.name;
 
   // ── Cek: akaun guru? Terus buka dashboard (jangan masuk main menu) ──
@@ -11556,7 +11536,7 @@ function showLogin(){
 }
 
 function doLogout(){
-  playerProfile={name:'',school:'',grade:'',email:''};
+  playerProfile={name:'',school:'',grade:'',email:'',gender:''};
   authClearSession();
   ['goOverlay','winOverlay','lvlOverlay','bossIntro'].forEach(id=>document.getElementById(id).classList.remove('show'));
   clearInterval(timerInterval);
@@ -11623,7 +11603,7 @@ const SMAP_KEY='mariomath_schoolchat_v2';
 
 // ── Shared helpers ──
 function smapEscHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function smapLoadChat(zone){try{return JSON.parse(localStorage.getItem(SMAP_KEY+'_'+zone)||'[]');}catch(e){return[];}}
+function smapLoadChat(zone){if(window._fbGetZoneMsgs&&zone){return window._fbGetZoneMsgs(zone);}try{return JSON.parse(localStorage.getItem(SMAP_KEY+'_'+zone)||'[]');}catch(e){return[];}}
 function smapSaveChat(zone,msgs){try{localStorage.setItem(SMAP_KEY+'_'+zone,JSON.stringify(msgs.slice(-100)));}catch(e){}}
 function smapGetPlayerName(){return(playerProfile.name||'KAMU').slice(0,14).toUpperCase();}
 
@@ -24322,13 +24302,11 @@ let smapWorldTab = false; // which tab is active
 let smapWorldLastCount = 0; // for unread badge
 
 function smapLoadWorldChat(){
-  // Kalau Firebase dah ready (walaupun buffer masih kosong), guna Firebase sahaja
-  // supaya mesej dari device lain boleh nampak
+  // Always use Firebase buffer — no localStorage fallback (prevents phantom messages)
   if(window._fbGetWorldMsgs){
     return window._fbGetWorldMsgs();
   }
-  // Fallback localStorage bila Firebase langsung tak tersedia (offline)
-  try{return JSON.parse(localStorage.getItem(SMAP_WORLD_KEY)||'[]');}catch(e){return[];}
+  return[];
 }
 function smapSaveWorldChat(msgs){
   // Simpan ke localStorage sebagai backup sahaja
@@ -24701,18 +24679,15 @@ function smapWorldSend(){
   const who  = smapGetPlayerName();
   inp.value = '';
 
-  // Cuba hantar melalui Firebase dulu
   if(window._fbSendWorld && window._fbSendWorld(who, txt)){
-    // Firebase akan trigger onChildAdded → smapRenderWorldMsgs() secara automatik
+    // onValue listener akan render mesej baru dari Firebase — tiada localStorage fallback
     return;
   }
 
-  // Fallback: localStorage sahaja (jika Firebase tidak tersedia)
-  const msgs = smapLoadWorldChat();
-  msgs.push({who, text:txt, time:new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})});
-  smapSaveWorldChat(msgs);
-  smapRenderWorldMsgs();
-  smapRenderFriends();
+  // Firebase tak tersedia — tunjuk error, JANGAN simpan localStorage (phantom message)
+  const el = document.getElementById('smapWorldMsgs');
+  if(el) el.insertAdjacentHTML('beforeend',
+    '<div class="smap-msg sys">⚠ Firebase belum sedia — mesej tidak dihantar.</div>');
 }
 
 function smapSwitchTab(which){
@@ -24725,33 +24700,14 @@ function smapSwitchTab(which){
   smapRenderFriends();
 }
 
-// Poll world chat every 4s to pick up messages from other browser tabs / shared localStorage
+// World chat sync handled by onValue listener — poller no longer needed
 let _worldChatPoller=null;
-let _worldChatLastFbCount=0; // track Firebase buffer size berasingan
+let _worldChatLastFbCount=0;
 function smapStartWorldPoller(){
-  if(_worldChatPoller)return;
-  _worldChatPoller=setInterval(()=>{
-    if(!smapActive)return;
-    // Check Firebase buffer terus (lebih reliable dari localStorage)
-    const fbMsgs = window._fbGetWorldMsgs ? window._fbGetWorldMsgs() : null;
-    if(fbMsgs){
-      if(fbMsgs.length > _worldChatLastFbCount){
-        _worldChatLastFbCount = fbMsgs.length;
-        smapRenderWorldMsgs();
-        smapRenderFriends();
-      }
-    } else {
-      // Fallback localStorage (offline mode)
-      const msgs=smapLoadWorldChat();
-      if(msgs.length>smapWorldLastCount){
-        smapRenderWorldMsgs();
-        smapRenderFriends();
-      }
-    }
-  },4000);
+  // No-op: onValue listener handles real-time cross-device sync
 }
 function smapStopWorldPoller(){
-  if(_worldChatPoller){clearInterval(_worldChatPoller);_worldChatPoller=null;}
+  // No-op: onValue listener handles real-time cross-device sync
 }
 
 // ── Open / Close ──
@@ -25588,18 +25544,27 @@ const SHOP_ITEMS = [
   {id:'skin_sasuke', cat:'skin', icon:'⚡', name:'SKIN SASUKE', desc:'Jadi Sasuke Uchiha! Tembakan → Chidori⚡ di Arena & Menara (50 Rare Coin)', price:50, currency:'rare', type:'wearable'},
    {id:'skin_kafka', cat:'skin', icon:'✊', name:'SKIN KAFKA HIBINO', desc:'Jadi Kafka drpd Kaijuu No.8! Serangan → Power Punch✊ (50 Rare Coin)', price:50, currency:'rare', type:'wearable'},
    {id:'skin_kirito', cat:'skin', icon:'⚔️', name:'SKIN KIRITO', desc:'Jadi Kirito! Serangan → DUAL SWORD AURA⚔️ (50 Rare Coin)', price:50, currency:'rare', type:'wearable'},
-  // ── GLB Skin — Model 3D Khas (Rare Coin) ──
-  {id:'glb_wizard',  cat:'glb_skin', icon:'🧙', name:'GLB WIZARD',    desc:'Ahli sihir bertopi tinggi — model 3D penuh! (30 Rare Coin)',  price:30, currency:'rare', type:'wearable', glbSkin:'skin_wizard'},
-  {id:'glb_knight',  cat:'glb_skin', icon:'⚔️', name:'GLB KNIGHT',    desc:'Ksatria berperisai penuh — model 3D penuh! (30 Rare Coin)',  price:30, currency:'rare', type:'wearable', glbSkin:'skin_knight'},
-  {id:'glb_ninja',   cat:'glb_skin', icon:'🥷', name:'GLB NINJA',     desc:'Ninja bayangan gelap — model 3D penuh! (30 Rare Coin)',      price:30, currency:'rare', type:'wearable', glbSkin:'skin_ninja'},
-  {id:'glb_robot',   cat:'glb_skin', icon:'🤖', name:'GLB ROBOT',     desc:'Robot futuristik — model 3D penuh! (35 Rare Coin)',          price:35, currency:'rare', type:'wearable', glbSkin:'skin_robot'},
-  {id:'glb_dragon',  cat:'glb_skin', icon:'🐉', name:'GLB DRAGON LORD', desc:'Raja naga — model 3D penuh! (40 Rare Coin)',              price:40, currency:'rare', type:'wearable', glbSkin:'skin_dragon'},
-  {id:'glb_pirate',  cat:'glb_skin', icon:'🏴‍☠️', name:'GLB PIRATE',    desc:'Lanun laut lepas — model 3D penuh! (25 Rare Coin)',         price:25, currency:'rare', type:'wearable', glbSkin:'skin_pirate'},
-  {id:'glb_angel',   cat:'glb_skin', icon:'👼', name:'GLB ANGEL',     desc:'Malaikat bersayap cahaya — model 3D penuh! (40 Rare Coin)', price:40, currency:'rare', type:'wearable', glbSkin:'skin_angel'},
-  {id:'glb_demon',   cat:'glb_skin', icon:'😈', name:'GLB DEMON',     desc:'Syaitan bertanduk merah — model 3D penuh! (40 Rare Coin)',  price:40, currency:'rare', type:'wearable', glbSkin:'skin_demon'},
-  {id:'glb_samurai', cat:'glb_skin', icon:'⛩️', name:'GLB SAMURAI',   desc:'Samurai pedang katana — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_samurai'},
-  {id:'glb_mech',    cat:'glb_skin', icon:'🦾', name:'GLB MECHA PILOT', desc:'Pilot mech gergasi — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_mech'},
+  // ── BOY SKINS — FBX khusus lelaki (Rare Coin) ──
+  {id:'glb_wizard',  cat:'glb_skin', icon:'🧙', name:'GLB WIZARD',    desc:'Ahli sihir bertopi tinggi — model 3D penuh! (30 Rare Coin)',  price:30, currency:'rare', type:'wearable', glbSkin:'skin_wizard',  boyOnly:true},
+  {id:'glb_knight',  cat:'glb_skin', icon:'⚔️', name:'GLB KNIGHT',    desc:'Ksatria berperisai penuh — model 3D penuh! (30 Rare Coin)',  price:30, currency:'rare', type:'wearable', glbSkin:'skin_knight',  boyOnly:true},
+  {id:'glb_ninja',   cat:'glb_skin', icon:'🥷', name:'GLB NINJA',     desc:'Ninja bayangan gelap — model 3D penuh! (30 Rare Coin)',      price:30, currency:'rare', type:'wearable', glbSkin:'skin_ninja',   boyOnly:true},
+  {id:'glb_robot',   cat:'glb_skin', icon:'🤖', name:'GLB ROBOT',     desc:'Robot futuristik — model 3D penuh! (35 Rare Coin)',          price:35, currency:'rare', type:'wearable', glbSkin:'skin_robot',   boyOnly:true},
+  {id:'glb_dragon',  cat:'glb_skin', icon:'🐉', name:'GLB DRAGON LORD', desc:'Raja naga — model 3D penuh! (40 Rare Coin)',              price:40, currency:'rare', type:'wearable', glbSkin:'skin_dragon',  boyOnly:true},
+  {id:'glb_pirate',  cat:'glb_skin', icon:'🏴‍☠️', name:'GLB PIRATE',    desc:'Lanun laut lepas — model 3D penuh! (25 Rare Coin)',         price:25, currency:'rare', type:'wearable', glbSkin:'skin_pirate',  boyOnly:true},
+  {id:'glb_angel',   cat:'glb_skin', icon:'👼', name:'GLB ANGEL',     desc:'Malaikat bersayap cahaya — model 3D penuh! (40 Rare Coin)', price:40, currency:'rare', type:'wearable', glbSkin:'skin_angel',   boyOnly:true},
+  {id:'glb_demon',   cat:'glb_skin', icon:'😈', name:'GLB DEMON',     desc:'Syaitan bertanduk merah — model 3D penuh! (40 Rare Coin)',  price:40, currency:'rare', type:'wearable', glbSkin:'skin_demon',   boyOnly:true},
+  {id:'glb_samurai', cat:'glb_skin', icon:'⛩️', name:'GLB SAMURAI',   desc:'Samurai pedang katana — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_samurai', boyOnly:true},
+  {id:'glb_mech',    cat:'glb_skin', icon:'🦾', name:'GLB MECHA PILOT', desc:'Pilot mech gergasi — model 3D penuh! (35 Rare Coin)',    price:35, currency:'rare', type:'wearable', glbSkin:'skin_mech',    boyOnly:true},
   {id:'glb_custom_fbx', cat:'glb_skin', icon:'🎮', name:'CUSTOM HERO', desc:'Skin GLB custom — model 3D penuh! [ADMIN/DEBUG SAHAJA] (1 Rare Coin)', price:1, currency:'rare', type:'wearable', glbSkin:'skin_custom_fbx', adminOnly:true},
+  // ── GIRL SKINS — FBX khusus perempuan (30 Rare Coin setiap satu) ──
+  {id:'glb_princess',    cat:'glb_skin', icon:'👑', name:'GLB PRINCESS',     desc:'Puteri raja berbaju gaun indah — model 3D penuh! (30 Rare Coin)',      price:30, currency:'rare', type:'wearable', glbSkin:'skin_princess',    girlOnly:true},
+  {id:'glb_fairy',       cat:'glb_skin', icon:'🧚', name:'GLB FAIRY',        desc:'Peri bersayap cahaya berkilauan — model 3D penuh! (30 Rare Coin)',     price:30, currency:'rare', type:'wearable', glbSkin:'skin_fairy',       girlOnly:true},
+  {id:'glb_mage_girl',   cat:'glb_skin', icon:'🪄', name:'GLB MAGE GIRL',    desc:'Ahli sihir perempuan bertongkat ajaib — model 3D penuh! (30 RC)',     price:30, currency:'rare', type:'wearable', glbSkin:'skin_mage_girl',   girlOnly:true},
+  {id:'glb_kunoichi',    cat:'glb_skin', icon:'🌸', name:'GLB KUNOICHI',     desc:'Ninja perempuan berpedang pendek — model 3D penuh! (30 Rare Coin)',    price:30, currency:'rare', type:'wearable', glbSkin:'skin_kunoichi',    girlOnly:true},
+  {id:'glb_elf_warrior', cat:'glb_skin', icon:'🧝', name:'GLB ELF WARRIOR',  desc:'Pejuang elf perempuan bersenjata panah — model 3D penuh! (30 RC)',    price:30, currency:'rare', type:'wearable', glbSkin:'skin_elf_warrior', girlOnly:true},
+  {id:'glb_catgirl',     cat:'glb_skin', icon:'🐱', name:'GLB CAT GIRL',     desc:'Gadis kucing comel bertelinga kucing — model 3D penuh! (30 RC)',      price:30, currency:'rare', type:'wearable', glbSkin:'skin_catgirl',     girlOnly:true},
+  {id:'glb_witch',       cat:'glb_skin', icon:'🧙‍♀️', name:'GLB WITCH',        desc:'Penyihir perempuan bertopi bulat — model 3D penuh! (30 Rare Coin)',   price:30, currency:'rare', type:'wearable', glbSkin:'skin_witch',       girlOnly:true},
+  {id:'glb_mermaid',     cat:'glb_skin', icon:'🧜', name:'GLB MERMAID',      desc:'Duyung laut berekor bersisik — model 3D penuh! (30 Rare Coin)',       price:30, currency:'rare', type:'wearable', glbSkin:'skin_mermaid',     girlOnly:true},
   // ── Kenderaan Sekolah (Rare Coin) — boleh ditunggang keliling peta sekolah ──
   {id:'veh_neonmoto',   cat:'vehicle', icon:'🏍️', name:'MOTOSIKAL NEON RACER', desc:'Motor sport neon biru-ungu, laju & bergaya! (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
   {id:'veh_hoverboard', cat:'vehicle', icon:'🛹', name:'PAPAN HOVER ANTI-GRAVITI', desc:'Papan hoverboard terapung dgn cincin tenaga neon (100 Rare Coin)', price:100, currency:'rare', type:'wearable'},
@@ -29238,7 +29203,17 @@ function shopRender(){
   if(glbGrid){
     const glbItems=SHOP_ITEMS.filter(i=>i.cat==='glb_skin');
     const _isAdminShopper=(typeof isAdminUser==='function')&&isAdminUser(shopGetUsername());
-    glbGrid.innerHTML=glbItems.filter(item=>!item.adminOnly||_isAdminShopper).map(item=>{
+    const _isGirl=(playerProfile.gender==='perempuan');
+    const _isBoy=(playerProfile.gender==='lelaki');
+    const _girlNote=document.getElementById('shopGirlSkinsNote');
+    const _boyNote=document.getElementById('shopBoySkinsNote');
+    if(_girlNote) _girlNote.style.display=_isGirl?'block':'none';
+    if(_boyNote) _boyNote.style.display=_isBoy?'block':'none';
+    glbGrid.innerHTML=glbItems.filter(item=>!item.adminOnly||_isAdminShopper).filter(item=>{
+      if(item.girlOnly && !_isGirl) return false;
+      if(item.boyOnly && !_isBoy) return false;
+      return true;
+    }).map(item=>{
       const isOwned=!!(d.owned&&d.owned[item.id]);
       const isEquipped=!!(d.equipped&&d.equipped['glb_skin']===item.glbSkin);
       const canAfford=rarePts>=item.price;
@@ -29253,7 +29228,7 @@ function shopRender(){
       }
       return `<div class="shop-item${isOwned?' owned':''}${isEquipped?' equipped':''}" style="${isEquipped?'border:2px solid #ffa500;':isOwned?'border:2px solid #00e676;':''}">
         <span class="item-icon" style="font-size:2.2em;">${item.icon}</span>
-        <div class="item-name" style="color:#ffd700;">${item.name}${item.adminOnly?' <span style="color:#c084fc;font-size:0.7em;">👑ADMIN</span>':''}</div>
+        <div class="item-name" style="color:#ffd700;">${item.name}${item.adminOnly?' <span style="color:#c084fc;font-size:0.7em;">👑ADMIN</span>':''}${item.girlOnly?' <span style="color:#f472b6;font-size:0.7em;">👧GIRL</span>':''}${item.boyOnly?' <span style="color:#60a5fa;font-size:0.7em;">👦BOY</span>':''}</div>
         <div class="item-desc">${item.desc}</div>
         <div class="item-price" style="${isOwned?'color:#00e676;':'color:#ff8c00;'}">
           ${isOwned?'✅ DIMILIKI':'🪙 '+item.price+' RARE COIN'}
@@ -32101,17 +32076,26 @@ function applyCostume(){
 // ══════════════════════════════════════════════════════════════
 var GLB_SKINS = {
   //  id              : { name, file, fileWalk, price, desc, icon }
-  skin_wizard      : { name:'Wizard',       file:'skins/wizard.fbx',      fileWalk:'skins/wizard_walk.fbx',      price:30, desc:'Ahli sihir bertopi tinggi',        icon:'🧙' },
-  skin_knight      : { name:'Knight',       file:'skins/knight.fbx',      fileWalk:'skins/knight_walk.fbx',      price:30, desc:'Ksatria berperisai penuh',          icon:'⚔️' },
-  skin_ninja       : { name:'Ninja',        file:'skins/ninja.fbx',       fileWalk:'skins/ninja_walk.fbx',       price:30, desc:'Ninja bayangan gelap',              icon:'🥷' },
-  skin_robot       : { name:'Robot',        file:'skins/robot.fbx',       fileWalk:'skins/robot_walk.fbx',       price:35, desc:'Robot futuristik bersenjata',       icon:'🤖' },
-  skin_dragon      : { name:'Dragon Lord',  file:'skins/dragon_lord.fbx', fileWalk:'skins/dragon_lord_walk.fbx', price:40, desc:'Raja naga berkuasa',                icon:'🐉' },
-  skin_pirate      : { name:'Pirate',       file:'skins/pirate.fbx',      fileWalk:'skins/pirate_walk.fbx',      price:25, desc:'Lanun laut lepas',                  icon:'🏴‍☠️' },
-  skin_angel       : { name:'Angel',        file:'skins/angel.fbx',       fileWalk:'skins/angel_walk.fbx',       price:40, desc:'Malaikat bersayap cahaya',          icon:'👼' },
-  skin_demon       : { name:'Demon',        file:'skins/demon.fbx',       fileWalk:'skins/demon_walk.fbx',       price:40, desc:'Syaitan bertanduk merah',           icon:'😈' },
-  skin_samurai     : { name:'Samurai',      file:'skins/samurai.fbx',     fileWalk:'skins/samurai_walk.fbx',     price:35, desc:'Samurai pedang katana',              icon:'⛩️' },
-  skin_mech        : { name:'Mecha Pilot',  file:'skins/mech_pilot.fbx',  fileWalk:'skins/mech_pilot_walk.fbx',  price:35, desc:'Pilot mech gergasi',                icon:'🦾' },
+  skin_wizard      : { name:'Wizard',       file:'skins/wizard.fbx',      fileWalk:'skins/wizard_walk.fbx',      price:30, desc:'Ahli sihir bertopi tinggi',        icon:'🧙', boyOnly:true },
+  skin_knight      : { name:'Knight',       file:'skins/knight.fbx',      fileWalk:'skins/knight_walk.fbx',      price:30, desc:'Ksatria berperisai penuh',          icon:'⚔️', boyOnly:true },
+  skin_ninja       : { name:'Ninja',        file:'skins/ninja.fbx',       fileWalk:'skins/ninja_walk.fbx',       price:30, desc:'Ninja bayangan gelap',              icon:'🥷', boyOnly:true },
+  skin_robot       : { name:'Robot',        file:'skins/robot.fbx',       fileWalk:'skins/robot_walk.fbx',       price:35, desc:'Robot futuristik bersenjata',       icon:'🤖', boyOnly:true },
+  skin_dragon      : { name:'Dragon Lord',  file:'skins/dragon_lord.fbx', fileWalk:'skins/dragon_lord_walk.fbx', price:40, desc:'Raja naga berkuasa',                icon:'🐉', boyOnly:true },
+  skin_pirate      : { name:'Pirate',       file:'skins/pirate.fbx',      fileWalk:'skins/pirate_walk.fbx',      price:25, desc:'Lanun laut lepas',                  icon:'🏴‍☠️', boyOnly:true },
+  skin_angel       : { name:'Angel',        file:'skins/angel.fbx',       fileWalk:'skins/angel_walk.fbx',       price:40, desc:'Malaikat bersayap cahaya',          icon:'👼', boyOnly:true },
+  skin_demon       : { name:'Demon',        file:'skins/demon.fbx',       fileWalk:'skins/demon_walk.fbx',       price:40, desc:'Syaitan bertanduk merah',           icon:'😈', boyOnly:true },
+  skin_samurai     : { name:'Samurai',      file:'skins/samurai.fbx',     fileWalk:'skins/samurai_walk.fbx',     price:35, desc:'Samurai pedang katana',              icon:'⛩️', boyOnly:true },
+  skin_mech        : { name:'Mecha Pilot',  file:'skins/mech_pilot.fbx',  fileWalk:'skins/mech_pilot_walk.fbx',  price:35, desc:'Pilot mech gergasi',                icon:'🦾', boyOnly:true },
   skin_custom_fbx  : { name:'Custom Hero',  file:'skins/custom_hero.glb', fileWalk:'skins/custom_hero_walk.glb', price:1, desc:'Skin GLB custom (ADMIN/DEBUG)',                   icon:'🎮' },
+  // ── GIRL SKINS (FBX khusus perempuan, 30 Rare Coin setiap satu) ──
+  skin_princess    : { name:'Princess',     file:'skins/princess.fbx',     fileWalk:'skins/princess_walk.fbx',     price:30, desc:'Puteri raja berbaju gaun indah',                    icon:'👑', girlOnly:true },
+  skin_fairy       : { name:'Fairy',        file:'skins/fairy.fbx',        fileWalk:'skins/fairy_walk.fbx',        price:30, desc:'Peri bersayap cahaya berkilauan',                   icon:'🧚', girlOnly:true },
+  skin_mage_girl   : { name:'Mage Girl',    file:'skins/mage_girl.fbx',    fileWalk:'skins/mage_girl_walk.fbx',    price:30, desc:'Ahli sihir perempuan bertongkat ajaib',             icon:'🪄', girlOnly:true },
+  skin_kunoichi    : { name:'Kunoichi',     file:'skins/kunoichi.fbx',     fileWalk:'skins/kunoichi_walk.fbx',     price:30, desc:'Ninja perempuan berpedang pendek',                  icon:'🌸', girlOnly:true },
+  skin_elf_warrior : { name:'Elf Warrior',  file:'skins/elf_warrior.fbx',  fileWalk:'skins/elf_warrior_walk.fbx',  price:30, desc:'Pejuang elf perempuan bersenjata panah',            icon:'🧝', girlOnly:true },
+  skin_catgirl     : { name:'Cat Girl',     file:'skins/catgirl.fbx',      fileWalk:'skins/catgirl_walk.fbx',      price:30, desc:'Gadis kucing comel bertelinga kucing',              icon:'🐱', girlOnly:true },
+  skin_witch       : { name:'Witch',        file:'skins/witch.fbx',        fileWalk:'skins/witch_walk.fbx',        price:30, desc:'Penyihir perempuan bertopi bulat',                  icon:'🧙‍♀️', girlOnly:true },
+  skin_mermaid     : { name:'Mermaid',      file:'skins/mermaid.fbx',      fileWalk:'skins/mermaid_walk.fbx',      price:30, desc:'Duyung laut berekor bersisik',                      icon:'🧜', girlOnly:true },
   // ── PET ZAPREZ (Legenda, model FBX sebenar — bukan procedural) ──
   // Letakkan fail fbx anda di path di bawah (relatif ke index.html):
   //   pets/zaprez.fbx       = rig idle/diam
@@ -51731,6 +51715,14 @@ setInterval(_mobaProxPatch, 50); // poll every 50ms when smap active
         </select>
       </div>
       <div class="prof-field">
+        <label>Jantina</label>
+        <select class="prof-select" id="profEditGender">
+          <option value="">— Pilih Jantina —</option>
+          <option value="lelaki">👦 Lelaki (Boy)</option>
+          <option value="perempuan">👧 Perempuan (Girl)</option>
+        </select>
+      </div>
+      <div class="prof-field">
         <label>Email (pilihan)</label>
         <input class="prof-input" id="profEditEmail" type="email" placeholder="email@contoh.com" maxlength="80">
       </div>
@@ -51878,6 +51870,9 @@ function profShowEdit(){
   const autoAge = gradeMatch ? (12 + parseInt(gradeMatch[1])) : '';
   document.getElementById('profEditAge').value   = autoAge || saved.age || '';
   document.getElementById('profEditBio').value   = saved.bio   || '';
+  const genderVal = saved.gender || playerProfile.gender || '';
+  const genderSelect = document.getElementById('profEditGender');
+  if(genderSelect){ for(let opt of genderSelect.options){ opt.selected=(opt.value===genderVal); } }
   // Sentiasa kosongkan medan password bila borang dibuka (jangan pra-isi/simpan)
   document.getElementById('profEditCurPass').value  = '';
   document.getElementById('profEditNewPass').value  = '';
@@ -51901,6 +51896,7 @@ function profSave(){
   const name   = document.getElementById('profEditName').value.trim();
   const school = document.getElementById('profSchoolCode').value.trim();
   const grade  = document.getElementById('profEditGrade').value;
+  const gender = document.getElementById('profEditGender').value;
   const email  = document.getElementById('profEditEmail').value.trim();
   const phone  = document.getElementById('profEditPhone').value.trim();
   const age    = document.getElementById('profEditAge').value.trim();
@@ -51930,16 +51926,17 @@ function profSave(){
 
   const newData = {
     ...saved,
-    name, school, grade, email, phone, age, bio,
+    name, school, grade, gender, email, phone, age, bio,
     updatedAt: new Date().toLocaleDateString('ms-MY')
   };
   profSaveData(newData);
 
-  // Sync back to playerProfile (name/school/grade/email/phone)
+  // Sync back to playerProfile (name/school/grade/email/phone/gender)
   if(name)   playerProfile.name   = name;
   if(school) playerProfile.school = school;
   if(grade)  playerProfile.grade  = grade;
   if(phone)  playerProfile.phone  = phone;
+  if(gender) playerProfile.gender = gender;
 
   // Update HUD display
   const pNameEl = document.querySelector('#hudPlayerCard .playerName');
@@ -51968,6 +51965,7 @@ function profSave(){
         name,
         school: school || existingUser.school,
         grade:  grade  || existingUser.grade,
+        gender: gender || existingUser.gender,
         email:  email ? email.toLowerCase() : existingUser.email,
         phone:  phone || existingUser.phone
       });

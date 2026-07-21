@@ -1683,7 +1683,7 @@ window.addEventListener('error', function(e){
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, push, set, remove, get, onValue, onChildAdded, query, limitToLast, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, push, set, remove, get, onValue, onChildAdded, query, limitToLast, serverTimestamp, runTransaction, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   // ── GANTI nilai di bawah dengan Firebase project kamu ──
@@ -1735,6 +1735,7 @@ window.addEventListener('error', function(e){
   window._fbRemoveFn    = remove;
   window._fbOnValueFn   = onValue;
   window._fbTransactionFn = runTransaction;
+  window._fbUpdateFn      = update;
 
   // ── Sync all users from Firebase into local cache on page load ──
   get(ref(db, 'users')).then(snap => {
@@ -11829,6 +11830,41 @@ function smWeatherRebuildParticles(){
   }
 }
 
+// ── Rujukan Firebase untuk cuaca global peta sekolah ──
+let _smWeatherSyncRef=null;
+let _smWeatherUnsub=null;
+let _smWeatherLastSync=0;
+let _smWeatherLastPush=0;
+// Panggil sekali untuk mula dengar cuaca global
+function smWeatherStartSync(){
+  if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueFn||!window._fbUpdateFn)return;
+  _smWeatherSyncRef=window._fbRefFn(window._fbPresenceDb,'weather_school');
+  if(_smWeatherUnsub){_smWeatherUnsub();}
+  _smWeatherUnsub=window._fbOnValueFn(_smWeatherSyncRef,function(snap){
+    var d=snap.val();
+    if(!d)return;
+    // Guna data dari Firebase — semua device sync ke sini
+    smWeather.season=d.season!==undefined?d.season:smWeather.season;
+    smWeather.dayTime=d.dayTime!==undefined?d.dayTime:smWeather.dayTime;
+    // Jangan reset particle group bila season berubah — rebuild diperlukan
+    if(smWeather.ready){
+      // Force rebuild particles if season changed
+      if(smWeather._lastSeason!==undefined&&smWeather._lastSeason!==smWeather.season){
+        smWeatherRebuildParticles();
+      }
+      smWeather._lastSeason=smWeather.season;
+    }
+  });
+  // Push data pertama sekali
+  if(window._fbUpdateFn&&_smWeatherSyncRef){
+    window._fbUpdateFn(_smWeatherSyncRef,{
+      season:smWeather.season,
+      dayTime:smWeather.dayTime,
+      ts:Date.now()
+    }).catch(function(){});
+  }
+}
+
 // ── Kemas kini kitaran cuaca/musim/siang-malam setiap frame ──
 function smUpdateWeatherSystem(dt,heroX,heroZ){
   if(!smWeather.ready) return;
@@ -11842,6 +11878,16 @@ function smUpdateWeatherSystem(dt,heroX,heroZ){
     smWeather.seasonT=0;
     smWeather.season=(smWeather.season+1)%SM_SEASONS.length;
     smWeatherRebuildParticles();
+  }
+  // Sync ke Firebase setiap 3 saat supaya semua device guna masa yang sama
+  var now=Date.now();
+  if(now-_smWeatherLastPush>3000&&window._fbPresenceDb&&window._fbUpdateFn&&_smWeatherSyncRef){
+    _smWeatherLastPush=now;
+    window._fbUpdateFn(_smWeatherSyncRef,{
+      season:smWeather.season,
+      dayTime:smWeather.dayTime,
+      ts:now
+    }).catch(function(){});
   }
   if(!smWeather.particleGroup.children.length && SM_SEASONS[smWeather.season].particle){
     smWeatherRebuildParticles();
@@ -13067,11 +13113,25 @@ function smapBuild3D(){
   function _ziIsNight(){return smZb.dayTime>0.7||smZb.dayTime<0.2;}
   // ── Weather system ──
   function _ziWeatherTick(dt){
+    // Co-op: non-host jangan generate weather sendiri — guna dari Firebase
+    if(_ziCoop.active&&_ziCoop.code&&!_ziCoop.isHost){
+      if(_ziCoop.roomData&&_ziCoop.roomData.weather&&_ziCoop.roomData.weather!==smZb.weatherType){
+        var oldW=smZb.weatherType;
+        smZb.weatherType=_ziCoop.roomData.weather;
+        if(smZb.weatherType!=='clear')smZbFloatingText(smHeroState.x,3,smHeroState.z,'⛈️ WEATHER: '+smZb.weatherType.toUpperCase()+'!','#88aaff');
+      }
+      return;
+    }
     smZb.weatherTimer-=dt;
     if(smZb.weatherTimer<=0){
       var types=['clear','rain','fog','bloodmoon','toxic_rain'];
       smZb.weatherType=types[Math.floor(Math.random()*types.length)];
       smZb.weatherTimer=180+Math.random()*300;
+      // Co-op host: sync ke Firebase
+      if(_ziCoop.active&&_ziCoop.code&&_ziCoop.isHost){
+        var wr=_ziCoopRoomRef(_ziCoop.code);
+        if(wr)window._fbUpdateFn(wr,{weather:smZb.weatherType}).catch(function(){});
+      }
       if(smZb.weatherType!=='clear')smZbFloatingText(smHeroState.x,3,smHeroState.z,'⛈️ WEATHER: '+smZb.weatherType.toUpperCase()+'!','#88aaff');
     }
   }
@@ -16961,6 +17021,9 @@ function smapBuild3D(){
       _ziCoopRenderPartyHud();
       if(d.bossDefeated&&!_ziCoop.handledDefeat&&_ziNest.active&&_ziNest.coop){
         _ziCoopOnVictoryDetected();
+      }
+      if(d.weather&&d.weather!==smZb.weatherType){
+        smZb.weatherType=d.weather;
       }
       if(d.wave===0&&!d.bossSpawned&&!d.bossDefeated){
         _ziCoop.handledDefeat=false;
@@ -23574,6 +23637,7 @@ function smapBuild3D(){
 
   // ── SISTEM CUACA & MUSIM (4 musim + kitaran siang/malam) ──
   smInitWeatherSystem(smScene);
+  smWeatherStartSync();
 
   // ── ZOMBIE TYPES di Sarang Zombie island ──
   const smZombies=[];
@@ -27157,11 +27221,11 @@ function gsInviteStartListen(){
   if(!window._fbPresenceDb||!window._fbRefFn)return;
   if(!playerProfile||(!playerProfile.username&&!playerProfile.name))return;
   var me=gsMyKey();
-  var invRef=window._fbRefFn(window._fbPresenceDb,'gs_invites/'+me);
   var tryListen=function(){
     if(!window._fbReady)return;
     if(!window._fbOnValueFn)return;
     if(_gsInviteListener)return;
+    var invRef=window._fbRefFn(window._fbPresenceDb,'gs_invites/'+me);
     _gsInviteListener=window._fbOnValueFn(invRef,function(snap){
       var d=snap.val();
       if(!d||d.status!=='pending')return;
@@ -37644,11 +37708,11 @@ function chessInviteStartListen(){
   if(!playerProfile||(!(playerProfile.username)&&!(playerProfile.name))) return;
   if(_chessInviteListener) return;
   const me=_chessMyName();
-  const invRef=window._fbRefFn(window._fbPresenceDb,'chess_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
     if(_chessInviteListener) return;
+    const invRef=window._fbRefFn(window._fbPresenceDb,'chess_invites/'+me);
     _chessInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
     const d=snap.val();
     if(!d||d.status!=='pending') return;
@@ -38526,11 +38590,11 @@ function damInviteStartListen(){
   if(!window._fbPresenceDb||!window._fbRefFn) return;
   if(!playerProfile||(!(playerProfile.username)&&!(playerProfile.name))) return;
   const me = _damMyName();
-  const invRef = window._fbRefFn(window._fbPresenceDb,'dam_invites/'+me);
   const tryListen = ()=>{
     if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
     if(_damInviteListener) return;
+    const invRef = window._fbRefFn(window._fbPresenceDb,'dam_invites/'+me);
     _damInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
       if(!d || d.status !== 'pending') return;
@@ -39596,10 +39660,10 @@ function pvpStartInviteListen(){
   if(!playerProfile||!playerProfile.username) return;
   if(_pvpInviteListener) return;
   const me=playerProfile.username.toUpperCase();
-  const invRef=window._fbRefFn(window._fbPresenceDb,'pvp_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    const invRef=window._fbRefFn(window._fbPresenceDb,'pvp_invites/'+me);
     _pvpInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
       if(!d||d.status!=='pending') return;
@@ -43788,11 +43852,11 @@ function gkInviteStartListen(){
   if(!window._fbPresenceDb||!window._fbRefFn) return;
   if(!window.playerProfile||(!window.playerProfile.username&&!window.playerProfile.name)) return;
   const me=_gkMyKey();
-  const invRef=window._fbRefFn(window._fbPresenceDb,'gk_invites/'+me);
   const tryListen=()=>{
     if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
     if(_gkInviteListener) return;
+    const invRef=window._fbRefFn(window._fbPresenceDb,'gk_invites/'+me);
     _gkInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
       if(!d||d.status!=='pending') return;
@@ -45334,11 +45398,11 @@ function futsalInviteStartListen(){
     return;
   }
   const me = _fsMyName();
-  const invRef = window._fbRefFn(window._fbPresenceDb,'futsal_invites/'+me);
   const tryListen = ()=>{
-    if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    if(!window._fbOnValueModule) return;
     if(_fsInviteListener) return;
+    const invRef = window._fbRefFn(window._fbPresenceDb,'futsal_invites/'+me);
     _fsInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
       if(!d || d.status !== 'pending') return;
@@ -45531,11 +45595,11 @@ function fol5vInviteStartListen(){
   if(!window._fbPresenceDb||!window._fbRefFn) return;
   if(!playerProfile||(!(playerProfile.username)&&!(playerProfile.name))) return;
   const me = _fol5vMyKey();
-  const invRef = window._fbRefFn(window._fbPresenceDb,'fol5v_invites/'+me);
   const tryListen=()=>{
-    if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    if(!window._fbOnValueModule) return;
     if(_fol5vInviteListener) return;
+    const invRef = window._fbRefFn(window._fbPresenceDb,'fol5v_invites/'+me);
     _fol5vInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
       if(!d||d.status!=='pending') return;
@@ -48820,11 +48884,11 @@ window.mobaInviteStartListen = function(){
   }
   const me = smapGetPlayerName();
   if(!me){ setTimeout(mobaInviteStartListen, 1000); return; }
-  const invRef = window._fbRefFn(window._fbPresenceDb, 'moba_invites/'+me);
   const tryListen = ()=>{
-    if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    if(!window._fbOnValueModule) return;
     if(_mobaInviteListener) return;
+    const invRef = window._fbRefFn(window._fbPresenceDb, 'moba_invites/'+me);
     _mobaInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
       if(!d||d.status!=='pending') return;
@@ -56401,11 +56465,11 @@ function pbInviteStartListen(){
   if(!window._fbPresenceDb||!window._fbRefFn) return;
   if(!playerProfile||(!playerProfile.username&&!playerProfile.name)) return;
   const me=_pbMyName();
-  const invRef=window._fbRefFn(window._fbPresenceDb,'pb_invites/'+me);
   const tryListen=()=>{
-    if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    if(!window._fbOnValueModule) return;
     if(_pbInviteListener) return;
+    const invRef=window._fbRefFn(window._fbPresenceDb,'pb_invites/'+me);
     _pbInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
       if(!d||d.status!=='pending') return;

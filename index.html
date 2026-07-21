@@ -12176,7 +12176,7 @@ function smapBuild3D(){
       const sg=new THREE.Mesh(new THREE.BoxGeometry(0.04,2.4,0.04),jGlowMat);
       sg.position.set(s*1.85,1.3,0.45); g.add(sg);
     }
-    g.position.set(jx,-0.08,jz); g.rotation.y=rad;
+    g.position.set(jx,0.32,jz); g.rotation.y=rad;
     smScene.add(g);
   }
   // Jeti setiap pulau (menghadap ke arah Pulau Sekolah)
@@ -12561,36 +12561,38 @@ function smapBuild3D(){
       x.fillRect(p1[0],p1[1],p2[0]-p1[0],p2[1]-p1[1]);
     }
     // ══ JALAN UTAMA (main arteries) ══
-    rd(20,-5,154,6);           // Main Street E-W: z=-5, x:-57..+97, d=6 (z:-8..-2, touches Paintball)
+    rd(20,2,154,6);            // Main Street E-W: z=2 (center thru flagpole), x:-57..+97, d=6 (z:-1..5)
     rd(17,-21,4,142);          // Central Avenue N-S: x=17, z:-92..+50, w=4 (x:15..19)
     // ══ CABANG JALAN → BANGUNAN (branch roads to buildings) ══
     // [1] E-Sport Arena (-32,-26) + Dam Board (-32,28) — shared vertical at x=-32
-    rd(-32,-1,8,32);           // z:-17..15, x:-36..-28
-    // [2] Arena Master (32,-26) — vertical from Main St north
-    rd(32,-11.5,8,13);         // z:-18..-5, x:28..36
-    // [3] Kedai/Shop (0,38) — vertical from Main St north
-    rd(0,14.5,8,39);           // z:-5..34, x:-4..4
+    rd(-32,2,8,32);            // z:-14..18, x:-36..-28 (sambung Main St z=2)
+    // [2] Arena Master (32,-26) — vertical from Main St
+    rd(32,-11.5,8,27);         // z:-25..2, x:28..36 (sambung Main St z=2)
+    // [PB] Paintball (0,-8) — cabang ke pintu
+    rd(0,0,6,9);               // z:-7..2, x:-3..3 (sambung Main St z=2)
+    // [3] Kedai/Shop (0,38) — vertical from Main St
+    rd(0,20,8,36);             // z:2..38, x:-4..4 (sambung Main St z=2)
     // [4] Menara Matematik (32,28) — NORTH entrance portal at z=20.5, x=32
-    rd(26,17,16,4);            // x:18..34, z:15..19 (road in front of north entrance)
-    // [5] Papan Catur (68,-26) — vertical from Main St north
-    rd(68,-9,8,8);             // z:-13..-5, x:64..72
-    // [6] Go Kart (90,9) — short from Main St north
-    rd(85,-3,8,4);             // z:-5..-1, x:81..89
-    // [7] Billboard + Arena NPC (-50,2) — from Main St, west of billboard
-    rd(-58,1.5,8,13);          // z:-5..8, x:-62..-54 (west of billboard x:-53..-47)
-    // [8] Guild House (0,-56) — route east of Paintball, then west
-    rd(16,-31.2,4,44.4);       // x=16, z:-53.4..-9, x:14..18 (reaches building north)
-    rd(8,-51,20,4);            // x:-2..18, z:-53..-49 (connects road 9 to Guild House)
-    // [9] PVP/Futsal (70,72) — long vertical from Main St north
-    rd(70,19,8,48);            // z:-5..43, x:66..74
-    // [10] Dewan Guild (30,-84) — SOUTH entrance at z=-76, x=26..34
-    rd(25,-72,14,4);           // x:18..32, z:-74..-70 (road in front of south entrance)
+    rd(26,17,16,4);            // x:18..34, z:15..19
+    // [5] Papan Catur (68,-26) — vertical from Main St
+    rd(68,-11.5,8,27);         // z:-25..2, x:64..72 (sambung Main St z=2)
+    // [6] Go Kart (90,9) — short from Main St
+    rd(85,0.5,8,3);            // z:-1..2, x:81..89 (sambung Main St z=2)
+    // [7] Billboard + Arena NPC (-50,2) — from Main St, west of billboard (z=2)
+    rd(-58,2,8,4);             // z:0..4, x:-62..-54 (pusing ke billboard)
+    // [8] Guild House (0,-56) — route east of Paintball, then south
+    rd(16,-27,4,58);           // x=16, z:-56..2, x:14..18 (sambung Main St z=2)
+    rd(8,-51,20,4);            // x:-2..18, z:-53..-49 (connects to Guild House)
+    // [9] PVP/Futsal (70,72) — long vertical from Main St
+    rd(70,37,8,70);            // z:2..72, x:66..74 (sambung Main St z=2)
+    // [10] Dewan Guild (30,-84) — SOUTH entrance
+    rd(25,-72,14,4);           // x:18..32, z:-74..-70
     // ══ PLANE ══
     var tex=new THREE.CanvasTexture(c);
     tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter;
     var mat=new THREE.MeshLambertMaterial({map:tex, polygonOffset:true, polygonOffsetFactor:2, polygonOffsetUnits:2});
     var plane=new THREE.Mesh(new THREE.PlaneGeometry(WH*2,WH*2),mat);
-    plane.rotation.x=-Math.PI/2; plane.position.y=0.26;
+    plane.rotation.x=-Math.PI/2; plane.position.y=0.32;
     plane.receiveShadow=true; smScene.add(plane);
   })();
 
@@ -13115,7 +13117,7 @@ function smapBuild3D(){
         var sx=smHeroState.x+Math.cos(angle)*dist;var sz=smHeroState.z+Math.sin(angle)*dist;
         sx=Math.max(-100,Math.min(100,sx));sz=Math.max(135,Math.min(340,sz));
         var zt=SM_ZT[ti];var hpMul=1+smZbHero.wave*0.15;var atkMul=1+smZbHero.wave*0.1;
-        var zm=smZbMakeModel(zt);zm.position.set(sx,0,sz);ziScene.add(zm);
+    var zm=smZbMakeModel(zt);zm.position.set(sx,smGetFloorY(sx,sz),sz);ziScene.add(zm);
         var hb=smZbMakeHpBar();ziScene.add(hb);
         zm._zbAlive=true;zm._zbType=zt;zm._zbHp=Math.floor(zt.hp*hpMul);zm._zbMaxHp=zm._zbHp;
         zm._zbAtk=Math.floor(zt.atk*atkMul);zm._zbDef=zt.def;zm._zbXP=zt.xp;zm._zbGold=zt.gold;
@@ -18412,8 +18414,8 @@ function smapBuild3D(){
   // ══════════════════════════════════════════════
   //  BILLBOARD RANKING 3D — besar & jelas
   // ══════════════════════════════════════════════
-  const BB_X=DAM_CX-18;  // dialihkan ke kiri
-  const BB_Z=DAM_CZ-DAM_BD/2-14;
+  const BB_X=-57;       // alih ke sebelah kiri papan dam
+  const BB_Z=2;         // sama dengan Main Street baru
   const BB_W=19, BB_H=9.5;
 
 
@@ -20865,8 +20867,8 @@ function smapBuild3D(){
     g.position.set(x,0,z); g.rotation.y=ry||0;
     smScene.add(g);
   }
-  makeBench(-28,-10,0); makeBench(-28,-6,0);
-  makeBench(28,-10,0);  makeBench(28,-6,0);
+  makeBench(-28,-10,0); makeBench(-28,-4,0);   // tepi jalan (z=-4 tepi utara Main St)
+  makeBench(28,-10,0);  makeBench(28,-4,0);    // tepi jalan
   makeBench(-28,10,0);  makeBench(28,10,0);
   // ── LAMP POSTS ──
   function makeLamp(x,z){
@@ -21015,7 +21017,7 @@ function smapBuild3D(){
   const smNPCMeshes={};
   SMAP_NPCS.forEach(n=>{
     const mesh=makeNPCMesh(n.color);
-    mesh.position.set(n.wx,0,n.wz);
+    mesh.position.set(n.wx,smGetFloorY(n.wx,n.wz),n.wz);
     mesh._npcData=n;
     mesh._animT=0;
     mesh._wanderTx=n.wx; mesh._wanderTz=n.wz; mesh._wanderTimer=Math.random()*3;
@@ -22030,9 +22032,9 @@ function smapBuild3D(){
 
     // ── Bangku (bench) — setiap bench ~2.4x0.6, tambah margin 0.5 ──
     {xmin:-29.7,xmax:-26.3,zmin:-10.6,zmax:-9.4, camSkip:true},  // bench kiri-1
-    {xmin:-29.7,xmax:-26.3,zmin: -6.6,zmax: -5.4, camSkip:true}, // bench kiri-2
+    {xmin:-29.7,xmax:-26.3,zmin: -5.4,zmax: -4.2, camSkip:true}, // bench kiri-2 (tepi jalan)
     {xmin: 26.3,xmax: 29.7,zmin:-10.6,zmax: -9.4, camSkip:true}, // bench kanan-1
-    {xmin: 26.3,xmax: 29.7,zmin: -6.6,zmax: -5.4, camSkip:true}, // bench kanan-2
+    {xmin: 26.3,xmax: 29.7,zmin: -5.4,zmax: -4.2, camSkip:true}, // bench kanan-2 (tepi jalan)
     {xmin:-29.7,xmax:-26.3,zmin:  9.4,zmax: 10.6, camSkip:true}, // bench kiri-3
     {xmin: 26.3,xmax: 29.7,zmin:  9.4,zmax: 10.6, camSkip:true}, // bench kanan-3
     // ── Dam Board (papan dam 3D) ──
@@ -22116,7 +22118,8 @@ function smapBuild3D(){
   function smGetFloorY(hx,hz){
     // Futsal / Arena PVP floor: cover keseluruhan padang futsal (FS_CX=70,FS_CZ=72,HW/HD=21)
     if(hx>=38&&hx<=92&&hz>=40&&hz<=94) return 0.3;
-    return 0; // lantai biasa (ground permukaan = 0)
+    // Kasut model makeMario() berada di y=-0.32, jadi floor perlu 0.32 supaya tapak kasut tepat di atas ground
+    return 0.32;
   }
 
   // ── UPDATE ──
@@ -56864,7 +56867,7 @@ function pbCleanupAll(){
   const qe=document.getElementById('pbKillQ'); if(qe) qe.style.display='none';
   pbStopMusic();
   _pbJoyActive=false; _pbJoyX=0; _pbJoyY=0; _pbJoyPtrId=null;
-  _pbMouseTrack=null;
+
   if(_pbAnimId){ cancelAnimationFrame(_pbAnimId); _pbAnimId=null; }
   // Remove paintball key & mouse listeners
   if(window._pbKeyHandlers){
@@ -56930,8 +56933,7 @@ function paintballInit(){
   // ── Crosshair ──
   _pbCrosshairEl=document.createElement('div');
   _pbCrosshairEl.id='pbCrosshairCS';
-  _pbCrosshairEl.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none;z-index:21;transition:none;';
-  // CS-style crosshair: 4 lines forming a + with a gap in center
+  _pbCrosshairEl.style.cssText='position:absolute;top:0;left:0;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none;z-index:21;transition:none;';
   _pbCrosshairEl.innerHTML='<div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:7px;background:rgba(0,255,0,0.85);border-radius:1px;"></div>'+
     '<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:2px;height:7px;background:rgba(0,255,0,0.85);border-radius:1px;"></div>'+
     '<div style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:7px;height:2px;background:rgba(0,255,0,0.85);border-radius:1px;"></div>'+
@@ -57745,6 +57747,7 @@ function paintballInit(){
   // ▸ Mula (team mode)
   _pbBullets=[];
   _pbRunning=true;
+  if(_pbCrosshairEl) _pbCrosshairEl.style.cssText='position:absolute;top:'+(window.innerHeight/2)+'px;left:'+(window.innerWidth/2)+'px;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none;z-index:21;transition:none;';
 
   // Keyboard + Mouse controller untuk laptop & smartphone
   function _pbKeyDown(e){
@@ -57761,18 +57764,17 @@ function paintballInit(){
   function _pbMouseMove(e){
     if(!_pbRunning||!_pbHero||!_pbMyPlayer||!_pbMyPlayer.alive) return;
     if(e.target.closest('#pbShootBtn,#pbScopeBtn,#pbJoy,#pbHud,#pbScoreboard,#pbEndOverlay')) return;
-    // Move crosshair to mouse position
+    if(_pbMouseTrack===null){ _pbMouseTrack={x:e.clientX,y:e.clientY}; return; }
+    var dx=e.clientX-_pbMouseTrack.x, dy=e.clientY-_pbMouseTrack.y;
+    _pbMouseTrack.x=e.clientX; _pbMouseTrack.y=e.clientY;
     if(_pbCrosshairEl){
       _pbCrosshairEl.style.left=e.clientX+'px';
       _pbCrosshairEl.style.top=e.clientY+'px';
     }
-    if(_pbMouseTrack===null){ _pbMouseTrack={x:e.clientX,y:e.clientY}; return; }
-    const dx=e.clientX-_pbMouseTrack.x, dy=e.clientY-_pbMouseTrack.y;
-    _pbMouseTrack.x=e.clientX; _pbMouseTrack.y=e.clientY;
     if(Math.abs(dx)<1&&Math.abs(dy)<1) return;
     _pbHeroRotY-=dx*0.004;
-    _pbHero.rotation.y=_pbHeroRotY;
     _pbAimPitch-=dy*0.004;
+    _pbHero.rotation.y=_pbHeroRotY;
     if(_pbAimPitch>1.2)_pbAimPitch=1.2;
     if(_pbAimPitch<-1.2)_pbAimPitch=-1.2;
   }
@@ -57783,14 +57785,12 @@ function paintballInit(){
     else if(e.button===2) pbToggleScope();
   }
   function _pbCtx(e){ e.preventDefault(); }
-  function _pbLockClick(){}
   document.addEventListener('keydown',_pbKeyDown);
   document.addEventListener('keyup',_pbKeyUp);
   document.addEventListener('mousemove',_pbMouseMove);
   document.addEventListener('mousedown',_pbMouseDown);
   document.addEventListener('contextmenu',_pbCtx);
-  document.getElementById('c').addEventListener('click',_pbLockClick);
-  window._pbKeyHandlers=[_pbKeyDown,_pbKeyUp,_pbMouseMove,_pbMouseDown,_pbCtx,_pbLockClick];
+  window._pbKeyHandlers=[_pbKeyDown,_pbKeyUp,_pbMouseMove,_pbMouseDown,_pbCtx];
 
   _pbLastShot=0;
   _pbAimPitch=0; // sudut tegak scope (atas/bawah)
@@ -57889,17 +57889,28 @@ function pbSpawnPlayers(){
 
   // Build ordered player list per team from online players + AI fill
   const teamSlots=[[],[]];
+  let foundMine=false;
   for(let t=0;t<2;t++){
     // Online humans first
     const onlineOnTeam=_pbOnlinePlayers.filter(p=>p.team===t);
     onlineOnTeam.forEach(p=>{
-      teamSlots[t].push({name:p.name,isHuman:true,isMine:p.name===me,isOnline:true});
+      const isMine=p.name===me;
+      if(isMine) foundMine=true;
+      teamSlots[t].push({name:p.name,isHuman:true,isMine,isOnline:true});
     });
     // Fill remaining with AI
     const fill=5-teamSlots[t].length;
     for(let i=0;i<fill;i++){
       teamSlots[t].push({name:BOT_NAMES[(t*7+i)%BOT_NAMES.length],isHuman:false,isOnline:false});
     }
+  }
+  // Fallback: if no isMine found (Firebase offline/blocked), add self to humanTeam
+  if(!foundMine){
+    const ht=humanTeam;
+    // Remove last AI from this team to make room
+    const aiIdx=teamSlots[ht].findIndex(s=>!s.isHuman);
+    if(aiIdx>=0) teamSlots[ht].splice(aiIdx,1);
+    teamSlots[ht].push({name:me,isHuman:true,isMine:true,isOnline:false});
   }
 
   _pbPlayers=[];
@@ -58319,8 +58330,8 @@ function pbShoot(){
   const bMat=new THREE.MeshBasicMaterial({color:0xff8800});
   const bullet=new THREE.Mesh(new THREE.SphereGeometry(0.10,6,6),bMat);
 
-  // ▸ Crosshair aim target via raycast (camera → crosshair screen pos → world)
-  var _aimVec=new THREE.Vector2();
+  // ▸ Crosshair aim target via raycast (camera → crosshair screen pos)
+  var _aimVec=new THREE.Vector2(0,0);
   if(_pbMouseTrack){
     _aimVec.set((_pbMouseTrack.x/window.innerWidth)*2-1, -(_pbMouseTrack.y/window.innerHeight)*2+1);
   }

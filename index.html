@@ -48605,6 +48605,10 @@ window.mobaJoinInRoom = function(roomId){
   const blueN=Object.values(_m.players).filter(p=>p.team==='blue').length;
   const redN=Object.values(_m.players).filter(p=>p.team==='red').length;
   _m.myTeam = blueN<=redN?'blue':'red';
+  // Auto-fill: pick first hero not taken by teammates in same team
+  const takenHeroes=Object.values(_m.players).filter(p=>p.team===_m.myTeam&&p.heroId).map(p=>p.heroId);
+  const firstAvail=MOBA_HEROES.find(h=>!takenHeroes.includes(h.id));
+  if(firstAvail) _m.myHeroId=firstAvail.id;
   _fbWriteMySlot(roomId);
   _m.joined = true;
   _mobaShowRoomUI('joined');
@@ -48613,9 +48617,15 @@ window.mobaJoinInRoom = function(roomId){
     : '📋 Sertai bilik';
   const joinBtn=document.getElementById('mobaJoinBtn');
   if(joinBtn){ joinBtn.disabled=true; joinBtn.style.opacity='0.45'; joinBtn.style.cursor='default'; joinBtn.textContent='✅ SUDAH SERTAI PASUKAN '+(_m.myTeam==='blue'?'🔵 BIRU':'🔴 MERAH'); }
+  // Only host can start — invitees wait
   const startBtn=document.getElementById('mobaStartNowBtn');
-  if(startBtn) startBtn.style.display='block';
+  if(startBtn) startBtn.style.display=_m.isHost?'block':'none';
+  if(!_m.isHost){
+    const s=document.getElementById('mobaLobbyStatus');
+    if(s){s.textContent='⏳ Menunggu tuan rumah mulakan permainan...';s.style.color='#ffd700';}
+  }
   _enableTeamSwitch();
+  _buildHeroPicker();
   // Read room code from Firebase (if not host)
   if(!_m.isHost&&_mobaRoomId&&window._fbGetFn){
     window._fbGetFn(window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+_mobaRoomId)).then(snap=>{

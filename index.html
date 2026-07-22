@@ -53281,7 +53281,7 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
   el.style.alignItems = 'center';
   el.style.justifyContent = 'center';
 
-  const sz = isMine ? 140 : 120;
+  const sz = isMine ? 160 : 140;
   const canvas = document.createElement('canvas');
   canvas.width = sz * 2;
   canvas.height = sz * 2;
@@ -53294,13 +53294,8 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-  if(isMine){
-    camera.position.set(0, 1.2, 4.2);
-    camera.lookAt(0, 0.15, 0);
-  } else {
-    camera.position.set(0, 1.2, 4.2);
-    camera.lookAt(0, 0.15, 0);
-  }
+  camera.position.set(0, 0.7, 1.8);
+  camera.lookAt(0, 0.35, 0);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
   const dl = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -53312,7 +53307,7 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
 
   const group = new THREE.Group();
   const rarity = petDef.rarity || 'Biasa';
-  const sc = rarity==='Legenda' ? 0.80 : rarity==='Nadir' ? 0.65 : 0.55;
+  const sc = rarity==='Legenda' ? 0.70 : rarity==='Nadir' ? 0.65 : 0.60;
   _pkmnBuildPetModel(petDef.id, THREE, group, sc);
   scene.add(group);
 
@@ -53351,7 +53346,7 @@ function _pkmnBuildPetModel(id, THREE, group, sc){
     case 'eevee':   _buildEevee(THREE, group, sc); break;
     case 'jigglypuff':_buildJigglypuff(THREE, group, sc); break;
     case 'meowth':  _buildMeowth(THREE, group, sc); break;
-    case 'zaprez':  if(typeof glbApplySkin==='function'){ group.scale.setScalar(sc*1.0); glbApplySkin(group,'pet_zaprez'); } else { _buildNaga(THREE, group, sc); } break;
+    case 'zaprez':  if(typeof glbApplySkin==='function'){ group.scale.setScalar(0.01); var _zaprezFallback=function(){ if(group.children.length===0||group.scaleScalar<0.02){ group.scale.setScalar(1); _buildNaga(THREE, group, sc); } }; setTimeout(_zaprezFallback,3000); glbApplySkin(group,'pet_zaprez',function(){ try{ group.scale.setScalar(1); group.updateMatrixWorld(true); var bb=new THREE.Box3().setFromObject(group); var sz=new THREE.Vector3(); bb.getSize(sz); var maxDim=Math.max(sz.x,sz.y,sz.z); if(maxDim>0.01){ var fitSc=(1.0*sc)/maxDim; group.scale.setScalar(fitSc); group.position.y=-bb.min.y*fitSc; var d2=_pkmnBattleRenderers.find(r=>r.group===group); if(d2){ d2._fbxFit=true; d2._fbxFitY=-bb.min.y*fitSc; } } }catch(e){} }); } else { _buildNaga(THREE, group, sc); } break;
     default:        _buildKucing(THREE, group, sc); break;
   }
 }
@@ -53368,7 +53363,11 @@ function _pkmnStartBattleRaf(){
       if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
       d.t += 0.016;
       const bob = Math.sin(d.t*2.8)*0.01;
-      d.group.position.y = d.sc*0.10+bob;
+      if(d._fbxFit){
+        d.group.position.y = d._fbxFitY+bob;
+      } else {
+        d.group.position.y = d.sc*0.10+bob;
+      }
       d.group.rotation.y = d.isMine ? Math.PI : 0;
       d.ring.rotation.z = t*0.3;
       d.renderer.render(d.scene, d.camera);

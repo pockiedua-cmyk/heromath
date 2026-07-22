@@ -48250,21 +48250,27 @@ window._createMatchAndStart = function(){
     };
   });
 
-  // Write match to Firebase (tells other players to start)
+  // Write match to Firebase FIRST (tells other players to start)
   window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_match/'+matchId),{
     status:'playing',
     startTime:Date.now(),
     host:me,
     players:matchPlayers
+  }).then(()=>{
+    // Tag room AFTER match data confirmed — so invitee reads match data successfully
+    if(_m._mobaRoomId){
+      window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+_m._mobaRoomId+'/match'),matchId);
+      window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+_m._mobaRoomId+'/state'),'playing');
+    }
+    // Backward compat: tag lobby entry
+    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_lobby/'+me+'/_match'),matchId);
+  }).catch(()=>{
+    // If write fails, still try to tag room
+    if(_m._mobaRoomId){
+      window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+_m._mobaRoomId+'/match'),matchId);
+      window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+_m._mobaRoomId+'/state'),'playing');
+    }
   });
-
-  // Tag room so other players in room detect match
-  if(_m._mobaRoomId){
-    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+_m._mobaRoomId+'/match'),matchId);
-    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+_m._mobaRoomId+'/state'),'playing');
-  }
-  // Backward compat: tag lobby entry
-  window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_lobby/'+me+'/_match'),matchId);
 
   _startMultiplayerGame(matchId, matchPlayers);
 };
@@ -48278,18 +48284,20 @@ window._joinMatch = function(matchId){
   _m.isHost=false;
 
   // Safety timeout: reset joining flag if match data never arrives
+  let _joinCleaned=false;
   const joinTimeout=setTimeout(()=>{
-    if(_m&&_m._joiningMatch){ _m._joiningMatch=false; _m.matchId=null; }
+    if(_m&&_m._joiningMatch){ _m._joiningMatch=false; _m.matchId=null; _joinCleaned=true; try{ if(typeof unsub==='function') unsub(); }catch(e){} }
   }, 8000);
 
   // Read match data from Firebase and start game
   const matchRef=window._fbRefFn(window._fbPresenceDb,'moba_match/'+matchId);
   const unsub=window._fbOnValueFn(matchRef, snap=>{
-    if(!_m||_m.phase==='game'){ _m._joiningMatch=false; clearTimeout(joinTimeout); try{ if(typeof unsub==='function') unsub(); }catch(e){} return; }
+    if(_joinCleaned) return;
+    if(!_m||_m.phase==='game'){ _m._joiningMatch=false; clearTimeout(joinTimeout); _joinCleaned=true; try{ if(typeof unsub==='function') unsub(); }catch(e){} return; }
     const matchData=snap.val();
-    if(!matchData||!matchData.players){ _m._joiningMatch=false; clearTimeout(joinTimeout); try{ if(typeof unsub==='function') unsub(); }catch(e){} return; }
+    if(!matchData||!matchData.players) return;
     const myMatchData=matchData.players[me];
-    if(!myMatchData){ _m._joiningMatch=false; clearTimeout(joinTimeout); try{ if(typeof unsub==='function') unsub(); }catch(e){} return; }
+    if(!myMatchData) return;
 
     // Set our hero from match data
     const h=MOBA_HEROES.find(hh=>hh.id===myMatchData.heroId);
@@ -48298,6 +48306,7 @@ window._joinMatch = function(matchId){
 
     _m._joiningMatch=false;
     clearTimeout(joinTimeout);
+    _joinCleaned=true;
     _startMultiplayerGame(matchId, matchData.players);
     try{ if(typeof unsub==='function') unsub(); }catch(e){}
   });

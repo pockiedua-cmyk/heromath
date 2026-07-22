@@ -8600,6 +8600,7 @@ function authStartGame(profile){
     if(typeof pbInviteStartListen==='function') pbInviteStartListen();
     if(typeof chessInviteStartListen==='function') chessInviteStartListen();
     if(typeof gsInviteStartListen==='function') gsInviteStartListen();
+    if(typeof _ziLobbyInviteStartListen==='function') _ziLobbyInviteStartListen();
   }, 1500);
   // ── Sync SEMUA data shop (points, owned, equipped) dari Firebase ──
   setTimeout(()=>{
@@ -11431,6 +11432,7 @@ function menuGoMap(){
   setTimeout(()=>{ if(typeof pbInviteStartListen==='function') pbInviteStartListen(); }, 950);
   setTimeout(()=>{ if(typeof chessInviteStartListen==='function') chessInviteStartListen(); }, 950);
   setTimeout(()=>{ if(typeof gsInviteStartListen==='function') gsInviteStartListen(); }, 950);
+  setTimeout(()=>{ if(typeof _ziLobbyInviteStartListen==='function') _ziLobbyInviteStartListen(); }, 1000);
   setTimeout(()=>{ if(typeof petPvPInitListener==='function') petPvPInitListener(); }, 1000);
 }
 
@@ -20508,6 +20510,7 @@ function smapBuild3D(){
       }
       h+='</div>';
       h+='<div style="font-size:7px;color:#aaa;margin-bottom:10px;">👥 '+names.length+' / 4 pemain</div>';
+      h+='<button onclick="_ziLobbyInviteOpen()" style="display:block;width:100%;background:linear-gradient(135deg,#1a3a6a,#0a2040);color:#66aaff;border:3px solid #4488ff;padding:10px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:9px;margin-bottom:8px;">📨 JEMPUT PLAYER ONLINE</button>';
       if(isH){
         h+='<button id="ziLobbyStartBtn" onclick="_ziLobbyStartGame()" style="display:block;width:100%;background:linear-gradient(135deg,#228822,#00aa44);color:#fff;border:3px solid #44ff66;padding:12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:11px;margin-bottom:8px;box-shadow:0 4px 0 #006622;">⚔️ MULA PERMAINAN</button>';
       }else{
@@ -20583,8 +20586,10 @@ function smapBuild3D(){
     _ziLobby.code=null;_ziLobby.isHost=false;_ziLobby.active=false;_ziLobby.roomData=null;
     _ziLobbyRenderBody();
   };
+  var _ziLobbyStartedHandled=false;
   function _ziLobbyListen(code){
     if(_ziLobby.unsub)try{_ziLobby.unsub();}catch(e){}
+    _ziLobbyStartedHandled=false;
     var ref=_ziLobbyRoomRef(code);
     if(!ref)return;
     _ziLobby.unsub=window._fbOnValueFn(ref,function(snap){
@@ -20592,20 +20597,34 @@ function smapBuild3D(){
       if(!d){
         _ziLobby.active=false;_ziLobby.roomData=null;
         _ziLobby.code=null;_ziLobby.isHost=false;
-        var ov=document.getElementById('ziLobbyOverlay');
-        if(ov){_ziLobbyRenderBody();if(!_ziLobby.code)_ziLobbyOpen();}
         return;
       }
       _ziLobby.roomData=d;
       _ziLobby.isHost=(d.host===_ziLobbyUser());
+      if(d.started&&!_ziLobbyStartedHandled&&!_ziLobby.isHost){
+        _ziLobbyStartedHandled=true;
+        _ziLobbyEnterGame(code,false);
+        return;
+      }
       _ziLobbyRenderBody();
     });
   }
   window._ziLobbyStartGame=function(){
-    if(!_ziLobby.isHost||!_ziLobby.code)return;
+    if(!_ziLobby.isHost||!ziLobbyCodeReady())return;
     var code=_ziLobby.code;
+    var ref=_ziLobbyRoomRef(code);
+    if(ref&&window._fbSetFn){
+      window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'zi_coop/'+code+'/started'),Date.now()).then(function(){
+        _ziLobbyEnterGame(code,true);
+      });
+    }else{
+      _ziLobbyEnterGame(code,true);
+    }
+  };
+  function ziLobbyCodeReady(){return!!_ziLobby.code;}
+  window._ziLobbyEnterGame=function(code,isHost){
     var ov=document.getElementById('ziLobbyOverlay');if(ov)ov.remove();
-    _ziCoop.code=code;_ziCoop.isHost=true;_ziCoop.active=true;
+    _ziCoop.code=code;_ziCoop.isHost=!!isHost;_ziCoop.active=true;
     _ziCoopAttachListener(code);
     _ziCoopEnsureUI();
     ziOpen();
@@ -20624,14 +20643,170 @@ function smapBuild3D(){
       var pref=window._fbRefFn(window._fbPresenceDb,'zi_coop/'+code+'/players/'+u);
       window._fbSetFn(pref,{joined:true,hp:100,ts:Date.now()}).then(function(){
         _ziLobby.code=code;_ziLobby.isHost=(d.host===u);_ziLobby.active=true;
-        _ziCoop.code=code;_ziCoop.isHost=(d.host===u);_ziCoop.active=true;
         _ziLobbyListen(code);
-        _ziCoopAttachListener(code);
-        _ziCoopEnsureUI();
-        _ziLobbyOpen();
+        _ziLobbyRenderBody();
+        if(!document.getElementById('ziLobbyOverlay'))_ziLobbyOpen();
       });
     });
   }
+
+  // ──────────────────────────────────────────
+  //  ZI LOBBY — INVITE PLAYER ONLINE
+  // ──────────────────────────────────────────
+  var _ziInviteUnsub=null;
+  var _ziInviteListenerStarted=false;
+
+  window._ziLobbyInviteOpen=function(){
+    if(!_ziLobby.code){alert('❌ Tiada bilik aktif.');return;}
+    var ov=document.getElementById('ziInviteOverlay');
+    if(ov){ov.remove();return;}
+    ov=document.createElement('div');ov.id='ziInviteOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);font-family:"Press Start 2P",monospace;color:#fff;display:flex;align-items:center;justify-content:center;';
+    document.body.appendChild(ov);
+    ov.innerHTML='<div style="background:linear-gradient(180deg,#0a1a2a,#0a0a1a);border:3px solid #4488ff;border-radius:12px;padding:20px 24px;max-width:360px;width:92vw;text-align:center;">'
+      +'<div style="font-size:12px;color:#4488ff;margin-bottom:12px;">📨 JEMPUT PLAYER</div>'
+      +'<div style="font-size:7px;color:#888;margin-bottom:10px;">Bilik: <span style="color:#00ff44;letter-spacing:3px;">'+_ziLobby.code+'</span></div>'
+      +'<div id="ziInviteList" style="max-height:240px;overflow-y:auto;margin-bottom:12px;"></div>'
+      +'<div id="ziInviteStatus" style="font-size:7px;color:#aaa;margin-bottom:8px;"></div>'
+      +'<button onclick="document.getElementById(\'ziInviteOverlay\').remove()" style="background:#444;color:#fff;border:2px solid #888;padding:8px 16px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:7px;">✖ TUTUP</button>'
+      +'</div>';
+    _ziLobbyRenderInviteList();
+    if(window._ziInviteListInterval)clearInterval(window._ziInviteListInterval);
+    window._ziInviteListInterval=setInterval(function(){
+      var ov2=document.getElementById('ziInviteOverlay');
+      if(ov2)_ziLobbyRenderInviteList();else clearInterval(window._ziInviteListInterval);
+    },3000);
+  };
+
+  function _ziLobbyRenderInviteList(){
+    var list=document.getElementById('ziInviteList');if(!list)return;
+    var me=_ziLobbyUser();
+    var now=Date.now();
+    var cache=window._fbPresenceCache||{};
+    var ps=Object.values(cache).filter(function(p){
+      return p.who&&p.who.toUpperCase()!==me&&(now-(p.ts||0))<25000;
+    });
+    if(ps.length===0){
+      list.innerHTML='<div style="color:#335;font-size:7px;text-align:center;padding:12px 0;">Tiada pemain lain online.<br><span style="color:#224;">Minta kawan buka Peta Sekolah!</span></div>';
+      return;
+    }
+    list.innerHTML='';
+    ps.forEach(function(p){
+      var name=(p.who||'').toUpperCase();
+      var display=p.who||name;
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:rgba(0,100,255,0.05);border:1px solid #1a2a4a;border-radius:6px;padding:6px 8px;margin-bottom:4px;';
+      row.innerHTML='<div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">'
+        +'<div style="width:7px;height:7px;border-radius:50%;background:#00e676;flex-shrink:0;box-shadow:0 0 5px #00e676;"></div>'
+        +'<span style="color:#ccc;font-size:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+display+'</span></div>'
+        +'<button onclick="_ziLobbyInviteSend(\''+name+'\')" style="background:linear-gradient(135deg,#003a6a,#001a3a);color:#00b4ff;border:2px solid #4488ff;padding:4px 9px;font-family:inherit;font-size:6px;cursor:pointer;border-radius:4px;white-space:nowrap;flex-shrink:0;">📨 JEMPUT</button>';
+      list.appendChild(row);
+    });
+  }
+
+  window._ziLobbyInviteSend=function(target){
+    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn||!_ziLobby.code){return;}
+    var st=document.getElementById('ziInviteStatus');
+    document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=true;});
+    if(st){st.style.color='#ffd700';st.textContent='📡 Menjemput '+target+'...';}
+    var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+target);
+    window._fbSetFn(invRef,{
+      from:_ziLobbyUser(),
+      fromDisplay:(playerProfile&&playerProfile.name?playerProfile.name:_ziLobbyUser()),
+      roomCode:_ziLobby.code,
+      ts:Date.now(),
+      status:'pending'
+    }).then(function(){
+      if(st)st.textContent='⏳ Tunggu '+target+' balas...';
+      var autoCancel=setTimeout(function(){
+        if(_ziInviteUnsub){_ziInviteUnsub();_ziInviteUnsub=null;}
+        _ziLobbyCleanInvite(target);
+        if(st){st.style.color='#e52521';st.textContent='⏱ Masa tamat.';}
+        document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=false;});
+      },25000);
+      if(_ziInviteUnsub){_ziInviteUnsub();_ziInviteUnsub=null;}
+      _ziInviteUnsub=window._fbOnValueModule.onValue(invRef,function(snap){
+        var d=snap.val();
+        if(!d)return;
+        if(d.status==='accepted'){
+          clearTimeout(autoCancel);
+          if(_ziInviteUnsub){_ziInviteUnsub();_ziInviteUnsub=null;}
+          setTimeout(function(){_ziLobbyCleanInvite(target);},3000);
+          if(st){st.style.color='#00e676';st.textContent='✅ '+target+' terima!';}
+          document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=false;});
+        }else if(d.status==='declined'){
+          clearTimeout(autoCancel);
+          if(_ziInviteUnsub){_ziInviteUnsub();_ziInviteUnsub=null;}
+          _ziLobbyCleanInvite(target);
+          if(st){st.style.color='#e52521';st.textContent='✖ '+target+' menolak.';}
+          document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=false;});
+        }
+      });
+    }).catch(function(){
+      if(st){st.style.color='#e52521';st.textContent='⚠ Gagal hantar.';}
+      document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=false;});
+    });
+  };
+
+  function _ziLobbyCleanInvite(target){
+    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbRemoveFn||!target)return;
+    try{window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'zi_invites/'+target));}catch(e){}
+  }
+
+  // ── Listen untuk jemputan ZI masuk ──
+  window._ziLobbyInviteStartListen=function(){
+    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueModule)return;
+    if(!playerProfile||(!playerProfile.username&&!playerProfile.name)){
+      setTimeout(window._ziLobbyInviteStartListen,1000);return;
+    }
+    var me=_ziLobbyUser();
+    if(!me){setTimeout(window._ziLobbyInviteStartListen,1000);return;}
+    if(_ziInviteListenerStarted)return;
+    _ziInviteListenerStarted=true;
+    var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+me);
+    window._fbOnValueModule.onValue(invRef,function(snap){
+      var d=snap.val();
+      if(!d||d.status!=='pending')return;
+      if(_isAnyGameActive&&_isAnyGameActive())return;
+      if(_ziLobby.active)return;
+      _ziLobbyShowInviteToast(d.from,d.fromDisplay,d.roomCode);
+    });
+  };
+
+  function _ziLobbyShowInviteToast(from,fromDisplay,code){
+    var existing=document.getElementById('ziInviteToast');
+    if(existing)existing.remove();
+    var t=document.createElement('div');t.id='ziInviteToast';
+    t.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0a1a0a;border:3px solid #00ff44;box-shadow:0 0 30px rgba(0,255,68,0.5),8px 8px 0 #004400;padding:22px 26px;text-align:center;z-index:9999;min-width:min(300px,88vw);font-family:"Press Start 2P",monospace;';
+    t.innerHTML='<div style="color:#00ff44;font-size:14px;margin-bottom:8px;">🧟 ZOMBIE ISLAND</div>'
+      +'<div style="color:#fff;font-size:8px;margin-bottom:6px;">'+(fromDisplay||from)+' menjemput anda!</div>'
+      +'<div style="color:#888;font-size:7px;margin-bottom:14px;">Bilik: <span style="color:#00ff44;letter-spacing:3px;">'+code+'</span></div>'
+      +'<button id="ziInviteAccept" style="background:#228822;color:#fff;border:3px solid #44ff66;padding:8px 16px;font-family:inherit;font-size:8px;cursor:pointer;margin-right:8px;">✅ TERIMA</button>'
+      +'<button id="ziInviteDecline" style="background:#e52521;color:#fff;border:3px solid #ff6666;padding:8px 16px;font-family:inherit;font-size:8px;cursor:pointer;">✖ TOLAK</button>';
+    document.body.appendChild(t);
+    document.getElementById('ziInviteAccept').onclick=function(){_ziLobbyInviteAccept(code,from);};
+    document.getElementById('ziInviteDecline').onclick=function(){_ziLobbyInviteDecline(code,from);};
+    setTimeout(function(){var el=document.getElementById('ziInviteToast');if(el)el.remove();},15000);
+  }
+
+  window._ziLobbyInviteAccept=function(code,from){
+    var t=document.getElementById('ziInviteToast');if(t)t.remove();
+    var me=_ziLobbyUser();
+    if(window._fbPresenceDb&&window._fbRefFn&&window._fbSetFn){
+      var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+me);
+      window._fbSetFn(invRef,{from:me,ts:Date.now(),status:'accepted'});
+    }
+    _ziLobbyJoin(code);
+  };
+
+  window._ziLobbyInviteDecline=function(code,from){
+    var t=document.getElementById('ziInviteToast');if(t)t.remove();
+    var me=_ziLobbyUser();
+    if(window._fbPresenceDb&&window._fbRefFn&&window._fbSetFn){
+      var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+me);
+      window._fbSetFn(invRef,{from:me,ts:Date.now(),status:'declined'});
+    }
+  };
 
   window._ziShowManualPage=function(){
     var el=document.getElementById('ziManualPage');

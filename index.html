@@ -20705,11 +20705,13 @@ function smapBuild3D(){
   }
 
   window._ziLobbyInviteSend=function(target){
-    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn||!_ziLobby.code){return;}
+    console.log('[ZI-INVITE-SEND] target='+target+' code='+_ziLobby.code+' me='+_ziLobbyUser());
+    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn||!_ziLobby.code){console.log('[ZI-INVITE-SEND] EARLY RETURN - missing fb refs or code');return;}
     var st=document.getElementById('ziInviteStatus');
     document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=true;});
     if(st){st.style.color='#ffd700';st.textContent='📡 Menjemput '+target+'...';}
     var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+target);
+    console.log('[ZI-INVITE-SEND] writing to zi_invites/'+target);
     window._fbSetFn(invRef,{
       from:_ziLobbyUser(),
       fromDisplay:(playerProfile&&playerProfile.name?playerProfile.name:_ziLobbyUser()),
@@ -20717,6 +20719,7 @@ function smapBuild3D(){
       ts:Date.now(),
       status:'pending'
     }).then(function(){
+      console.log('[ZI-INVITE-SEND] WRITE SUCCESS');
       if(st)st.textContent='⏳ Tunggu '+target+' balas...';
       var autoCancel=setTimeout(function(){
         if(_ziInviteUnsub){_ziInviteUnsub();_ziInviteUnsub=null;}
@@ -20742,7 +20745,8 @@ function smapBuild3D(){
           document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=false;});
         }
       });
-    }).catch(function(){
+    }).catch(function(e){
+      console.log('[ZI-INVITE-SEND] WRITE FAILED',e);
       if(st){st.style.color='#e52521';st.textContent='⚠ Gagal hantar.';}
       document.querySelectorAll('#ziInviteList button').forEach(function(b){b.disabled=false;});
     });
@@ -20755,23 +20759,26 @@ function smapBuild3D(){
 
   // ── Listen untuk jemputan ZI masuk ──
   window._ziLobbyInviteStartListen=function(){
-    if(!window._fbPresenceDb||!window._fbRefFn)return;
     if(!playerProfile||(!playerProfile.username&&!playerProfile.name)){
       setTimeout(window._ziLobbyInviteStartListen,1000);return;
     }
     var me=_ziLobbyUser();
     if(!me){setTimeout(window._ziLobbyInviteStartListen,1000);return;}
     var tryListen=function(){
-      if(!window._fbReady)return;
-      if(!window._fbOnValueModule)return;
-      if(_ziInviteListenerStarted)return;
+      if(!window._fbReady){console.log('[ZI-INVITE] fbNotReady');return;}
+      if(!window._fbPresenceDb||!window._fbRefFn){console.log('[ZI-INVITE] fbRefsMissing');return;}
+      if(!window._fbOnValueFn){console.log('[ZI-INVITE] onValueMissing');return;}
+      if(_ziInviteListenerStarted){console.log('[ZI-INVITE] alreadyListening');return;}
       _ziInviteListenerStarted=true;
-      var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+me);
-      window._fbOnValueModule.onValue(invRef,function(snap){
+      var path='zi_invites/'+me;
+      var invRef=window._fbRefFn(window._fbPresenceDb,path);
+      console.log('[ZI-INVITE] listenerSetup path='+path+' me='+me);
+      window._fbOnValueFn(invRef,function(snap){
         var d=snap.val();
+        console.log('[ZI-INVITE] listenerFired d=',JSON.stringify(d),'active='+_ziLobby.active);
         if(!d||d.status!=='pending')return;
-        if(_isAnyGameActive&&_isAnyGameActive())return;
-        if(_ziLobby.active)return;
+        if(_isAnyGameActive&&_isAnyGameActive()){console.log('[ZI-INVITE] blocked_by_game_active');return;}
+        if(_ziLobby.active){console.log('[ZI-INVITE] blocked_by_lobby_active');return;}
         _ziLobbyShowInviteToast(d.from,d.fromDisplay,d.roomCode);
       });
     };

@@ -3190,7 +3190,7 @@ setTimeout(()=>{
       <div id="smapRoomBtn" onclick="roomOpen()">🚪 BILIK<br><span style="color:#c084fc;font-size:0.85em;">HIAS</span></div>
       <div id="smapDailyClaimBtn" onclick="dcOpen()"><div class="dc-badge" id="dcBadge" style="display:none;">!</div>🎁<br><span style="font-size:0.85em;" id="dcBtnLabel">HARIAN</span></div>
       <div id="smapCoordDisplay" style="position:absolute;top:10px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1vw,8px);z-index:11;pointer-events:none;user-select:none;background:rgba(0,0,0,0.5);padding:4px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);">📌 X:0 Z:0</div>
-      <a href="https://www.facebook.com/profile.php?id=100078015591115" target="_blank" rel="noopener" style="position:absolute;top:34px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(5px,0.8vw,7px);z-index:11;pointer-events:auto;user-select:none;background:rgba(24,24,60,0.7);padding:3px 8px;border-radius:4px;border:1px solid #3b5998;text-decoration:none;box-shadow:0 0 6px rgba(59,89,152,0.4);">📘 Facebook</a>
+      <a id="smapFbLink" href="https://www.facebook.com/profile.php?id=100078015591115" target="_blank" rel="noopener" style="position:absolute;top:34px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(5px,0.8vw,7px);z-index:11;pointer-events:auto;user-select:none;background:rgba(24,24,60,0.7);padding:3px 8px;border-radius:4px;border:1px solid #3b5998;text-decoration:none;box-shadow:0 0 6px rgba(59,89,152,0.4);">📘 Facebook</a>
       <div id="smapScreenshotBtn" onclick="smapTakeScreenshot()" style="position:absolute;top:56px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(5px,0.8vw,7px);z-index:11;pointer-events:auto;user-select:none;background:rgba(24,24,60,0.7);padding:3px 8px;border-radius:4px;border:1px solid #e1306c;cursor:pointer;box-shadow:0 0 6px rgba(225,48,108,0.4);">📸 Share</div>
       <!-- Panel Cuaca (bawah butang Share): awan+matahari waktu siang, bintang+bulan+aurora/bintang jatuh waktu malam -->
       <div id="smapWeatherPanel" style="position:absolute;top:80px;right:118px;color:#ffffff;font-family:'Press Start 2P',monospace;font-size:clamp(4.5px,0.75vw,6.5px);line-height:1.7;z-index:11;pointer-events:none;user-select:none;background:rgba(24,24,60,0.7);padding:4px 8px;border-radius:4px;border:1px solid #6a8aaa;box-shadow:0 0 6px rgba(106,138,170,0.4);text-align:right;">☀️ Musim Panas • 🔆 Siang<br>☁️ Awan</div>
@@ -20476,7 +20476,8 @@ function smapBuild3D(){
       if(!_ziCoreHudIds[ch.id])continue;
       ch.style.display=onZI?'none':'';
     }}
-    ['smapPetBagBtn','smapRoomBtn','smapDailyClaimBtn','smapPetDialog','smapZiBtn'].forEach(function(_id){var el=document.getElementById(_id);if(el)el.style.display=onZI?'none':'';});
+    ['smapPetBagBtn','smapRoomBtn','smapDailyClaimBtn','smapPetDialog','smapZiBtn',
+     'smapWeatherPanel','smapFbLink','smapScreenshotBtn','smapMinimap'].forEach(function(_id){var el=document.getElementById(_id);if(el)el.style.display=onZI?'none':'';});
   }
   // ═══════════════════════════════════════════════
   //  ZOMBIE ISLAND — LOBBY ROOM (Portal Entry)
@@ -53241,6 +53242,120 @@ function _pkmnHit(elId){
   setTimeout(()=>el.classList.remove('hit'), 400);
 }
 
+// ── Global state untuk mini renderers battle ──
+let _pkmnBattleRenderers = [];
+let _pkmnBattleRafId = null;
+
+// ── Build model 3D pet di dalam div battle sprite ──
+function _pkmnBuildBattlePet(elId, petDef, isMine){
+  if(!window.THREE || !petDef) return;
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const THREE = window.THREE;
+  el.textContent = '';
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.justifyContent = 'center';
+
+  const sz = isMine ? 130 : 110;
+  const canvas = document.createElement('canvas');
+  canvas.width = sz * 2;
+  canvas.height = sz * 2;
+  canvas.style.cssText = 'width:'+sz+'px;height:'+sz+'px;display:block;';
+  el.appendChild(canvas);
+
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setSize(sz, sz);
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+  camera.position.set(0, 1.2, 3.5);
+  camera.lookAt(0, 0.3, 0);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+  dl.position.set(2, 4, 3);
+  scene.add(dl);
+  const dl2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+  dl2.position.set(-2, 2, -1);
+  scene.add(dl2);
+
+  const group = new THREE.Group();
+  const rarity = petDef.rarity || 'Biasa';
+  const sc = rarity==='Legenda' ? 0.92 : rarity==='Nadir' ? 0.78 : 0.68;
+  _pkmnBuildPetModel(petDef.id, THREE, group, sc);
+  scene.add(group);
+
+  // Rarity glow ring
+  const ringColor = rarity==='Legenda' ? 0xffd700 : rarity==='Nadir' ? 0xa29bfe : 0x00e676;
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(0.55, 0.82, 24),
+    new THREE.MeshBasicMaterial({color:ringColor, transparent:true, opacity:0.55, side:THREE.DoubleSide, depthWrite:false})
+  );
+  ring.rotation.x = -Math.PI/2;
+  ring.position.y = -0.01;
+  scene.add(ring);
+
+  const data = {renderer, scene, camera, group, ring, el, canvas, t: Math.random()*6.28, isMine};
+  _pkmnBattleRenderers.push(data);
+  _pkmnStartBattleRaf();
+}
+
+// ── Switch builder ikut pet id ──
+function _pkmnBuildPetModel(id, THREE, group, sc){
+  switch(id){
+    case 'pikachu': _buildPikachu(THREE, group, sc); break;
+    case 'kucing':  _buildKucing(THREE, group, sc); break;
+    case 'scorbunny':_buildScorbunny(THREE, group, sc); break;
+    case 'burung':  _buildBurung(THREE, group, sc); break;
+    case 'katak':   _buildKatak(THREE, group, sc); break;
+    case 'rama':    _buildRama(THREE, group, sc); break;
+    case 'musang':  _buildMusang(THREE, group, sc); break;
+    case 'naga':    _buildNaga(THREE, group, sc); break;
+    case 'lugia':   _buildLugia(THREE, group, sc); break;
+    case 'hooh':    _buildHooh(THREE, group, sc); break;
+    case 'groudon': _buildGroudon(THREE, group, sc); break;
+    case 'geodude': _buildGeodude(THREE, group, sc); break;
+    case 'oddish':  _buildOddish(THREE, group, sc); break;
+    case 'eevee':   _buildEevee(THREE, group, sc); break;
+    case 'jigglypuff':_buildJigglypuff(THREE, group, sc); break;
+    case 'meowth':  _buildMeowth(THREE, group, sc); break;
+    case 'zaprez':  if(typeof glbApplySkin==='function'){ group.scale.setScalar(sc*1.0); glbApplySkin(group,'pet_zaprez'); } else { _buildNaga(THREE, group, sc); } break;
+    default:        _buildKucing(THREE, group, sc); break;
+  }
+}
+
+// ── RAF loop untuk semua mini battle renderers ──
+function _pkmnStartBattleRaf(){
+  if(_pkmnBattleRafId) return;
+  function loop(){
+    if(!_pkmnBattleRenderers.length){ _pkmnBattleRafId = null; return; }
+    _pkmnBattleRafId = requestAnimationFrame(loop);
+    const t = performance.now()*0.001;
+    for(let i=_pkmnBattleRenderers.length-1;i>=0;i--){
+      const d = _pkmnBattleRenderers[i];
+      if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
+      d.t += 0.016;
+      const bob = Math.sin(d.t*2.8)*0.06;
+      d.group.position.y = d.isMine ? 0.45+bob : 0.42+bob;
+      d.group.rotation.y = Math.sin(d.t*0.8)*0.25;
+      d.ring.rotation.z = t*0.3;
+      d.renderer.render(d.scene, d.camera);
+    }
+  }
+  _pkmnBattleRafId = requestAnimationFrame(loop);
+}
+
+function _pkmnCleanupBattleRenderers(){
+  for(const d of _pkmnBattleRenderers){
+    try{ d.renderer.dispose(); }catch(e){}
+    d.el.textContent = '';
+  }
+  _pkmnBattleRenderers = [];
+  if(_pkmnBattleRafId){ cancelAnimationFrame(_pkmnBattleRafId); _pkmnBattleRafId = null; }
+}
+
 function petBattleStart(w){
   const summon = petSummonLoad();
   const myPet = summon || (petLoadBag().length > 0 ? petLoadBag()[0] : null);
@@ -53260,12 +53375,14 @@ function petBattleStart(w){
     turnCount: 0
   };
 
-  // Show battle UI
-  document.getElementById('petBattleMyEmoji').textContent = myPet.emoji || '🐾';
+  // Show battle UI — 3D pet models
+  _pkmnCleanupBattleRenderers();
+  const myPetDef = PET_DEFS.find(d=>d.id===myPet.id) || {id:myPet.id, emoji:'🐾', rarity:'Biasa'};
+  _pkmnBuildBattlePet('petBattleMyEmoji', myPetDef, true);
   document.getElementById('petBattleMyName').textContent = (myPet.name||'Pet')+' Lv.'+lvlInfo.lvl;
   document.getElementById('petBattleMyHpBar').style.width = '100%';
   document.getElementById('petBattleMyHpText').textContent = myMaxHP+'/'+myMaxHP;
-  document.getElementById('petBattleWildEmoji').textContent = w.def.emoji;
+  _pkmnBuildBattlePet('petBattleWildEmoji', w.def, false);
   document.getElementById('petBattleWildName').textContent = w.def.name+' ['+w.def.rarity+']';
   document.getElementById('petBattleWildHpBar').style.width = '100%';
   document.getElementById('petBattleWildHpText').textContent = wildMaxHP+'/'+wildMaxHP;
@@ -53384,6 +53501,7 @@ function _petBattleWildAttack(){
 }
 
 function _petBattleEnd(win){
+  _pkmnCleanupBattleRenderers();
   const s = window._petBattleState;
   if(!s) return;
   if(win){
@@ -53609,6 +53727,7 @@ function petPvPSendInvite(targetUsername, targetDisplay){
   const me = smapGetPlayerName();
   if(!me){ showPetNotification('⚠', 'GAGAL', 'Nama pemain tidak dijumpai.', '#e52521'); return; }
   if(!targetUsername || targetUsername===me){ showPetNotification('⚠', 'GAGAL', 'Tak boleh cabar diri sendiri.', '#e52521'); return; }
+  if(_petPvPState && _petPvPState.active){ showPetNotification('⚠', 'GAGAL', 'Sedang dalam pertarungan!', '#e52521'); return; }
   const myPet = petPvPGetMyPet();
   if(!myPet){
     showPetNotification('⚠', 'ANDA TIDAK ADA PET!', 'Beli PIKACHU STARTER di kedai!', '#e52521');
@@ -53618,12 +53737,16 @@ function petPvPSendInvite(targetUsername, targetDisplay){
     showPetNotification('⚠', 'FIREBASE TIDAK SIAP', 'Tunggu sebentar, cuba lagi.', '#e52521');
     return;
   }
+  // Padam response lama supaya onValue tak trigger data stale
+  const myRespRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+me+'/response');
+  try{ window._fbRemoveFn && window._fbRemoveFn(myRespRef); }catch(e){}
+  const inviteTs = Date.now();
   const invRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+targetUsername);
   window._fbSetFn(invRef, {
     from: me,
     fromDisplay: (playerProfile.name||me),
     myPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, lvl:myPet.lvl||1, rarity:myPet.rarity},
-    ts: Date.now(),
+    ts: inviteTs,
     status: 'pending'
   }).then(()=>{
     showPetNotification('📡', 'CABARAN DIHANTAR!', 'Tunggu '+targetDisplay+' terima...', '#a855f7');
@@ -53637,7 +53760,7 @@ function petPvPSendInvite(targetUsername, targetDisplay){
     if(window._fbOnValueModule){
       window._fbOnValueModule.onValue(respRef, snap=>{
         const d = snap.val();
-        if(d && d.status==='accepted'){
+        if(d && d.status==='accepted' && d.ts && d.ts >= inviteTs){
           petPvPStartBattle(d.oppPet);
         }
       }, {onlyOnce:true});
@@ -53674,15 +53797,18 @@ function petPvPAcceptInvite(){
     showPetNotification('⚠', 'ANDA TIDAK ADA PET!', 'Beli PIKACHU STARTER di kedai!', '#e52521');
     return;
   }
-  // Balas ke Firebase
+  if(_petPvPState && _petPvPState.active){
+    showPetNotification('⚠', 'GAGAL', 'Sedang dalam pertarungan!', '#e52521');
+    return;
+  }
   const respRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+_petPvPInvite.from+'/response');
   if(window._fbSetFn){
     window._fbSetFn(respRef, {
       status: 'accepted',
-      oppPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, lvl:myPet.lvl||1, rarity:myPet.rarity}
+      oppPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, lvl:myPet.lvl||1, rarity:myPet.rarity},
+      ts: Date.now()
     });
   }
-  // Mulakan battle
   petPvPStartBattle(_petPvPInvite.oppPet);
   _petPvPInvite = null;
 }
@@ -53734,15 +53860,18 @@ function petPvPStartBattle(oppPet){
   const oldQ = document.querySelector('.petPvPQuestionBtns');
   if(oldQ) oldQ.remove();
 
-  // Tunjukkan modal
-  document.getElementById('petPvPMyEmoji').textContent = myPet.emoji;
+  // Tunjukkan modal — 3D pet models
+  _pkmnCleanupBattleRenderers();
+  const myPetDef = PET_DEFS.find(d=>d.id===myPet.id) || {id:myPet.id, emoji:'🐾', rarity:myPet.rarity||'Biasa'};
+  const oppPetDef = PET_DEFS.find(d=>d.id===oppPet.id) || {id:oppPet.id, emoji:'🐾', rarity:oppPet.rarity||'Biasa'};
+  _pkmnBuildBattlePet('petPvPMyEmoji', myPetDef, true);
   document.getElementById('petPvPMyName').textContent = (myPet.name||'PET')+' Lv.'+(myPet.lvl||1);
   document.getElementById('petPvPMyHpBar').style.width = '100%';
   document.getElementById('petPvPMyHpText').textContent = myMaxHP+'/'+myMaxHP;
   _pkmnSetPlatform('petPvPPlatformMine', myPet);
   _pkmnSetPlatform('petPvPPlatformOpp', oppPet);
 
-  document.getElementById('petPvPOppEmoji').textContent = oppPet.emoji;
+  _pkmnBuildBattlePet('petPvPOppEmoji', oppPetDef, false);
   document.getElementById('petPvPOppName').textContent = (oppPet.name||'LAWAN')+' Lv.'+(oppPet.lvl||1);
   document.getElementById('petPvPOppHpBar').style.width = '100%';
   document.getElementById('petPvPOppHpText').textContent = oppMaxHP+'/'+oppMaxHP;
@@ -53761,6 +53890,23 @@ function petPvPRenderSkills(){
   const container = document.getElementById('petPvPSkills');
   if(!container) return;
   container.innerHTML = '';
+  // Tunjukkan indicator giliran
+  var turnIndicator = document.getElementById('petPvPTurnIndicator');
+  if(!turnIndicator){
+    turnIndicator = document.createElement('div');
+    turnIndicator.id = 'petPvPTurnIndicator';
+    turnIndicator.style.cssText = 'text-align:center;font-size:clamp(7px,1.4vw,10px);margin-bottom:6px;font-family:\'Press Start 2P\',monospace;';
+    container.parentNode.insertBefore(turnIndicator, container);
+  }
+  if(!s.myTurn){
+    turnIndicator.innerHTML = '<span style="color:#ff6b6b;">⏳ Giliran lawan...</span>';
+    container.style.opacity = '0.4';
+    container.style.pointerEvents = 'none';
+    return;
+  }
+  turnIndicator.innerHTML = '<span style="color:#00e676;">🎯 Giliran kamu! Pilih skill!</span>';
+  container.style.opacity = '1';
+  container.style.pointerEvents = 'auto';
   s.mySkills.forEach((sk, i)=>{
     const cd = s.myCds[i] || 0;
     const now = Date.now();
@@ -53869,7 +54015,7 @@ function petPvPAskQuestion(sk, callback){
   const opts = [[correct,true], ...[...wrongs].map(v=>[v,false])].sort(()=>Math.random()-0.5);
 
   // Tunjukkan soalan dalam log
-  document.getElementById('petPvPLog').innerHTML = '🧠 <span style="color:#fff;">'+q+'</span><br><span style="color:#aaa;font-size:0.85em;">Jawab betul untuk '+sk.emoji+' '+sk.name+'!</span>';
+  document.getElementById('petPvPLog').innerHTML = '🧠 <span style="color:#222;">'+q+'</span><br><span style="color:#555;font-size:0.85em;">Jawab betul untuk '+sk.emoji+' '+sk.name+'!</span>';
 
   // Buat butang jawapan
   const feedback = document.getElementById('petPvPFeedback');
@@ -53902,7 +54048,6 @@ function petPvPAskQuestion(sk, callback){
 function petPvPOppTurn(){
   const s = _petPvPState;
   if(!s || !s.active) return;
-  s.myTurn = true;
 
   // AI pilih skill random yang ready
   const now = Date.now();
@@ -53913,6 +54058,7 @@ function petPvPOppTurn(){
 
   if(readySkills.length === 0){
     document.getElementById('petPvPLog').textContent = '💤 Lawan sedang cooldown semua skill!';
+    s.myTurn = true;
     petPvPRenderSkills();
     return;
   }
@@ -53929,6 +54075,11 @@ function petPvPOppTurn(){
   if(dmg < 0){
     s.oppHP = Math.min(s.oppMaxHP, s.oppHP + Math.abs(dmg));
     document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💚 Lawan sembuh +'+Math.abs(dmg)+' HP!</span>';
+    document.getElementById('petPvPLog').textContent = '⏳ Lawan guna '+sk.emoji+' '+sk.name+'...';
+    setTimeout(()=>{
+      s.myTurn = true;
+      petPvPRenderSkills();
+    }, 800);
   } else if(hit){
     dmg += petLvlDmgBonus(s.oppPet && s.oppPet.lvl || 1);
     const variance = Math.floor(dmg * 0.2 * (Math.random()*2-1));
@@ -53937,27 +54088,32 @@ function petPvPOppTurn(){
     s.myHP -= dmg;
     if(s.myHP < 0) s.myHP = 0;
     document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 Lawan guna '+sk.emoji+' '+sk.name+'! -'+dmg+' HP</span>';
+    document.getElementById('petPvPLog').textContent = '⏳ Lawan menyerang...';
     _pkmnLunge('petPvPOppEmoji');
     setTimeout(()=>{
       _pkmnSetHp('petPvPMyHpBar', (s.myHP/s.myMaxHP)*100);
       _pkmnHit('petPvPMyEmoji');
       document.getElementById('petPvPMyHpText').textContent = Math.ceil(s.myHP)+'/'+s.myMaxHP;
-    }, 180);
-
-    if(s.myHP <= 0){
-      petPvPEnd(false);
-      return;
-    }
+      if(s.myHP <= 0){
+        petPvPEnd(false);
+        return;
+      }
+      s.myTurn = true;
+      petPvPRenderSkills();
+    }, 800);
   } else {
     document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#00e676;">🌀 Lawan guna '+sk.emoji+' '+sk.name+' tapi luput!</span>';
+    document.getElementById('petPvPLog').textContent = '⏳ Lawan cuba menyerang...';
+    setTimeout(()=>{
+      s.myTurn = true;
+      petPvPRenderSkills();
+    }, 800);
   }
-
-  document.getElementById('petPvPLog').textContent = '🎯 Giliran kamu! Pilih skill!';
-  petPvPRenderSkills();
 }
 
 // ── Tamat PVP ──
 function petPvPEnd(win){
+  _pkmnCleanupBattleRenderers();
   const s = _petPvPState;
   if(!s) return;
   s.active = false;
@@ -54231,9 +54387,10 @@ function petBagClose(){
 .pkmn-platform.opp{top:16%;right:8%;width:120px;height:42px;}
 .pkmn-platform.mine{bottom:12%;left:6%;width:170px;height:60px;}
 .pkmn-pet-sprite{position:absolute;font-size:52px;filter:drop-shadow(3px 6px 3px rgba(0,0,0,0.35));
-  animation:pkmnFloat 2.4s ease-in-out infinite;transition:transform .15s,opacity .3s;}
+  animation:pkmnFloat 2.4s ease-in-out infinite;transition:transform .15s,opacity .3s;overflow:visible;}
 .pkmn-pet-sprite.opp{top:6%;right:14%;font-size:46px;}
 .pkmn-pet-sprite.mine{bottom:20%;left:12%;font-size:64px;animation:pkmnFloatMine 2.4s ease-in-out infinite;}
+.pkmn-pet-sprite canvas{display:block;filter:drop-shadow(2px 4px 2px rgba(0,0,0,0.3));pointer-events:none;}
 .pkmn-pet-sprite.mine.hit,.pkmn-pet-sprite.opp.hit{animation:pkmnShake .4s ease;}
 .pkmn-pet-sprite.faint{opacity:0;transform:translateY(30px) scale(0.6);}
 @keyframes pkmnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}

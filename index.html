@@ -53257,7 +53257,7 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
   el.style.alignItems = 'center';
   el.style.justifyContent = 'center';
 
-  const sz = isMine ? 130 : 110;
+  const sz = isMine ? 140 : 120;
   const canvas = document.createElement('canvas');
   canvas.width = sz * 2;
   canvas.height = sz * 2;
@@ -53270,8 +53270,8 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(0, 1.2, 3.5);
-  camera.lookAt(0, 0.3, 0);
+  camera.position.set(0, 1.0, 3.0);
+  camera.lookAt(0, 0.25, 0);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
   const dl = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -53283,14 +53283,14 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
 
   const group = new THREE.Group();
   const rarity = petDef.rarity || 'Biasa';
-  const sc = rarity==='Legenda' ? 0.92 : rarity==='Nadir' ? 0.78 : 0.68;
+  const sc = rarity==='Legenda' ? 0.58 : rarity==='Nadir' ? 0.50 : 0.44;
   _pkmnBuildPetModel(petDef.id, THREE, group, sc);
   scene.add(group);
 
   // Rarity glow ring
   const ringColor = rarity==='Legenda' ? 0xffd700 : rarity==='Nadir' ? 0xa29bfe : 0x00e676;
   const ring = new THREE.Mesh(
-    new THREE.RingGeometry(0.55, 0.82, 24),
+    new THREE.RingGeometry(0.38, 0.58, 24),
     new THREE.MeshBasicMaterial({color:ringColor, transparent:true, opacity:0.55, side:THREE.DoubleSide, depthWrite:false})
   );
   ring.rotation.x = -Math.PI/2;
@@ -53338,7 +53338,7 @@ function _pkmnStartBattleRaf(){
       if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
       d.t += 0.016;
       const bob = Math.sin(d.t*2.8)*0.06;
-      d.group.position.y = d.isMine ? 0.45+bob : 0.42+bob;
+      d.group.position.y = d.isMine ? 0.30+bob : 0.28+bob;
       d.group.rotation.y = d.isMine ? Math.PI : 0;
       d.ring.rotation.z = t*0.3;
       d.renderer.render(d.scene, d.camera);
@@ -53772,7 +53772,7 @@ function petPvPSendInvite(targetUsername, targetDisplay){
         const d = snap.val();
         if(d && d.status==='accepted' && d.ts && d.ts >= inviteTs){
           try{ unsub(); }catch(e){}
-          petPvPStartBattle(d.oppPet);
+          petPvPStartBattle(d.oppPet, d.oppName || targetDisplay);
         }
       });
     }
@@ -53821,10 +53821,11 @@ function petPvPAcceptInvite(){
     window._fbSetFn(respRef, {
       status: 'accepted',
       oppPet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, level:myPet.level||1, lvl:myPet.lvl||1, rarity:myPet.rarity},
+      oppName: smapGetPlayerName() || 'KAMU',
       ts: Date.now()
     });
   }
-  petPvPStartBattle(_petPvPInvite.oppPet);
+  petPvPStartBattle(_petPvPInvite.oppPet, _petPvPInvite.fromName || _petPvPInvite.from);
   _petPvPInvite = null;
 }
 
@@ -53851,7 +53852,7 @@ function petPvPGetSkills(pet){
 }
 
 // ── Mula PVP Pet Battle ──
-function petPvPStartBattle(oppPet){
+function petPvPStartBattle(oppPet, oppDisplayName){
   const myPet = petPvPGetMyPet();
   if(!myPet) return;
 
@@ -53863,6 +53864,7 @@ function petPvPStartBattle(oppPet){
   _petPvPState = {
     active: true,
     myPet: myPet, oppPet: oppPet,
+    oppName: oppDisplayName || oppPet.name || 'LAWAN',
     myHP: myMaxHP, myMaxHP: myMaxHP,
     oppHP: oppMaxHP, oppMaxHP: oppMaxHP,
     mySkills: mySkills, oppSkills: oppSkills,
@@ -53887,11 +53889,11 @@ function petPvPStartBattle(oppPet){
   _pkmnSetPlatform('petPvPPlatformOpp', oppPet);
 
   _pkmnBuildBattlePet('petPvPOppEmoji', oppPetDef, false);
-  document.getElementById('petPvPOppName').textContent = (oppPet.name||'LAWAN')+' Lv.'+(oppPet.lvl||1);
+  document.getElementById('petPvPOppName').textContent = (_petPvPState.oppName || oppPet.name || 'LAWAN')+' Lv.'+(oppPet.lvl||1);
   document.getElementById('petPvPOppHpBar').style.width = '100%';
   document.getElementById('petPvPOppHpText').textContent = oppMaxHP+'/'+oppMaxHP;
 
-  document.getElementById('petPvPLog').textContent = '⚔️ Pilih skill untuk serang!';
+  document.getElementById('petPvPLog').textContent = '⚔️ Cabar '+(oppDisplayName||'lawan')+'! Pilih skill untuk serang!';
   document.getElementById('petPvPFeedback').textContent = '';
 
   petPvPRenderSkills();
@@ -53914,7 +53916,7 @@ function petPvPRenderSkills(){
     container.parentNode.insertBefore(turnIndicator, container);
   }
   if(!s.myTurn){
-    turnIndicator.innerHTML = '<span style="color:#ff6b6b;">⏳ Giliran lawan...</span>';
+    turnIndicator.innerHTML = '<span style="color:#ff6b6b;">⏳ Giliran '+(_petPvPState?(_petPvPState.oppName||'lawan'):'lawan')+'...</span>';
     container.style.opacity = '0.4';
     container.style.pointerEvents = 'none';
     return;
@@ -53984,14 +53986,14 @@ function petPvPUseSkill(skillIdx){
         if(dmg >= 0) _pkmnHit('petPvPOppEmoji');
         document.getElementById('petPvPOppHpText').textContent = Math.ceil(s.oppHP)+'/'+s.oppMaxHP;
       }, dmg >= 0 ? 180 : 0);
-      document.getElementById('petPvPLog').textContent = '✅ Serangan berjaya! Giliran lawan...';
+        document.getElementById('petPvPLog').textContent = '✅ Serangan berjaya! Giliran '+(s.oppName||'lawan')+'...';
 
       if(s.oppHP <= 0){
         petPvPEnd(true);
         return;
       }
     } else {
-      document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#e52521;">❌ Skill gagal! Giliran lawan...</span>';
+      document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#e52521;">❌ Skill gagal! Giliran '+(s.oppName||'lawan')+'...</span>';
     }
     // Refresh skill buttons
     petPvPRenderSkills();
@@ -54072,7 +54074,7 @@ function petPvPOppTurn(){
   }).filter(x=>x.ready);
 
   if(readySkills.length === 0){
-    document.getElementById('petPvPLog').textContent = '💤 Lawan sedang cooldown semua skill!';
+    document.getElementById('petPvPLog').textContent = '💤 '+(s.oppName||'Lawan')+' sedang cooldown semua skill!';
     s.myTurn = true;
     petPvPRenderSkills();
     return;
@@ -54089,8 +54091,8 @@ function petPvPOppTurn(){
   let dmg = sk.dmg;
   if(dmg < 0){
     s.oppHP = Math.min(s.oppMaxHP, s.oppHP + Math.abs(dmg));
-    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💚 Lawan sembuh +'+Math.abs(dmg)+' HP!</span>';
-    document.getElementById('petPvPLog').textContent = '⏳ Lawan guna '+sk.emoji+' '+sk.name+'...';
+    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💚 '+(s.oppName||'Lawan')+' sembuh +'+Math.abs(dmg)+' HP!</span>';
+    document.getElementById('petPvPLog').textContent = '⏳ '+(s.oppName||'Lawan')+' guna '+sk.emoji+' '+sk.name+'...';
     setTimeout(()=>{
       s.myTurn = true;
       petPvPRenderSkills();
@@ -54102,8 +54104,8 @@ function petPvPOppTurn(){
     if(dmg < 1) dmg = 1;
     s.myHP -= dmg;
     if(s.myHP < 0) s.myHP = 0;
-    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 Lawan guna '+sk.emoji+' '+sk.name+'! -'+dmg+' HP</span>';
-    document.getElementById('petPvPLog').textContent = '⏳ Lawan menyerang...';
+    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 '+(s.oppName||'Lawan')+' guna '+sk.emoji+' '+sk.name+'! -'+dmg+' HP</span>';
+    document.getElementById('petPvPLog').textContent = '⏳ '+(s.oppName||'Lawan')+' menyerang...';
     _pkmnLunge('petPvPOppEmoji');
     setTimeout(()=>{
       _pkmnSetHp('petPvPMyHpBar', (s.myHP/s.myMaxHP)*100);
@@ -54117,8 +54119,8 @@ function petPvPOppTurn(){
       petPvPRenderSkills();
     }, 800);
   } else {
-    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#00e676;">🌀 Lawan guna '+sk.emoji+' '+sk.name+' tapi luput!</span>';
-    document.getElementById('petPvPLog').textContent = '⏳ Lawan cuba menyerang...';
+    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#00e676;">🌀 '+(s.oppName||'Lawan')+' guna '+sk.emoji+' '+sk.name+' tapi luput!</span>';
+    document.getElementById('petPvPLog').textContent = '⏳ '+(s.oppName||'Lawan')+' cuba menyerang...';
     setTimeout(()=>{
       s.myTurn = true;
       petPvPRenderSkills();
@@ -54135,7 +54137,7 @@ function petPvPEnd(win){
   const resultDiv = document.getElementById('petPvPLog');
   if(win){
     playSound('sfx_win');
-    resultDiv.innerHTML = '🏆 <span style="color:#ffd700;">KAMU MENANG!</span> Pet lawan tumbang!';
+    resultDiv.innerHTML = '🏆 <span style="color:#ffd700;">KAMU MENANG!</span> Pet '+(s.oppName||'lawan')+' tumbang!';
     showPetNotification('🏆', 'PVP PET MENANG!', s.oppPet.name+' tumbang!', '#ffd700');
     // 🌟 Beri XP kepada pet kamu selepas menang PVP
     if(s.myPet) petGrantXP(s.myPet.id, s.myPet.level||1, 25);

@@ -244,9 +244,10 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 .login-box{position:relative;z-index:3;background:rgba(8,4,24,.93);border:2.5px solid #7c3aed;border-radius:20px;padding:24px 30px;text-align:center;max-width:min(420px,92vw);max-height:90vh;overflow-y:auto;width:100%;box-shadow:0 0 0 1px rgba(124,58,237,.3),0 0 60px rgba(124,58,237,.2),0 30px 80px rgba(0,0,0,.7);}
 .login-box::before{content:"";position:absolute;top:0;left:20%;right:20%;height:2.5px;background:linear-gradient(90deg,transparent,#a855f7,#6366f1,transparent);border-radius:0 0 4px 4px;}
 .login-box::after{content:"";position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:160px;height:80px;background:radial-gradient(ellipse,rgba(124,58,237,.35) 0%,transparent 70%);pointer-events:none;}
-.login-box::-webkit-scrollbar{width:5px;}
+.login-box::-webkit-scrollbar{width:10px;}
 .login-box::-webkit-scrollbar-track{background:rgba(124,58,237,.1);border-radius:4px;}
 .login-box::-webkit-scrollbar-thumb{background:rgba(124,58,237,.4);border-radius:4px;}
+@keyframes authScrollPulse{0%,100%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(3px)}}
 /* Title */
 .login-title{font-family:'Nunito',sans-serif;font-size:clamp(18px,4vw,26px);font-weight:900;background:linear-gradient(135deg,#ffd700,#ff6b35,#ff3c9c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:4px;text-shadow:none;}
 .login-sub{font-family:'Nunito',sans-serif;color:#6d5a8a;font-size:clamp(9px,1.4vw,11px);font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;}
@@ -7961,6 +7962,26 @@ function authSwitchTab(tab){
   else if(tab==='register') setTimeout(()=>document.getElementById('regUsername').focus(),60);
   else if(tab==='forgot'){ fpResetState(); setTimeout(()=>document.getElementById('fpUsername').focus(),60); }
   else if(tab==='parent'){ setTimeout(()=>document.getElementById('plUsername').focus(),60); }
+  _authShowScrollHint();
+}
+function _authShowScrollHint(){
+  var box=document.querySelector('.login-box');
+  if(!box) return;
+  var old=document.getElementById('authScrollHint');
+  if(old) old.remove();
+  if(box.scrollHeight<=box.clientHeight) return;
+  var hint=document.createElement('div');
+  hint.id='authScrollHint';
+  hint.style.cssText='position:sticky;bottom:0;left:0;right:0;text-align:center;padding:6px 0 2px;color:#a855f7;font-size:clamp(7px,1.4vw,10px);font-family:Nunito,sans-serif;font-weight:700;pointer-events:none;animation:authScrollPulse 1.5s ease-in-out infinite;';
+  hint.textContent='⬇ Tatal ke bawah untuk lihat lagi ⬇';
+  box.appendChild(hint);
+  box.addEventListener('scroll',function _onScroll(){
+    if(box.scrollTop+box.clientHeight>=box.scrollHeight-10){
+      hint.style.transition='opacity .3s';hint.style.opacity='0';
+      setTimeout(()=>hint.remove(),300);
+      box.removeEventListener('scroll',_onScroll);
+    }
+  });
 }
 
 
@@ -53273,8 +53294,13 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-  camera.position.set(0, 0.3, 5.5);
-  camera.lookAt(0, 0.0, 0);
+  if(isMine){
+    camera.position.set(0, 0.05, 4.8);
+    camera.lookAt(0, -0.05, 0);
+  } else {
+    camera.position.set(0, 0.05, 5.0);
+    camera.lookAt(0, -0.05, 0);
+  }
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
   const dl = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -53298,10 +53324,10 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
     new THREE.MeshBasicMaterial({color:ringColor, transparent:true, opacity:0.55, side:THREE.DoubleSide, depthWrite:false})
   );
   ring.rotation.x = -Math.PI/2;
-  ring.position.y = -0.01;
+  ring.position.y = isMine ? 0 : 0;
   scene.add(ring);
 
-  const data = {renderer, scene, camera, group, ring, el, canvas, t: Math.random()*6.28, isMine};
+  const data = {renderer, scene, camera, group, ring, el, canvas, t: Math.random()*6.28, isMine, sc};
   _pkmnBattleRenderers.push(data);
   _pkmnStartBattleRaf();
 }
@@ -53341,8 +53367,8 @@ function _pkmnStartBattleRaf(){
       const d = _pkmnBattleRenderers[i];
       if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
       d.t += 0.016;
-      const bob = Math.sin(d.t*2.8)*0.03;
-      d.group.position.y = d.isMine ? 0.02+bob : 0.01+bob;
+      const bob = Math.sin(d.t*2.8)*0.01;
+      d.group.position.y = d.sc*0.44+bob;
       d.group.rotation.y = d.isMine ? Math.PI : 0;
       d.ring.rotation.z = t*0.3;
       d.renderer.render(d.scene, d.camera);

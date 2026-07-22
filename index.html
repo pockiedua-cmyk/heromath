@@ -53269,9 +53269,9 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
   renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-  camera.position.set(0, 1.0, 3.0);
-  camera.lookAt(0, 0.25, 0);
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.set(0, 0.5, 4.0);
+  camera.lookAt(0, 0.1, 0);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
   const dl = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -53283,7 +53283,7 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
 
   const group = new THREE.Group();
   const rarity = petDef.rarity || 'Biasa';
-  const sc = rarity==='Legenda' ? 0.58 : rarity==='Nadir' ? 0.50 : 0.44;
+  const sc = rarity==='Legenda' ? 0.80 : rarity==='Nadir' ? 0.65 : 0.55;
   _pkmnBuildPetModel(petDef.id, THREE, group, sc);
   scene.add(group);
 
@@ -53338,7 +53338,7 @@ function _pkmnStartBattleRaf(){
       if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
       d.t += 0.016;
       const bob = Math.sin(d.t*2.8)*0.06;
-      d.group.position.y = d.isMine ? 0.30+bob : 0.28+bob;
+      d.group.position.y = d.isMine ? 0.10+bob : 0.08+bob;
       d.group.rotation.y = d.isMine ? Math.PI : 0;
       d.ring.rotation.z = t*0.3;
       d.renderer.render(d.scene, d.camera);
@@ -53672,6 +53672,96 @@ function petUpdateBagCount(){
 let _petPvPState = null; // {active, myPet, oppPet, myHP, myMaxHP, oppHP, oppMaxHP, turn, skillCds:[]}
 let _petPvPInvite = null; // {from, fromName, myPet, oppPet}
 
+// ── Synced PVP: Firebase shared battle state ──
+let _petPvPBattleId = null;     // deterministic key: "NAMEA_vs_NAMEB"
+let _petPvPBattleUnsub = null;  // onValue unsubscribe fn
+let _petPvPBattleLastTs = 0;    // last opponent action timestamp we processed
+let _petPvPBattleMySide = null; // 'p1' or 'p2'
+let _petPvPHeartbeat = null;    // setInterval id for heartbeat writer
+let _petPvPTimeoutCheck = null; // setInterval id for opponent timeout detection
+
+function petPvPGetBattleId(a, b){
+  const A = (a||'').toUpperCase(), B = (b||'').toUpperCase();
+  return A < B ? A+'_vs_'+B : B+'_vs_'+A;
+}
+function petPvPGetMySide(myName, oppName){
+  return myName.toUpperCase() < oppName.toUpperCase() ? 'p1' : 'p2';
+}
+function petPvPBattleRef(){
+  if(!_petPvPBattleId || !window._fbPresenceDb || !window._fbRefFn) return null;
+  return window._fbRefFn(window._fbPresenceDb, 'petPvpBattles/'+_petPvPBattleId);
+}
+function petPvPBattleWrite(updates){
+  const r = petPvPBattleRef();
+  if(!r || !window._fbUpdateFn) return;
+  window._fbUpdateFn(r, updates);
+}
+function petPvPBattleCleanup(){
+  if(_petPvPBattleUnsub){ try{ _petPvPBattleUnsub(); }catch(e){} _petPvPBattleUnsub = null; }
+  const r = petPvPBattleRef();
+  if(r && window._fbRemoveFn){ try{ window._fbRemoveFn(r); }catch(e){} }
+  _petPvPBattleId = null;
+  _petPvPBattleLastTs = 0;
+  _petPvPBattleMySide = null;
+  petPvPStopHeartbeat();
+  petPvPStopTimeoutCheck();
+}
+
+// ── Heartbeat: tulis lastActive setiap 5s supaya lawan tahu kita masih online ──
+const PETPVP_HEARTBEAT_INTERVAL = 5000;   // 5s
+const PETPVP_TIMEOUT_MS = 60000;           // 60s tiada heartbeat = disconnect
+function petPvPStartHeartbeat(){
+  petPvPStopHeartbeat();
+  _petPvPHeartbeat = setInterval(()=>{
+    if(!_petPvPState || !_petPvPState.active || !_petPvPBattleMySide) return;
+    const update = {};
+    update[_petPvPBattleMySide+'/lastActive'] = Date.now();
+    petPvPBattleWrite(update);
+  }, PETPVP_HEARTBEAT_INTERVAL);
+  // Write immediately
+  if(_petPvPState && _petPvPState.active && _petPvPBattleMySide){
+    const update = {};
+    update[_petPvPBattleMySide+'/lastActive'] = Date.now();
+    petPvPBattleWrite(update);
+  }
+}
+function petPvPStopHeartbeat(){
+  if(_petPvPHeartbeat){ clearInterval(_petPvPHeartbeat); _petPvPHeartbeat = null; }
+}
+// ── Timeout check: auto-win jika lawan disconnect >60s ──
+let _petPvPLastOppActiveTs = 0;
+function petPvPStartTimeoutCheck(){
+  petPvPStopTimeoutCheck();
+  _petPvPLastOppActiveTs = Date.now();
+  _petPvPTimeoutCheck = setInterval(()=>{
+    const s = _petPvPState;
+    if(!s || !s.active) { petPvPStopTimeoutCheck(); return; }
+    // Update opponent last-active indicator in UI
+    const elapsed = Date.now() - _petPvPLastOppActiveTs;
+    const el = document.getElementById('petPvPTurnIndicator');
+    if(el && !s.myTurn){
+      const secs = Math.floor(elapsed/1000);
+      if(secs >= 15){
+        el.innerHTML = '<span style="color:#ff6b6b;">⏳ Lawan tidak aktif... '+Math.max(0,60-secs)+'s</span>';
+      }
+    }
+    if(elapsed >= PETPVP_TIMEOUT_MS){
+      petPvPStopTimeoutCheck();
+      showPetNotification('⏰', 'LAWAN DISCONNECT', lawan_name(s)+' tidak aktif terlalu lama. MENANG AUTOMATIK!', '#ffd700');
+      petPvPEnd(true);
+    }
+  }, 5000);
+}
+function petPvPStopTimeoutCheck(){
+  if(_petPvPTimeoutCheck){ clearInterval(_petPvPTimeoutCheck); _petPvPTimeoutCheck = null; }
+}
+function petPvPRefreshOppActive(){
+  _petPvPLastOppActiveTs = Date.now();
+}
+function lawan_name(s){
+  return (s && s.oppName) || 'Lawan';
+}
+
 // ── Helper: cari pet aktif pemain ──
 function petPvPGetMyPet(){
   const summon = petSummonLoad();
@@ -53851,33 +53941,40 @@ function petPvPGetSkills(pet){
   return def ? def.skills : [{id:'serang',emoji:'💥',name:'SERANG',dmg:8,cd:2,desc:'Serangan biasa'}];
 }
 
-// ── Mula PVP Pet Battle ──
+// ── Mula PVP Pet Battle (SYNCED via Firebase) ──
 function petPvPStartBattle(oppPet, oppDisplayName){
   const myPet = petPvPGetMyPet();
   if(!myPet) return;
+  const me = smapGetPlayerName() || 'KAMU';
+  const opp = oppDisplayName || 'LAWAN';
 
   const myMaxHP = petPvPGetMaxHP(myPet);
   const oppMaxHP = petPvPGetMaxHP(oppPet);
   const mySkills = petPvPGetSkills(myPet);
-  const oppSkills = petPvPGetSkills(oppPet);
+
+  _petPvPBattleMySide = petPvPGetMySide(me, opp);
+  _petPvPBattleId = petPvPGetBattleId(me, opp);
+  _petPvPBattleLastTs = 0;
+
+  const oppSide = _petPvPBattleMySide === 'p1' ? 'p2' : 'p1';
 
   _petPvPState = {
     active: true,
     myPet: myPet, oppPet: oppPet,
-    oppName: oppDisplayName || oppPet.name || 'LAWAN',
+    oppName: opp, myName: me,
+    mySide: _petPvPBattleMySide, oppSide: oppSide,
     myHP: myMaxHP, myMaxHP: myMaxHP,
     oppHP: oppMaxHP, oppMaxHP: oppMaxHP,
-    mySkills: mySkills, oppSkills: oppSkills,
-    myCds: mySkills.map(()=>0), // cooldown timestamps
-    turn: 0,
-    myTurn: true
+    mySkills: mySkills, oppSkills: petPvPGetSkills(oppPet),
+    myCds: mySkills.map(()=>0),
+    oppCds: [],
+    myTurn: false,
+    turn: 0
   };
 
-  // Buang mana-mana butang jawapan tertinggal dari sesi lepas
   const oldQ = document.querySelector('.petPvPQuestionBtns');
   if(oldQ) oldQ.remove();
 
-  // Tunjukkan modal — 3D pet models
   _pkmnCleanupBattleRenderers();
   const myPetDef = PET_DEFS.find(d=>d.id===myPet.id) || {id:myPet.id, emoji:'🐾', rarity:myPet.rarity||'Biasa'};
   const oppPetDef = PET_DEFS.find(d=>d.id===oppPet.id) || {id:oppPet.id, emoji:'🐾', rarity:oppPet.rarity||'Biasa'};
@@ -53889,15 +53986,49 @@ function petPvPStartBattle(oppPet, oppDisplayName){
   _pkmnSetPlatform('petPvPPlatformOpp', oppPet);
 
   _pkmnBuildBattlePet('petPvPOppEmoji', oppPetDef, false);
-  document.getElementById('petPvPOppName').textContent = (_petPvPState.oppName || oppPet.name || 'LAWAN')+' Lv.'+(oppPet.lvl||1);
+  document.getElementById('petPvPOppName').textContent = (opp||'LAWAN')+' Lv.'+(oppPet.lvl||1);
   document.getElementById('petPvPOppHpBar').style.width = '100%';
   document.getElementById('petPvPOppHpText').textContent = oppMaxHP+'/'+oppMaxHP;
 
-  document.getElementById('petPvPLog').textContent = '⚔️ Cabar '+(oppDisplayName||'lawan')+'! Pilih skill untuk serang!';
+  document.getElementById('petPvPLog').textContent = '⚔️ Cabar '+opp+'! Menunggu battle sync...';
   document.getElementById('petPvPFeedback').textContent = '';
 
   petPvPRenderSkills();
   document.getElementById('petPvPBattleModal').style.display = 'flex';
+
+  if(!window._fbSetFn || !window._fbRefFn || !window._fbPresenceDb || !window._fbOnValueModule){
+    if(_petPvPBattleMySide === 'p1'){
+      _petPvPState.myTurn = true;
+      document.getElementById('petPvPLog').textContent = '⚔️ Tiada Firebase — battle tempatan.';
+      petPvPRenderSkills();
+    }
+    return;
+  }
+
+  const initWrite = {};
+  initWrite[_petPvPBattleMySide] = {
+    name: me,
+    pet: {id:myPet.id, name:myPet.name, emoji:myPet.emoji, lvl:myPet.lvl||1, rarity:myPet.rarity},
+    hp: myMaxHP, maxHp: myMaxHP
+  };
+  initWrite[oppSide] = {
+    name: opp,
+    pet: {id:oppPet.id, name:oppPet.name, emoji:oppPet.emoji, lvl:oppPet.lvl||1, rarity:oppPet.rarity},
+    hp: oppMaxHP, maxHp: oppMaxHP
+  };
+  initWrite.status = 'active';
+  initWrite.turn = 'p1';
+
+  petPvPBattleWrite(initWrite);
+
+  const battleRef = petPvPBattleRef();
+  if(battleRef){
+    _petPvPBattleUnsub = window._fbOnValueModule.onValue(battleRef, snap=>{
+      petPvPBattleOnUpdate(snap.val());
+    });
+  }
+  petPvPStartHeartbeat();
+  petPvPStartTimeoutCheck();
 }
 
 // ── Render butang skill dalam modal ──
@@ -53944,61 +54075,81 @@ function petPvPRenderSkills(){
   });
 }
 
-// ── Guna skill ──
+// ── Guna skill (SYNCED: tulis action ke Firebase) ──
 function petPvPUseSkill(skillIdx){
   const s = _petPvPState;
   if(!s || !s.active || !s.myTurn) return;
   const now = Date.now();
-  if(s.myCds[skillIdx] > now) return; // masih cooldown
+  if(s.myCds[skillIdx] > now) return;
 
   const sk = s.mySkills[skillIdx];
   if(!sk) return;
 
-  // Set cooldown
   s.myCds[skillIdx] = now + (sk.cd * 1000);
   s.turn++;
   s.myTurn = false;
+  petPvPRenderSkills();
 
-  // Kira damage dengan math question
   petPvPAskQuestion(sk, (hit)=>{
     if(!s.active) return;
+    let dmg = 0;
+    let heal = false;
     if(hit){
-      let dmg = sk.dmg;
+      dmg = sk.dmg;
       if(dmg < 0){
-        // Skill heal
+        heal = true;
         s.myHP = Math.min(s.myMaxHP, s.myHP + Math.abs(dmg));
-        playSound('sfx_powerup');
         document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#00e676;">💚 SEMBUH +'+Math.abs(dmg)+' HP!</span>';
       } else {
-        // Attack: damage + Lv bonus + random variance (+-20%)
         dmg += petLvlDmgBonus(s.myPet && s.myPet.lvl || 1);
         const variance = Math.floor(dmg * 0.2 * (Math.random()*2-1));
         dmg += variance;
         if(dmg < 1) dmg = 1;
         s.oppHP -= dmg;
-        playSound('hit');
         if(s.oppHP < 0) s.oppHP = 0;
         document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 '+sk.name+' kena! -'+dmg+' HP</span>';
         _pkmnLunge('petPvPMyEmoji');
       }
       setTimeout(()=>{
-        _pkmnSetHp('petPvPOppHpBar', (s.oppHP/s.oppMaxHP)*100);
-        if(dmg >= 0) _pkmnHit('petPvPOppEmoji');
-        document.getElementById('petPvPOppHpText').textContent = Math.ceil(s.oppHP)+'/'+s.oppMaxHP;
-      }, dmg >= 0 ? 180 : 0);
-        document.getElementById('petPvPLog').textContent = '✅ Serangan berjaya! Giliran '+(s.oppName||'lawan')+'...';
-
-      if(s.oppHP <= 0){
-        petPvPEnd(true);
-        return;
-      }
+        if(!heal){
+          _pkmnSetHp('petPvPOppHpBar', (s.oppHP/s.oppMaxHP)*100);
+          _pkmnHit('petPvPOppEmoji');
+          document.getElementById('petPvPOppHpText').textContent = Math.ceil(s.oppHP)+'/'+s.oppMaxHP;
+        } else {
+          _pkmnSetHp('petPvPMyHpBar', (s.myHP/s.myMaxHP)*100);
+          document.getElementById('petPvPMyHpText').textContent = Math.ceil(s.myHP)+'/'+s.myMaxHP;
+        }
+      }, heal?0:180);
+      document.getElementById('petPvPLog').textContent = '✅ Serangan berjaya! Menunggu '+(s.oppName||'lawan')+'...';
     } else {
-      document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#e52521;">❌ Skill gagal! Giliran '+(s.oppName||'lawan')+'...</span>';
+      document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#e52521;">❌ Skill gagal! Menunggu '+(s.oppName||'lawan')+'...</span>';
+      document.getElementById('petPvPLog').textContent = '⏳ Skill luput. Giliran '+(s.oppName||'lawan')+'...';
     }
-    // Refresh skill buttons
-    petPvPRenderSkills();
-    // Giliran lawan (AI) selepas 1 saat
-    setTimeout(petPvPOppTurn, 1200);
+
+    const updates = {};
+    updates.turn = s.oppSide;
+    updates.lastAction = {
+      by: s.mySide,
+      skillEmoji: sk.emoji,
+      skillName: sk.name,
+      dmg: dmg,
+      hit: !!hit,
+      heal: heal,
+      ts: Date.now()
+    };
+    updates[s.oppSide+'/hp'] = Math.max(0, s.oppHP);
+    updates[s.mySide+'/hp'] = Math.max(0, s.myHP);
+
+    if(s.oppHP <= 0 && !heal){
+      updates.status = 'ended';
+      updates.winner = s.mySide;
+    }
+
+    petPvPBattleWrite(updates);
+
+    if(s.oppHP <= 0 && !heal){
+      setTimeout(()=> petPvPEnd(true), 800);
+    }
   });
 }
 
@@ -54061,75 +54212,71 @@ function petPvPAskQuestion(sk, callback){
   document.getElementById('petPvPSkills').after(btns);
 }
 
-// ── Giliran AI lawan ──
-function petPvPOppTurn(){
+// ── Firebase listener: terima action lawan + sync HP + toggle turn ──
+function petPvPBattleOnUpdate(data){
   const s = _petPvPState;
-  if(!s || !s.active) return;
+  if(!s || !s.active || !data) return;
 
-  // AI pilih skill random yang ready
-  const now = Date.now();
-  const readySkills = s.oppSkills.map((sk,i)=>{
-    const cd = s.oppCds ? (s.oppCds[i]||0) : 0;
-    return {sk, idx:i, ready: now >= cd};
-  }).filter(x=>x.ready);
+  // Refresh opponent active timestamp whenever we receive their data
+  if(data[s.oppSide] || (data.lastAction && data.lastAction.by === s.oppSide)){
+    petPvPRefreshOppActive();
+  }
 
-  if(readySkills.length === 0){
-    document.getElementById('petPvPLog').textContent = '💤 '+(s.oppName||'Lawan')+' sedang cooldown semua skill!';
-    s.myTurn = true;
-    petPvPRenderSkills();
+  if(data.status === 'ended'){
+    if(data.winner && s.active){
+      petPvPEnd(data.winner === s.mySide);
+    }
     return;
   }
 
-  const pick = readySkills[Math.floor(Math.random()*readySkills.length)];
-  const sk = pick.sk;
+  if(data[s.mySide]){
+    s.myHP = data[s.mySide].hp;
+    _pkmnSetHp('petPvPMyHpBar', (data[s.mySide].hp/data[s.mySide].maxHp)*100);
+    document.getElementById('petPvPMyHpText').textContent = Math.ceil(data[s.mySide].hp)+'/'+data[s.mySide].maxHp;
+  }
+  if(data[s.oppSide]){
+    s.oppHP = data[s.oppSide].hp;
+    _pkmnSetHp('petPvPOppHpBar', (data[s.oppSide].hp/data[s.oppSide].maxHp)*100);
+    document.getElementById('petPvPOppHpText').textContent = Math.ceil(data[s.oppSide].hp)+'/'+data[s.oppSide].maxHp;
+  }
 
-  // Inisiasi oppCds jika belum
-  if(!s.oppCds) s.oppCds = s.oppSkills.map(()=>0);
-  s.oppCds[pick.idx] = now + (sk.cd * 1000);
+  if(data.lastAction && data.lastAction.by === s.oppSide){
+    const act = data.lastAction;
+    if(act.ts > _petPvPBattleLastTs){
+      _petPvPBattleLastTs = act.ts;
+      if(act.heal){
+        document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💚 '+(s.oppName||'Lawan')+' sembuh +'+Math.abs(act.dmg)+' HP!</span>';
+        _pkmnLunge('petPvPOppEmoji');
+      } else if(act.hit){
+        document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 '+(s.oppName||'Lawan')+' guna '+act.skillEmoji+' '+act.skillName+'! -'+act.dmg+' HP</span>';
+        _pkmnLunge('petPvPOppEmoji');
+        setTimeout(()=> _pkmnHit('petPvPMyEmoji'), 180);
+      } else {
+        document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#00e676;">🌀 '+(s.oppName||'Lawan')+' guna '+act.skillEmoji+' '+act.skillName+' tapi luput!</span>';
+      }
+      document.getElementById('petPvPLog').textContent = '⏳ '+(s.oppName||'Lawan')+' menyerang...';
 
-  const hit = Math.random() < 0.7; // AI 70% chance kena
-  let dmg = sk.dmg;
-  if(dmg < 0){
-    s.oppHP = Math.min(s.oppMaxHP, s.oppHP + Math.abs(dmg));
-    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💚 '+(s.oppName||'Lawan')+' sembuh +'+Math.abs(dmg)+' HP!</span>';
-    document.getElementById('petPvPLog').textContent = '⏳ '+(s.oppName||'Lawan')+' guna '+sk.emoji+' '+sk.name+'...';
-    setTimeout(()=>{
-      s.myTurn = true;
-      petPvPRenderSkills();
-    }, 800);
-  } else if(hit){
-    dmg += petLvlDmgBonus(s.oppPet && s.oppPet.lvl || 1);
-    const variance = Math.floor(dmg * 0.2 * (Math.random()*2-1));
-    dmg += variance;
-    if(dmg < 1) dmg = 1;
-    s.myHP -= dmg;
-    if(s.myHP < 0) s.myHP = 0;
-    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#ff6b6b;">💥 '+(s.oppName||'Lawan')+' guna '+sk.emoji+' '+sk.name+'! -'+dmg+' HP</span>';
-    document.getElementById('petPvPLog').textContent = '⏳ '+(s.oppName||'Lawan')+' menyerang...';
-    _pkmnLunge('petPvPOppEmoji');
-    setTimeout(()=>{
-      _pkmnSetHp('petPvPMyHpBar', (s.myHP/s.myMaxHP)*100);
-      _pkmnHit('petPvPMyEmoji');
-      document.getElementById('petPvPMyHpText').textContent = Math.ceil(s.myHP)+'/'+s.myMaxHP;
-      if(s.myHP <= 0){
-        petPvPEnd(false);
+      if(data[s.mySide] && data[s.mySide].hp <= 0){
+        setTimeout(()=> petPvPEnd(false), 1000);
         return;
       }
-      s.myTurn = true;
-      petPvPRenderSkills();
-    }, 800);
-  } else {
-    document.getElementById('petPvPFeedback').innerHTML = '<span style="color:#00e676;">🌀 '+(s.oppName||'Lawan')+' guna '+sk.emoji+' '+sk.name+' tapi luput!</span>';
-    document.getElementById('petPvPLog').textContent = '⏳ '+(s.oppName||'Lawan')+' cuba menyerang...';
-    setTimeout(()=>{
-      s.myTurn = true;
-      petPvPRenderSkills();
-    }, 800);
+    }
+  }
+
+  if(data.turn === s.mySide){
+    s.myTurn = true;
+    document.getElementById('petPvPLog').textContent = '🎯 Giliran kamu! Pilih skill!';
+    petPvPRenderSkills();
+  } else if(data.turn === s.oppSide && data.lastAction && data.lastAction.by === s.oppSide){
+    s.myTurn = false;
+    petPvPRenderSkills();
   }
 }
 
-// ── Tamat PVP ──
+// ── Tamat PVP (SYNCED) ──
 function petPvPEnd(win){
+  petPvPStopHeartbeat();
+  petPvPStopTimeoutCheck();
   _pkmnCleanupBattleRenderers();
   const s = _petPvPState;
   if(!s) return;
@@ -54139,7 +54286,6 @@ function petPvPEnd(win){
     playSound('sfx_win');
     resultDiv.innerHTML = '🏆 <span style="color:#ffd700;">KAMU MENANG!</span> Pet '+(s.oppName||'lawan')+' tumbang!';
     showPetNotification('🏆', 'PVP PET MENANG!', s.oppPet.name+' tumbang!', '#ffd700');
-    // 🌟 Beri XP kepada pet kamu selepas menang PVP
     if(s.myPet) petGrantXP(s.myPet.id, s.myPet.level||1, 25);
   } else {
     playSound('sfx_lose');
@@ -54150,7 +54296,16 @@ function petPvPEnd(win){
   document.getElementById('petPvPSkills').innerHTML = '';
   const oldQ = document.querySelector('.petPvPQuestionBtns');
   if(oldQ) oldQ.remove();
-  // Tutup modal selepas 3 saat
+
+  if(_petPvPBattleId){
+    if(win === true){
+      petPvPBattleWrite({status:'ended', winner: s.mySide});
+    } else if(win === false){
+      petPvPBattleWrite({status:'ended', winner: s.oppSide});
+    }
+    setTimeout(petPvPBattleCleanup, 3000);
+  }
+
   setTimeout(()=>{
     document.getElementById('petPvPBattleModal').style.display = 'none';
     _petPvPState = null;

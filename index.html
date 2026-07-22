@@ -11436,6 +11436,27 @@ function menuGoMap(){
   setTimeout(()=>{ if(typeof petPvPInitListener==='function') petPvPInitListener(); }, 1000);
 }
 
+// ── ZI Invite: TOP-LEVEL auto-retry (runs independently of smapBuild3D) ──
+// Polls every 2s — when smapBuild3D defines window._ziLobbyInviteStartListen, fires it
+(function(){
+  var _ziTopRetry=setInterval(function(){
+    if(typeof window._ziLobbyInviteStartListen==='function'){
+      clearInterval(_ziTopRetry);
+      console.log('[ZI-INVITE-TOP] function found, calling startListen');
+      window._ziLobbyInviteStartListen();
+    }
+  },2000);
+  // Also retry after 5s, 10s, 20s as fallback
+  [5000,10000,20000].forEach(function(ms){
+    setTimeout(function(){
+      if(typeof window._ziLobbyInviteStartListen==='function'){
+        console.log('[ZI-INVITE-TOP] retry@'+ms+'ms calling startListen');
+        window._ziLobbyInviteStartListen();
+      }
+    },ms);
+  });
+})();
+
 function menuLogout(){
   const userKey = (playerProfile.username||playerProfile.name||'').toUpperCase();
   _clearOnlinePresence();
@@ -20759,11 +20780,13 @@ function smapBuild3D(){
 
   // ── Listen untuk jemputan ZI masuk ──
   window._ziLobbyInviteStartListen=function(){
+    console.log('[ZI-INVITE] _startListen called, fbReady='+window._fbReady+' _started='+_ziInviteListenerStarted);
     if(!playerProfile||(!playerProfile.username&&!playerProfile.name)){
+      console.log('[ZI-INVITE] no playerProfile yet, retry in 1s');
       setTimeout(window._ziLobbyInviteStartListen,1000);return;
     }
     var me=_ziLobbyUser();
-    if(!me){setTimeout(window._ziLobbyInviteStartListen,1000);return;}
+    if(!me){console.log('[ZI-INVITE] no me, retry');setTimeout(window._ziLobbyInviteStartListen,1000);return;}
     var tryListen=function(){
       if(!window._fbReady){console.log('[ZI-INVITE] fbNotReady');return;}
       if(!window._fbPresenceDb||!window._fbRefFn){console.log('[ZI-INVITE] fbRefsMissing');return;}
@@ -20787,6 +20810,14 @@ function smapBuild3D(){
       var poll=setInterval(function(){if(window._fbReady){tryListen();clearInterval(poll);}},500);
     }
   };
+
+  // AUTO-SETUP: Ensure listener is always running, independent of login hooks
+  setInterval(function(){
+    if(window._fbReady && !_ziInviteListenerStarted && typeof _ziLobbyInviteStartListen==='function'){
+      console.log('[ZI-INVITE] auto-retry setup');
+      _ziLobbyInviteStartListen();
+    }
+  },3000);
 
   function _ziLobbyShowInviteToast(from,fromDisplay,code){
     var existing=document.getElementById('ziInviteToast');

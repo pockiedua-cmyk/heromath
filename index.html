@@ -593,6 +593,9 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 /* Minimap */
 #smapMinimap{position:absolute;top:10px;right:10px;width:100px;height:100px;background:rgba(0,0,0,0.7);border:2px solid #ffd700;z-index:10;cursor:crosshair;}
 #smapMinimapHint{position:absolute;top:112px;right:10px;color:rgba(255,215,0,0.7);font-size:clamp(4px,0.9vw,6px);z-index:10;pointer-events:none;text-align:right;white-space:nowrap;}
+#smapDonateBtn{position:absolute;top:128px;right:14px;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,50,100,0.95),rgba(180,0,60,0.95));border:2px solid #ff69b4;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;user-select:none;text-align:center;line-height:1.2;z-index:10;box-shadow:0 2px 12px rgba(255,105,180,0.6);animation:smapDonatePulse 2s ease-in-out infinite;}
+#smapDonateBtn:hover{transform:scale(1.1);box-shadow:0 2px 20px rgba(255,105,180,0.9);}
+@keyframes smapDonatePulse{0%,100%{box-shadow:0 2px 12px rgba(255,105,180,0.6)}50%{box-shadow:0 2px 22px rgba(255,105,180,1)}}
 /* Room button on school map */
 #smapRoomBtn{position:absolute;top:10px;left:calc(88px + env(safe-area-inset-left));padding:6px 10px;background:linear-gradient(135deg,rgba(120,80,200,0.9),rgba(60,20,120,0.85));border:2px solid #a855f7;color:#fff;font-family:'Press Start 2P',monospace;font-size:clamp(5px,1.2vw,8px);cursor:pointer;pointer-events:all;user-select:none;text-align:center;line-height:1.6;z-index:11;box-shadow:0 2px 10px rgba(168,85,247,0.4);border-radius:6px;-webkit-tap-highlight-color:transparent;}
 #smapRoomBtn:hover{background:linear-gradient(135deg,rgba(140,100,220,0.95),rgba(80,30,140,0.95));border-color:#c084fc;}
@@ -762,6 +765,7 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 @media (max-height:500px) and (orientation:landscape){
   #smapMinimap{width:72px;height:72px;top:8px;right:8px;}
   #smapMinimapHint{display:none;}
+  #smapDonateBtn{width:36px;height:36px;font-size:12px;top:90px;right:10px;}
   #smapStatBtn{
     bottom:calc(8px + env(safe-area-inset-bottom)) !important;
     top:auto !important;
@@ -3146,6 +3150,7 @@ setTimeout(()=>{
       </div>
       <canvas id="smapMinimap" title="Klik untuk navigasi automatik ke lokasi ini"></canvas>
       <div id="smapMinimapHint">👆 Klik peta → auto jalan</div>
+      <div id="smapDonateBtn" onclick="smapDonateOpen()">💖<br><span style="font-size:6px;">DONATE</span></div>
       <!-- Mobile Legends Joystick -->
       <div id="smapJoystickZone">
         <div id="smapJoystickBase"></div>
@@ -20501,7 +20506,7 @@ function smapBuild3D(){
       ch.style.display=onZI?'none':'';
     }}
     ['smapPetBagBtn','smapRoomBtn','smapDailyClaimBtn','smapPetDialog','smapZiBtn',
-     'smapWeatherPanel','smapFbLink','smapScreenshotBtn','smapMinimap'].forEach(function(_id){var el=document.getElementById(_id);if(el)el.style.display=onZI?'none':'';});
+     'smapWeatherPanel','smapFbLink','smapScreenshotBtn','smapMinimap','smapDonateBtn'].forEach(function(_id){var el=document.getElementById(_id);if(el)el.style.display=onZI?'none':'';});
   }
   // ═══════════════════════════════════════════════
   //  ZOMBIE ISLAND — LOBBY ROOM (Portal Entry)
@@ -29901,6 +29906,43 @@ function shopBuyFurniture(itemId){
   playSound('coin');
   shopRender();
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  DONATE BUTTON — Quick Topup via ToyyibPay
+// ══════════════════════════════════════════════════════════════════
+function smapDonateOpen(){
+  var u=shopGetUsername();
+  if(!u){alert('Sila login terlebih dahulu.');return;}
+  var pkgs=[
+    {id:'topup_rare10', label:'10 🪙', rm:'RM2'},
+    {id:'topup_rare30', label:'30 🪙', rm:'RM5'},
+    {id:'topup_rare50', label:'50 🪙', rm:'RM8'},
+    {id:'topup_rare100',label:'100 💎',rm:'RM15'},
+    {id:'topup_rare500',label:'500 💎',rm:'RM65'}
+  ];
+  var rows=pkgs.map(function(p){
+    return '<div onclick="smapDonateClose();shopBuyTopup(\''+p.id+'\')" style="padding:10px 14px;margin:6px 0;background:linear-gradient(135deg,rgba(255,50,100,0.15),rgba(180,0,60,0.25));border:1px solid rgba(255,105,180,0.4);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .15s;" onmouseover="this.style.borderColor='#ff69b4';this.style.background='rgba(255,50,100,0.3)'" onmouseout="this.style.borderColor='rgba(255,105,180,0.4)';this.style.background='rgba(255,50,100,0.15)'">' +
+      '<span style="color:#fff;font-size:14px;font-family:\'Press Start 2P\',monospace;">'+p.label+'</span>' +
+      '<span style="background:linear-gradient(135deg,#ff69b4,#ff1493);color:#fff;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:bold;font-family:\'Press Start 2P\',monospace;">💳 '+p.rm+'</span>' +
+    '</div>';
+  }).join('');
+
+  var ov=document.createElement('div');
+  ov.id='smapDonateOverlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML='<div style="background:linear-gradient(135deg,#1a0a1e,#2d1040);border:2px solid #ff69b4;border-radius:14px;padding:24px 20px;max-width:360px;width:90%;box-shadow:0 4px 40px rgba(255,105,180,0.4);">' +
+    '<div style="text-align:center;margin-bottom:16px;">' +
+      '<div style="font-size:36px;margin-bottom:6px;">💖</div>' +
+      '<div style="color:#ff69b4;font-size:13px;font-family:\'Press Start 2P\',monospace;margin-bottom:4px;">DONATE</div>' +
+      '<div style="color:#aaa;font-size:9px;font-family:\'Press Start 2P\',monospace;">Support game ini & dapatkan Rare Coin!</div>' +
+    '</div>' +
+    rows +
+    '<div onclick="smapDonateClose()" style="text-align:center;margin-top:12px;color:#ff69b4;font-size:10px;font-family:\'Press Start 2P\',monospace;cursor:pointer;padding:6px;opacity:0.7;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">✖ TUTUP</div>' +
+  '</div>';
+  ov.addEventListener('click',function(e){if(e.target===ov)smapDonateClose();});
+  document.body.appendChild(ov);
+}
+function smapDonateClose(){var o=document.getElementById('smapDonateOverlay');if(o)o.remove();}
 
 // ══════════════════════════════════════════════════════════════════
 //  TOPUP / PAYMENT — Rare Coin via ToyyibPay
@@ -54591,8 +54633,8 @@ function petBagClose(){
   background:radial-gradient(ellipse at center,#7ecb52 0%,#4c9c3a 70%,#3a7a2c 100%);
   box-shadow:0 10px 0 rgba(0,0,0,0.15),inset 0 -4px 8px rgba(0,0,0,0.2);
   transform:rotateX(55deg);}
-.pkmn-platform.opp{top:16%;right:8%;width:120px;height:42px;}
-.pkmn-platform.mine{bottom:12%;left:6%;width:170px;height:60px;}
+.pkmn-platform.opp{top:42%;right:14%;width:120px;height:42px;}
+.pkmn-platform.mine{bottom:16%;left:12%;width:170px;height:60px;}
 .pkmn-pet-sprite{position:absolute;font-size:52px;filter:drop-shadow(3px 6px 3px rgba(0,0,0,0.35));
   animation:pkmnFloat 2.4s ease-in-out infinite;transition:transform .15s,opacity .3s;overflow:visible;}
 .pkmn-pet-sprite.opp{top:6%;right:14%;font-size:46px;}

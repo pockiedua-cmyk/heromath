@@ -241,9 +241,12 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 #loginCharRight{right:calc(50% - 280px);animation:ls-idle 2s ease-in-out infinite .6s;}
 @keyframes ls-idle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-10px) rotate(1deg)}}
 /* Login Box */
-.login-box{position:relative;z-index:3;background:rgba(8,4,24,.93);border:2.5px solid #7c3aed;border-radius:20px;padding:24px 30px;text-align:center;max-width:min(420px,92vw);width:100%;box-shadow:0 0 0 1px rgba(124,58,237,.3),0 0 60px rgba(124,58,237,.2),0 30px 80px rgba(0,0,0,.7);}
+.login-box{position:relative;z-index:3;background:rgba(8,4,24,.93);border:2.5px solid #7c3aed;border-radius:20px;padding:24px 30px;text-align:center;max-width:min(420px,92vw);max-height:90vh;overflow-y:auto;width:100%;box-shadow:0 0 0 1px rgba(124,58,237,.3),0 0 60px rgba(124,58,237,.2),0 30px 80px rgba(0,0,0,.7);}
 .login-box::before{content:"";position:absolute;top:0;left:20%;right:20%;height:2.5px;background:linear-gradient(90deg,transparent,#a855f7,#6366f1,transparent);border-radius:0 0 4px 4px;}
 .login-box::after{content:"";position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:160px;height:80px;background:radial-gradient(ellipse,rgba(124,58,237,.35) 0%,transparent 70%);pointer-events:none;}
+.login-box::-webkit-scrollbar{width:5px;}
+.login-box::-webkit-scrollbar-track{background:rgba(124,58,237,.1);border-radius:4px;}
+.login-box::-webkit-scrollbar-thumb{background:rgba(124,58,237,.4);border-radius:4px;}
 /* Title */
 .login-title{font-family:'Nunito',sans-serif;font-size:clamp(18px,4vw,26px);font-weight:900;background:linear-gradient(135deg,#ffd700,#ff6b35,#ff3c9c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:4px;text-shadow:none;}
 .login-sub{font-family:'Nunito',sans-serif;color:#6d5a8a;font-size:clamp(9px,1.4vw,11px);font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;}
@@ -257,7 +260,7 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
 .auth-tab{flex:1;padding:9px 4px;border-radius:8px;border:none;background:transparent;color:#6d5a8a;font-family:'Nunito',sans-serif;font-size:clamp(10px,1.8vw,13px);font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:.3px;}
 .auth-tab.active{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;box-shadow:0 2px 12px rgba(124,58,237,.4);}
 .auth-tab:hover:not(.active){background:rgba(255,255,255,.07);color:#bbb;}
-.auth-panel{display:none;}
+.auth-panel{display:none;padding-bottom:8px;}
 .auth-panel.active{display:block;}
 /* Fields */
 .login-field{margin-bottom:12px;text-align:left;}
@@ -53270,8 +53273,8 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-  camera.position.set(0, 0.5, 4.0);
-  camera.lookAt(0, 0.1, 0);
+  camera.position.set(0, 0.3, 5.5);
+  camera.lookAt(0, 0.0, 0);
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
   const dl = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -53287,10 +53290,11 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
   _pkmnBuildPetModel(petDef.id, THREE, group, sc);
   scene.add(group);
 
-  // Rarity glow ring
+  // Rarity glow ring — scaled to match pet size
   const ringColor = rarity==='Legenda' ? 0xffd700 : rarity==='Nadir' ? 0xa29bfe : 0x00e676;
+  const ringSc = rarity==='Legenda' ? 1.5 : rarity==='Nadir' ? 1.2 : 1.0;
   const ring = new THREE.Mesh(
-    new THREE.RingGeometry(0.38, 0.58, 24),
+    new THREE.RingGeometry(0.38*ringSc, 0.58*ringSc, 24),
     new THREE.MeshBasicMaterial({color:ringColor, transparent:true, opacity:0.55, side:THREE.DoubleSide, depthWrite:false})
   );
   ring.rotation.x = -Math.PI/2;
@@ -53337,8 +53341,8 @@ function _pkmnStartBattleRaf(){
       const d = _pkmnBattleRenderers[i];
       if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
       d.t += 0.016;
-      const bob = Math.sin(d.t*2.8)*0.06;
-      d.group.position.y = d.isMine ? 0.10+bob : 0.08+bob;
+      const bob = Math.sin(d.t*2.8)*0.03;
+      d.group.position.y = d.isMine ? 0.02+bob : 0.01+bob;
       d.group.rotation.y = d.isMine ? Math.PI : 0;
       d.ring.rotation.z = t*0.3;
       d.renderer.render(d.scene, d.camera);
@@ -54061,11 +54065,11 @@ function petPvPRenderSkills(){
     const ready = now >= cd;
     const remain = ready ? 0 : Math.ceil((cd - now)/1000);
     const btn = document.createElement('button');
-    btn.style.cssText = 'background:'+(ready?'radial-gradient(circle at 35% 30%,rgba(0,100,200,0.9),rgba(0,40,100,0.85))':'#1a1a2a')+';border:3px solid '+(ready?'#00c8ff':'#333')+';color:#fff;padding:10px 8px;font-family:\'Press Start 2P\',monospace;font-size:clamp(8px,1.6vw,11px);cursor:'+(ready?'pointer':'not-allowed')+';border-radius:8px;transition:all .1s;';
-    btn.innerHTML = '<div style="font-size:clamp(20px,4.5vw,28px);">'+sk.emoji+'</div>'+
-      '<div style="margin-top:3px;">'+sk.name+'</div>'+
-      '<div style="color:#aaa;font-size:clamp(6px,1.2vw,8px);">'+sk.desc+'</div>'+
-      (remain>0?'<div style="color:#ff6b6b;font-size:clamp(10px,2vw,14px);margin-top:3px;">'+remain+'s</div>':'');
+    btn.style.cssText = 'background:'+(ready?'radial-gradient(circle at 35% 30%,rgba(0,100,200,0.9),rgba(0,40,100,0.85))':'#1a1a2a')+';border:2px solid '+(ready?'#00c8ff':'#333')+';color:#fff;padding:4px 4px;font-family:\'Press Start 2P\',monospace;font-size:clamp(6px,1.2vw,9px);cursor:'+(ready?'pointer':'not-allowed')+';border-radius:5px;transition:all .1s;';
+    btn.innerHTML = '<div style="font-size:clamp(14px,3.2vw,20px);">'+sk.emoji+'</div>'+
+      '<div style="margin-top:2px;">'+sk.name+'</div>'+
+      '<div style="color:#aaa;font-size:clamp(5px,1vw,7px);">'+sk.desc+'</div>'+
+      (remain>0?'<div style="color:#ff6b6b;font-size:clamp(7px,1.4vw,10px);margin-top:1px;">'+remain+'s</div>':'');
     if(ready){
       btn.onclick = ()=> petPvPUseSkill(i);
       btn.onmouseenter = function(){ this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0,200,255,0.4)'; };
@@ -54189,10 +54193,10 @@ function petPvPAskQuestion(sk, callback){
   const feedback = document.getElementById('petPvPFeedback');
   const btns = document.createElement('div');
   btns.className = 'petPvPQuestionBtns';
-  btns.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0;';
+  btns.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0;';
   opts.forEach(([val, isAns])=>{
     const b = document.createElement('button');
-    b.style.cssText = 'background:#1a1a2a;border:3px solid #4f46e5;color:#fff;padding:10px 8px;font-family:\'Press Start 2P\',monospace;font-size:clamp(18px,4vw,28px);cursor:pointer;border-radius:6px;transition:all .1s;';
+    b.style.cssText = 'background:#1a1a2a;border:2px solid #4f46e5;color:#fff;padding:5px 6px;font-family:\'Press Start 2P\',monospace;font-size:clamp(12px,2.8vw,18px);cursor:pointer;border-radius:4px;transition:all .1s;';
     b.textContent = val;
     b.onclick = function(){
       [...btns.children].forEach(c=>c.disabled=true);
@@ -54586,8 +54590,8 @@ function petBagClose(){
 .pkmn-hp-fill.mid{background:linear-gradient(180deg,#ffd54c,#e8a800);}
 .pkmn-hp-fill.low{background:linear-gradient(180deg,#ff6b5c,#e52521);}
 .pkmn-hp-text{color:#555;font-size:clamp(4px,0.9vw,6px);text-align:right;margin-top:2px;}
-.pkmn-dialog{background:#fdfdf5;border:3px solid #4a4a3a;border-radius:6px;box-shadow:2px 3px 0 rgba(0,0,0,0.3);
-  padding:12px 14px;margin-top:10px;min-height:32px;color:#222;font-size:clamp(11px,2.4vw,16px);line-height:1.5;}
+.pkmn-dialog{background:#fdfdf5;border:2px solid #4a4a3a;border-radius:6px;box-shadow:2px 3px 0 rgba(0,0,0,0.3);
+  padding:6px 10px;margin-top:6px;min-height:24px;color:#222;font-size:clamp(9px,2vw,13px);line-height:1.4;}
 .pkmn-answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
 .pkmn-answer-btn{background:linear-gradient(180deg,#fdfdf5,#e8e4d0);border:2px solid #4a4a3a;border-radius:5px;
   box-shadow:2px 2px 0 rgba(0,0,0,0.3);padding:10px 8px;font-family:'Press Start 2P',monospace;
@@ -54648,9 +54652,9 @@ function petBagClose(){
       <div style="position:absolute;top:5px;left:50%;transform:translateX(-50%);color:#a855f7;font-size:clamp(6px,1.3vw,8px);text-shadow:1px 1px 0 #000;">⚔️ PVP PET BATTLE!</div>
     </div>
     <div id="petPvPLog" class="pkmn-dialog">Pilih skill untuk serang!</div>
-    <div id="petPvPSkills" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;"></div>
+    <div id="petPvPSkills" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;"></div>
     <div id="petPvPFeedback" style="min-height:18px;font-size:clamp(8px,1.8vw,12px);margin:8px 0 6px;color:#ffd700;text-align:center;"></div>
-    <div style="text-align:center;"><button onclick="petPvPQuit()" style="background:#333;color:#aaa;border:1px solid #555;padding:6px 14px;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.4vw,10px);cursor:pointer;">✖ LARI (KALAH)</button></div>
+    <div style="text-align:center;"><button onclick="petPvPQuit()" style="background:#333;color:#aaa;border:1px solid #555;padding:3px 10px;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.2vw,8px);cursor:pointer;">✖ LARI (KALAH)</button></div>
   </div>
 </div>
 

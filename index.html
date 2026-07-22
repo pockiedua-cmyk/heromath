@@ -48925,8 +48925,8 @@ window.mobaInviteAccept = function(){
   const me   = smapGetPlayerName();
   const from = _mobaInvitePendingFrom; // nama asal (case-sensitive untuk path Firebase)
   if(window._fbPresenceDb&&window._fbRefFn&&window._fbSetFn){
-    // BETUL: tulis accepted ke path SENDER (moba_invites/FROM) — sender listen sini
-    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_invites/'+from),{
+    // FIX: tulis accepted ke path SENDIRI (moba_invites/ME) — sender listen pada target path, bukan sender path
+    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_invites/'+me),{
       from: me, ts: Date.now(), status: 'accepted'
     });
   }
@@ -48951,10 +48951,10 @@ window.mobaInviteDecline = function(){
   const toast=document.getElementById('mobaInviteToast');
   if(!_mobaInvitePendingFrom){ toast&&toast.classList.remove('show'); return; }
   const me   = smapGetPlayerName();
-  const from = _mobaInvitePendingFrom; // path sender
+  const from = _mobaInvitePendingFrom; // nama pengirim (untuk rujukan sahaja)
   if(window._fbPresenceDb&&window._fbRefFn&&window._fbSetFn){
-    // BETUL: tulis declined ke path SENDER supaya sender nampak response
-    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_invites/'+from),{
+    // FIX: tulis declined ke path SENDIRI (moba_invites/ME) — sender listen pada target path, bukan sender path
+    window._fbSetFn(window._fbRefFn(window._fbPresenceDb,'moba_invites/'+me),{
       from: me, ts: Date.now(), status: 'declined'
     });
   }
@@ -53356,19 +53356,18 @@ function petPvPChallengeFromList(targetUsername, targetDisplay){
 
 // ── Hantar cabaran PVP Pet ke pemain lain di peta sekolah ──
 function petPvPSendInvite(targetUsername, targetDisplay){
-  // FIX: guna smapGetPlayerName() (sama identiti dengan sistem presence/kedudukan)
-  // supaya invite dihantar & didengar di alamat Firebase yang SAMA. Dulu guna
-  // (username||name) di sini tapi presence guna smapGetPlayerName() — bila kedua-dua
-  // berbeza, jemputan "hilang" sebab dihantar ke alamat lain dari yang didengar.
   const me = smapGetPlayerName();
-  if(!targetUsername || targetUsername===me) return;
+  if(!me){ showPetNotification('⚠', 'GAGAL', 'Nama pemain tidak dijumpai.', '#e52521'); return; }
+  if(!targetUsername || targetUsername===me){ showPetNotification('⚠', 'GAGAL', 'Tak boleh cabar diri sendiri.', '#e52521'); return; }
   const myPet = petPvPGetMyPet();
   if(!myPet){
     showPetNotification('⚠', 'ANDA TIDAK ADA PET!', 'Beli PIKACHU STARTER di kedai!', '#e52521');
     return;
   }
-  if(!window._fbPresenceDb || !window._fbRefFn || !window._fbSetFn) return;
-  // Hantar invite ke Firebase
+  if(!window._fbPresenceDb || !window._fbRefFn || !window._fbSetFn){
+    showPetNotification('⚠', 'FIREBASE TIDAK SIAP', 'Tunggu sebentar, cuba lagi.', '#e52521');
+    return;
+  }
   const invRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+targetUsername);
   window._fbSetFn(invRef, {
     from: me,
@@ -53378,14 +53377,12 @@ function petPvPSendInvite(targetUsername, targetDisplay){
     status: 'pending'
   }).then(()=>{
     showPetNotification('📡', 'CABARAN DIHANTAR!', 'Tunggu '+targetDisplay+' terima...', '#a855f7');
-    // Auto batal selepas 30s
     setTimeout(()=>{
       if(_petPvPInvite && _petPvPInvite.from===targetUsername){
         _petPvPInvite = null;
         showPetNotification('⏱', 'MASA TAMAT', 'Cabaran tidak dijawab.', '#e52521');
       }
     }, 30000);
-    // Dengar response
     const respRef = window._fbRefFn(window._fbPresenceDb, 'petPvpInvites/'+me+'/response');
     if(window._fbOnValueModule){
       window._fbOnValueModule.onValue(respRef, snap=>{
@@ -53395,6 +53392,9 @@ function petPvPSendInvite(targetUsername, targetDisplay){
         }
       }, {onlyOnce:true});
     }
+  }).catch(err=>{
+    console.error('petPvPSendInvite error:', err);
+    showPetNotification('⚠', 'GAGAL HANTAR', 'Firebase error: '+(err.message||err), '#e52521');
   });
 }
 

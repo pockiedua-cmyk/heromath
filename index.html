@@ -53368,7 +53368,7 @@ function _pkmnStartBattleRaf(){
       if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
       d.t += 0.016;
       const bob = Math.sin(d.t*2.8)*0.01;
-      d.group.position.y = d.sc*0.44+bob;
+      d.group.position.y = d.sc*0.32+bob;
       d.group.rotation.y = d.isMine ? Math.PI : 0;
       d.ring.rotation.z = t*0.3;
       d.renderer.render(d.scene, d.camera);

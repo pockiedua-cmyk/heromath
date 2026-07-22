@@ -1701,16 +1701,7 @@ window.addEventListener('error', function(e){
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
   const auth = getAuth(app);
-
-  // ── Sign in secara anonymous SEBELUM apa-apa baca/tulis Firebase ──
-  // Ini perlu supaya Security Rules 'auth != null' berfungsi.
-  try {
-    await signInAnonymously(auth);
-  } catch (authErr) {
-    console.error('[Firebase] Anonymous sign-in gagal:', authErr.message);
-    window._fbAuthError = true;
-  }
-
+  signInAnonymously(auth).catch(e => console.warn('Firebase anon auth failed:', e));
   const worldRef = ref(db, 'worldchat');
 
   // Expose to global scope for use in non-module code
@@ -11835,7 +11826,6 @@ let _smWeatherSyncRef=null;
 let _smWeatherUnsub=null;
 let _smWeatherLastSync=0;
 let _smWeatherLastPush=0;
-// Panggil sekali untuk mula dengar cuaca global
 function smWeatherStartSync(){
   if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueFn||!window._fbUpdateFn)return;
   _smWeatherSyncRef=window._fbRefFn(window._fbPresenceDb,'weather_school');
@@ -11843,19 +11833,15 @@ function smWeatherStartSync(){
   _smWeatherUnsub=window._fbOnValueFn(_smWeatherSyncRef,function(snap){
     var d=snap.val();
     if(!d)return;
-    // Guna data dari Firebase — semua device sync ke sini
     smWeather.season=d.season!==undefined?d.season:smWeather.season;
     smWeather.dayTime=d.dayTime!==undefined?d.dayTime:smWeather.dayTime;
-    // Jangan reset particle group bila season berubah — rebuild diperlukan
     if(smWeather.ready){
-      // Force rebuild particles if season changed
       if(smWeather._lastSeason!==undefined&&smWeather._lastSeason!==smWeather.season){
         smWeatherRebuildParticles();
       }
       smWeather._lastSeason=smWeather.season;
     }
   });
-  // Push data pertama sekali
   if(window._fbUpdateFn&&_smWeatherSyncRef){
     window._fbUpdateFn(_smWeatherSyncRef,{
       season:smWeather.season,
@@ -11879,7 +11865,6 @@ function smUpdateWeatherSystem(dt,heroX,heroZ){
     smWeather.season=(smWeather.season+1)%SM_SEASONS.length;
     smWeatherRebuildParticles();
   }
-  // Sync ke Firebase setiap 3 saat supaya semua device guna masa yang sama
   var now=Date.now();
   if(now-_smWeatherLastPush>3000&&window._fbPresenceDb&&window._fbUpdateFn&&_smWeatherSyncRef){
     _smWeatherLastPush=now;
@@ -13113,10 +13098,8 @@ function smapBuild3D(){
   function _ziIsNight(){return smZb.dayTime>0.7||smZb.dayTime<0.2;}
   // ── Weather system ──
   function _ziWeatherTick(dt){
-    // Co-op: non-host jangan generate weather sendiri — guna dari Firebase
     if(_ziCoop.active&&_ziCoop.code&&!_ziCoop.isHost){
       if(_ziCoop.roomData&&_ziCoop.roomData.weather&&_ziCoop.roomData.weather!==smZb.weatherType){
-        var oldW=smZb.weatherType;
         smZb.weatherType=_ziCoop.roomData.weather;
         if(smZb.weatherType!=='clear')smZbFloatingText(smHeroState.x,3,smHeroState.z,'⛈️ WEATHER: '+smZb.weatherType.toUpperCase()+'!','#88aaff');
       }
@@ -13127,7 +13110,6 @@ function smapBuild3D(){
       var types=['clear','rain','fog','bloodmoon','toxic_rain'];
       smZb.weatherType=types[Math.floor(Math.random()*types.length)];
       smZb.weatherTimer=180+Math.random()*300;
-      // Co-op host: sync ke Firebase
       if(_ziCoop.active&&_ziCoop.code&&_ziCoop.isHost){
         var wr=_ziCoopRoomRef(_ziCoop.code);
         if(wr)window._fbUpdateFn(wr,{weather:smZb.weatherType}).catch(function(){});
@@ -37709,8 +37691,8 @@ function chessInviteStartListen(){
   if(_chessInviteListener) return;
   const me=_chessMyName();
   const tryListen=()=>{
-    if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    if(!window._fbOnValueModule) return;
     if(_chessInviteListener) return;
     const invRef=window._fbRefFn(window._fbPresenceDb,'chess_invites/'+me);
     _chessInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
@@ -38591,8 +38573,8 @@ function damInviteStartListen(){
   if(!playerProfile||(!(playerProfile.username)&&!(playerProfile.name))) return;
   const me = _damMyName();
   const tryListen = ()=>{
-    if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    if(!window._fbOnValueModule) return;
     if(_damInviteListener) return;
     const invRef = window._fbRefFn(window._fbPresenceDb,'dam_invites/'+me);
     _damInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
@@ -43853,8 +43835,8 @@ function gkInviteStartListen(){
   if(!window.playerProfile||(!window.playerProfile.username&&!window.playerProfile.name)) return;
   const me=_gkMyKey();
   const tryListen=()=>{
-    if(!window._fbOnValueModule) return;
     if(!window._fbReady) return;
+    if(!window._fbOnValueModule) return;
     if(_gkInviteListener) return;
     const invRef=window._fbRefFn(window._fbPresenceDb,'gk_invites/'+me);
     _gkInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
@@ -48884,11 +48866,11 @@ window.mobaInviteStartListen = function(){
   }
   const me = smapGetPlayerName();
   if(!me){ setTimeout(mobaInviteStartListen, 1000); return; }
+  const invRef = window._fbRefFn(window._fbPresenceDb, 'moba_invites/'+me);
   const tryListen = ()=>{
     if(!window._fbReady) return;
     if(!window._fbOnValueModule) return;
     if(_mobaInviteListener) return;
-    const invRef = window._fbRefFn(window._fbPresenceDb, 'moba_invites/'+me);
     _mobaInviteListener = window._fbOnValueModule.onValue(invRef, snap=>{
       const d = snap.val();
       if(!d||d.status!=='pending') return;
@@ -48916,8 +48898,6 @@ window.mobaInviteStartListen = function(){
   else{
     const poll=setInterval(()=>{ if(window._fbReady){ tryListen(); clearInterval(poll); } },500);
   }
-}
-
 };
 
 window.mobaInviteAccept = function(){
@@ -51126,126 +51106,52 @@ smapBuild3D = function(){
   // Add MOBA portal ring in front of E-Sport building after world is built
   setTimeout(()=>{
     try{
-      if(!sm3.scene||sm3.mobaRing) return;
-      const ESPORT_X=32, ESPORT_Z=-26+8.2;
+      if(!sm3.scene) return;
 
-      // ── Portal group ──────────────────────────────────────
-      const portalGroup = new THREE.Group();
-      portalGroup.position.set(ESPORT_X, 0, ESPORT_Z+1);
-      sm3.scene.add(portalGroup);
+      function _makePortal(sx,sz,ringColor,discColor,glowColor,labelText){
+        const g=new THREE.Group(); g.position.set(sx,0,sz); sm3.scene.add(g);
+        const rg=new THREE.TorusGeometry(3.0,0.28,16,64);
+        const rm=new THREE.MeshBasicMaterial({color:ringColor,transparent:true,opacity:0.95});
+        const r=new THREE.Mesh(rg,rm); r.position.set(0,3.2,0); g.add(r);
+        const dg=new THREE.CircleGeometry(2.68,64);
+        const dm=new THREE.MeshBasicMaterial({color:discColor,transparent:true,opacity:0.55,side:THREE.DoubleSide});
+        const d=new THREE.Mesh(dg,dm); d.position.set(0,3.2,0.01); g.add(d);
+        const r2g=new THREE.TorusGeometry(2.68,0.10,8,64);
+        const r2m=new THREE.MeshBasicMaterial({color:glowColor,transparent:true,opacity:0.75});
+        const r2=new THREE.Mesh(r2g,r2m); r2.position.set(0,3.2,0.02); g.add(r2);
+        const lt=new THREE.PointLight(glowColor,2.5,14); lt.position.set(0,3.2,0); g.add(lt);
+        const pyM=new THREE.MeshBasicMaterial({color:glowColor});
+        [-3,3].forEach(cx=>{const p=new THREE.Mesh(new THREE.BoxGeometry(0.22,4,0.22),pyM);p.position.set(cx,5,0);g.add(p);});
+        [-3,3].forEach(cx=>{const c=new THREE.Mesh(new THREE.SphereGeometry(0.28,8,8),pyM);c.position.set(cx,7.1,0);g.add(c);});
+        const bM=new THREE.MeshBasicMaterial({color:discColor});
+        const b=new THREE.Mesh(new THREE.BoxGeometry(6.5,0.3,1.5),bM); b.position.set(0,0.15,0); g.add(b);
+        const tM=new THREE.MeshBasicMaterial({color:ringColor,transparent:true,opacity:0.8});
+        const t=new THREE.Mesh(new THREE.BoxGeometry(6.6,0.12,1.6),tM); t.position.set(0,0.31,0); g.add(t);
+        const cv=document.createElement('canvas'); cv.width=512; cv.height=96;
+        const cx=cv.getContext('2d');
+        cx.fillStyle='rgba(0,0,0,0.75)'; cx.fillRect(0,0,512,96);
+        cx.strokeStyle='#'+glowColor.toString(16).padStart(6,'0'); cx.lineWidth=3; cx.strokeRect(2,2,508,92);
+        cx.font='bold 42px monospace'; cx.textAlign='center'; cx.textBaseline='middle';
+        cx.fillStyle='#ffffff'; cx.fillText(labelText,256,48);
+        const txt=new THREE.CanvasTexture(cv);
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:txt,transparent:true}));
+        sp.scale.set(6,1.12,1); sp.position.set(0,8.2,0); g.add(sp);
+        return {group:g,ring:r,ringMat:rm,disc:d,discMat:dm,light:lt,sp};
+      }
 
-      // Outer ring (thick torus, RED/GOLD — Arena Master)
-      const rGeo = new THREE.TorusGeometry(3.0, 0.28, 16, 64);
-      const rMat = new THREE.MeshBasicMaterial({color:0xe52521, transparent:true, opacity:0.95});
-      const ring = new THREE.Mesh(rGeo, rMat);
-      ring.position.set(0, 3.2, 0);
-      portalGroup.add(ring);
+      // ══ ARENA MASTER (red) — perpustakaan ══
+      const AM_X=32, AM_Z=-17;
+      const am=_makePortal(AM_X,AM_Z+1,0xe52521,0x1a0000,0xff2200,'⚔ ARENA MASTER');
+      sm3.mobaPortalGroup=am.group; sm3.mobaRing=am.ring; sm3.mobaRingMat=am.ringMat;
+      sm3.mobaPortalDisc=am.disc; sm3.mobaPortalDiscMat=am.discMat; sm3.mobaPortalLight=am.light;
+      sm3.mobaEsportX=AM_X; sm3.mobaEsportZ=AM_Z;
 
-      // Inner glow disc (portal surface — dark blood red)
-      const dGeo = new THREE.CircleGeometry(2.68, 64);
-      const dMat = new THREE.MeshBasicMaterial({
-        color:0x1a0000,
-        transparent:true,
-        opacity:0.60,
-        side:THREE.DoubleSide
-      });
-      const disc = new THREE.Mesh(dGeo, dMat);
-      disc.position.set(0, 3.2, 0.01);
-      portalGroup.add(disc);
-
-      // Inner shimmer ring (gold edge glow)
-      const r2Geo = new THREE.TorusGeometry(2.68, 0.10, 8, 64);
-      const r2Mat = new THREE.MeshBasicMaterial({color:0xffd700, transparent:true, opacity:0.75});
-      const ring2 = new THREE.Mesh(r2Geo, r2Mat);
-      ring2.position.set(0, 3.2, 0.02);
-      portalGroup.add(ring2);
-
-      // Point light inside portal — red glow
-      const light = new THREE.PointLight(0xff2200, 2.8, 14);
-      light.position.set(0, 3.2, 0);
-      portalGroup.add(light);
-
-      // ── "ARENA MASTER" sign above portal ──────────────
-      const signGeo = new THREE.BoxGeometry(4.5, 0.85, 0.12);
-      const signMat = new THREE.MeshBasicMaterial({color:0x1a0008});
-      const sign = new THREE.Mesh(signGeo, signMat);
-      sign.position.set(0, 7.2, 0);
-      portalGroup.add(sign);
-
-      // Sign border (gold)
-      const borderGeo = new THREE.BoxGeometry(4.65, 0.98, 0.10);
-      const borderMat = new THREE.MeshBasicMaterial({color:0xffd700});
-      const border = new THREE.Mesh(borderGeo, borderMat);
-      border.position.set(0, 7.2, -0.02);
-      portalGroup.add(border);
-
-      // Sign pylon left & right — dark red pillars
-      const pylGeo = new THREE.BoxGeometry(0.22, 4.0, 0.22);
-      const pylMat = new THREE.MeshBasicMaterial({color:0x660000});
-      const pylL = new THREE.Mesh(pylGeo, pylMat);
-      pylL.position.set(-3.0, 5.0, 0);
-      portalGroup.add(pylL);
-      const pylR = new THREE.Mesh(pylGeo, pylMat);
-      pylR.position.set( 3.0, 5.0, 0);
-      portalGroup.add(pylR);
-
-      // Sign pylon glow caps — gold spheres
-      const capGeo = new THREE.SphereGeometry(0.28, 8, 8);
-      const capMat = new THREE.MeshBasicMaterial({color:0xffd700});
-      [-3.0, 3.0].forEach(cx=>{
-        const cap = new THREE.Mesh(capGeo, capMat);
-        cap.position.set(cx, 7.1, 0);
-        portalGroup.add(cap);
-      });
-
-      // Base platform — dark red
-      const baseGeo = new THREE.BoxGeometry(6.5, 0.3, 1.5);
-      const baseMat = new THREE.MeshBasicMaterial({color:0x1a0008});
-      const base = new THREE.Mesh(baseGeo, baseMat);
-      base.position.set(0, 0.15, 0);
-      portalGroup.add(base);
-
-      // Base trim — glowing red edge
-      const trimGeo = new THREE.BoxGeometry(6.6, 0.12, 1.6);
-      const trimMat = new THREE.MeshBasicMaterial({color:0xe52521, transparent:true, opacity:0.85});
-      const trim = new THREE.Mesh(trimGeo, trimMat);
-      trim.position.set(0, 0.31, 0);
-      portalGroup.add(trim);
-
-      // Store refs — Arena Master portal
-      sm3.mobaPortalGroup = portalGroup;
-      sm3.mobaRing        = ring;
-      sm3.mobaRingMat     = rMat;
-      sm3.mobaPortalDisc  = disc;
-      sm3.mobaPortalDiscMat = dMat;
-      sm3.mobaPortalLight = light;
-      sm3.mobaEsportX     = ESPORT_X;
-      sm3.mobaEsportZ     = ESPORT_Z;
-
-      // ══ MOBA LOBBY PORTAL (cyan) — pintu depan bangunan ══
-      const MLB_X=-32, MLB_Z=-17;
-      const mlg=new THREE.Group(); mlg.position.set(MLB_X,0,MLB_Z); sm3.scene.add(mlg);
-      const mlrG=new THREE.TorusGeometry(3.0,0.28,16,64);
-      const mlrM=new THREE.MeshBasicMaterial({color:0x00ffff,transparent:true,opacity:0.95});
-      const mlR=new THREE.Mesh(mlrG,mlrM); mlR.position.set(0,3.2,0); mlg.add(mlR);
-      const mldG=new THREE.CircleGeometry(2.68,64);
-      const mldM=new THREE.MeshBasicMaterial({color:0x003366,transparent:true,opacity:0.55,side:THREE.DoubleSide});
-      const mlD=new THREE.Mesh(mldG,mldM); mlD.position.set(0,3.2,0.01); mlg.add(mlD);
-      const mlr2G=new THREE.TorusGeometry(2.68,0.10,8,64);
-      const mlr2M=new THREE.MeshBasicMaterial({color:0x44ddff,transparent:true,opacity:0.75});
-      const mlR2=new THREE.Mesh(mlr2G,mlr2M); mlR2.position.set(0,3.2,0.02); mlg.add(mlR2);
-      const mLight=new THREE.PointLight(0x00eeff,2.5,14); mLight.position.set(0,3.2,0); mlg.add(mLight);
-      const mpylM=new THREE.MeshBasicMaterial({color:0x003399});
-      [-3,3].forEach(cx=>{const p=new THREE.Mesh(new THREE.BoxGeometry(0.22,4,0.22),mpylM);p.position.set(cx,5,0);mlg.add(p);});
-      const mcapM=new THREE.MeshBasicMaterial({color:0x00ffff});
-      [-3,3].forEach(cx=>{const c=new THREE.Mesh(new THREE.SphereGeometry(0.28,8,8),mcapM);c.position.set(cx,7.1,0);mlg.add(c);});
-      const mbM=new THREE.MeshBasicMaterial({color:0x001a33});
-      const mB=new THREE.Mesh(new THREE.BoxGeometry(6.5,0.3,1.5),mbM); mB.position.set(0,0.15,0); mlg.add(mB);
-      const mtM=new THREE.MeshBasicMaterial({color:0x0099cc,transparent:true,opacity:0.8});
-      const mT=new THREE.Mesh(new THREE.BoxGeometry(6.6,0.12,1.6),mtM); mT.position.set(0,0.31,0); mlg.add(mT);
-      sm3.mobaLobbyRing=mlR; sm3.mobaLobbyRingMat=mlrM;
-      sm3.mobaLobbyDiscMat=mldM; sm3.mobaLobbyLight=mLight;
-      sm3.mobaLobbyX=MLB_X; sm3.mobaLobbyZ=MLB_Z;
+      // ══ MOBA LOBBY (cyan) — E-Sport ══
+      const ML_X=-32, ML_Z=-16;
+      const ml=_makePortal(ML_X,ML_Z,0x00ffff,0x003366,0x00eeff,'🎮 MOBA LOBBY');
+      sm3.mobaLobbyRing=ml.ring; sm3.mobaLobbyRingMat=ml.ringMat;
+      sm3.mobaLobbyDiscMat=ml.discMat; sm3.mobaLobbyLight=ml.light;
+      sm3.mobaLobbyX=ML_X; sm3.mobaLobbyZ=ML_Z;
 
     }catch(e){ console.warn('[MOBA portal]',e); }
   },200);
@@ -57964,28 +57870,17 @@ function pbSpawnPlayers(){
 
   // Build ordered player list per team from online players + AI fill
   const teamSlots=[[],[]];
-  let foundMine=false;
   for(let t=0;t<2;t++){
     // Online humans first
     const onlineOnTeam=_pbOnlinePlayers.filter(p=>p.team===t);
     onlineOnTeam.forEach(p=>{
-      const isMine=p.name===me;
-      if(isMine) foundMine=true;
-      teamSlots[t].push({name:p.name,isHuman:true,isMine,isOnline:true});
+      teamSlots[t].push({name:p.name,isHuman:true,isMine:p.name===me,isOnline:true});
     });
     // Fill remaining with AI
     const fill=5-teamSlots[t].length;
     for(let i=0;i<fill;i++){
       teamSlots[t].push({name:BOT_NAMES[(t*7+i)%BOT_NAMES.length],isHuman:false,isOnline:false});
     }
-  }
-  // Fallback: if no isMine found (Firebase offline/blocked), add self to humanTeam
-  if(!foundMine){
-    const ht=humanTeam;
-    // Remove last AI from this team to make room
-    const aiIdx=teamSlots[ht].findIndex(s=>!s.isHuman);
-    if(aiIdx>=0) teamSlots[ht].splice(aiIdx,1);
-    teamSlots[ht].push({name:me,isHuman:true,isMine:true,isOnline:false});
   }
 
   _pbPlayers=[];
@@ -70557,8 +70452,8 @@ function bossInviteStartListen(){
   if(!me||!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn)return;
   if(_bossInviteListener)return;
   const tryListen=()=>{
-    if(!window._fbOnValueModule)return;
     if(!window._fbReady)return;
+    if(!window._fbOnValueModule)return;
     if(_bossInviteListener)return;
     try{
     const ref=window._fbRefFn(window._fbPresenceDb,'boss_invites/'+me);
@@ -72515,8 +72410,8 @@ function pvpInviteStartListen(){
   if(!me||!window._fbPresenceDb||!window._fbRefFn||!window._fbSetFn)return;
   if(_pvpInviteListener)return;
   const tryListen=()=>{
-    if(!window._fbOnValueModule)return;
     if(!window._fbReady)return;
+    if(!window._fbOnValueModule)return;
     if(_pvpInviteListener)return;
     try{
       const ref=window._fbRefFn(window._fbPresenceDb,'pvp_invites/'+me);

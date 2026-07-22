@@ -20466,7 +20466,7 @@ function smapBuild3D(){
     for(var i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];
     return s;
   }
-  function _ziLobbyUser(){return((playerProfile&&(playerProfile.username||playerProfile.name))||'GUEST').toUpperCase();}
+  function _ziLobbyUser(){return smapGetPlayerName();}
   function _ziLobbyRoomRef(code){
     if(!window._fbPresenceDb||!window._fbRefFn)return null;
     return window._fbRefFn(window._fbPresenceDb,'zi_coop/'+code);

@@ -48214,7 +48214,33 @@ function _enableTeamSwitch(){
 window.mobaStartNow = function(){
   if(!_m||!_m.myTeam) return;
   const me=smapGetPlayerName();
-  // Check if Firebase available & other humans in lobby
+  const _fireStart = (players) => {
+    _m.players = _m.players || {};
+    Object.assign(_m.players, players);
+    const humanUids=Object.keys(_m.players).filter(uid=>uid!==me&&!_m.players[uid].isAI);
+    if(humanUids.length>0){
+      _createMatchAndStart();
+    } else {
+      _startGameOffline();
+    }
+  };
+  if(_m._mobaRoomId && window._fbGetFn && window._fbPresenceDb && window._fbRefFn){
+    const playersRef = window._fbRefFn(window._fbPresenceDb, 'moba_rooms/' + _m._mobaRoomId + '/players');
+    window._fbGetFn(playersRef).then(snap => {
+      const data = snap.val() || {};
+      const now = Date.now();
+      const STALE_MS = 2*60*1000;
+      const fresh = {};
+      Object.entries(data).forEach(([uid, p]) => {
+        if(p.ts && (now - p.ts) > STALE_MS) return;
+        fresh[uid] = p;
+      });
+      _fireStart(fresh);
+    }).catch(() => {
+      _fireStart(_m.players || {});
+    });
+    return;
+  }
   if(window._fbPresenceDb&&window._fbRefFn&&window._fbSetFn&&window._fbOnValueFn&&_m.players){
     const humanUids=Object.keys(_m.players).filter(uid=>uid!==me&&!_m.players[uid].isAI);
     if(humanUids.length>0){
@@ -48222,7 +48248,6 @@ window.mobaStartNow = function(){
       return;
     }
   }
-  // Fallback: AI mode (single player)
   _startGameOffline();
 };
 
@@ -48603,6 +48628,9 @@ window.mobaJoinRoomById = function(roomId){
   _mobaRoomId=roomId;
   _m._mobaRoomId=roomId;
   _m.isHost=false;
+  _m.matchId=null;
+  _m.phase='lobby';
+  _m._joiningMatch=false;
   _fbRoomListen(roomId);
   mobaJoinInRoom(roomId);
 };
@@ -48697,6 +48725,7 @@ function _mobaShowStatus(msg){
 // ── Room-scoped listener ──
 function _fbRoomListen(roomId){
   if(_mobaRoomListenUnsub){ try{ _mobaRoomListenUnsub(); }catch(e){} _mobaRoomListenUnsub=null; }
+  if(_m&&_m._roomMetaUnsub){ try{ _m._roomMetaUnsub(); }catch(e){} _m._roomMetaUnsub=null; }
   if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueFn||!roomId) return;
   const roomRef=window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+roomId+'/players');
   const metaRef=window._fbRefFn(window._fbPresenceDb,'moba_rooms/'+roomId);

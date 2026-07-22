@@ -53295,11 +53295,11 @@ function _pkmnBuildBattlePet(elId, petDef, isMine){
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
   if(isMine){
-    camera.position.set(0, 0.05, 4.8);
-    camera.lookAt(0, -0.05, 0);
+    camera.position.set(0, 0.25, 4.8);
+    camera.lookAt(0, 0.20, 0);
   } else {
-    camera.position.set(0, 0.05, 5.0);
-    camera.lookAt(0, -0.05, 0);
+    camera.position.set(0, 0.25, 5.0);
+    camera.lookAt(0, 0.20, 0);
   }
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
@@ -53368,7 +53368,7 @@ function _pkmnStartBattleRaf(){
       if(!d.el.isConnected){ d.renderer.dispose(); _pkmnBattleRenderers.splice(i,1); continue; }
       d.t += 0.016;
       const bob = Math.sin(d.t*2.8)*0.01;
-      d.group.position.y = d.sc*0.32+bob;
+      d.group.position.y = d.sc*0.10+bob;
       d.group.rotation.y = d.isMine ? Math.PI : 0;
       d.ring.rotation.z = t*0.3;
       d.renderer.render(d.scene, d.camera);
@@ -53701,6 +53701,7 @@ function petUpdateBagCount(){
 
 let _petPvPState = null; // {active, myPet, oppPet, myHP, myMaxHP, oppHP, oppMaxHP, turn, skillCds:[]}
 let _petPvPInvite = null; // {from, fromName, myPet, oppPet}
+let _petPvPQuestionActive = false; // true while question is being answered
 
 // ── Synced PVP: Firebase shared battle state ──
 let _petPvPBattleId = null;     // deterministic key: "NAMEA_vs_NAMEB"
@@ -54213,6 +54214,7 @@ function petPvPAskQuestion(sk, callback){
   const opts = [[correct,true], ...[...wrongs].map(v=>[v,false])].sort(()=>Math.random()-0.5);
 
   // Tunjukkan soalan dalam log
+  _petPvPQuestionActive = true;
   document.getElementById('petPvPLog').innerHTML = '🧠 <span style="color:#222;font-size:1.15em;">'+q+'</span><br><span style="color:#555;font-size:0.8em;">Jawab betul untuk '+sk.emoji+' '+sk.name+'!</span>';
 
   // Buat butang jawapan
@@ -54226,6 +54228,7 @@ function petPvPAskQuestion(sk, callback){
     b.textContent = val;
     b.onclick = function(){
       [...btns.children].forEach(c=>c.disabled=true);
+      _petPvPQuestionActive = false;
       if(isAns){
         feedback.innerHTML = '<span style="color:#00e676;">✅ BETUL! Skill dilepaskan!</span>';
         callback(true);
@@ -54295,16 +54298,19 @@ function petPvPBattleOnUpdate(data){
 
   if(data.turn === s.mySide){
     s.myTurn = true;
-    document.getElementById('petPvPLog').textContent = '🎯 Giliran kamu! Pilih skill!';
-    petPvPRenderSkills();
+    if(!_petPvPQuestionActive){
+      document.getElementById('petPvPLog').textContent = '🎯 Giliran kamu! Pilih skill!';
+      petPvPRenderSkills();
+    }
   } else if(data.turn === s.oppSide && data.lastAction && data.lastAction.by === s.oppSide){
     s.myTurn = false;
-    petPvPRenderSkills();
+    if(!_petPvPQuestionActive) petPvPRenderSkills();
   }
 }
 
 // ── Tamat PVP (SYNCED) ──
 function petPvPEnd(win){
+  _petPvPQuestionActive = false;
   petPvPStopHeartbeat();
   petPvPStopTimeoutCheck();
   _pkmnCleanupBattleRenderers();

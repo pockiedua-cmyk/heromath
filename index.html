@@ -20755,22 +20755,30 @@ function smapBuild3D(){
 
   // ── Listen untuk jemputan ZI masuk ──
   window._ziLobbyInviteStartListen=function(){
-    if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueModule)return;
+    if(!window._fbPresenceDb||!window._fbRefFn)return;
     if(!playerProfile||(!playerProfile.username&&!playerProfile.name)){
       setTimeout(window._ziLobbyInviteStartListen,1000);return;
     }
     var me=_ziLobbyUser();
     if(!me){setTimeout(window._ziLobbyInviteStartListen,1000);return;}
-    if(_ziInviteListenerStarted)return;
-    _ziInviteListenerStarted=true;
-    var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+me);
-    window._fbOnValueModule.onValue(invRef,function(snap){
-      var d=snap.val();
-      if(!d||d.status!=='pending')return;
-      if(_isAnyGameActive&&_isAnyGameActive())return;
-      if(_ziLobby.active)return;
-      _ziLobbyShowInviteToast(d.from,d.fromDisplay,d.roomCode);
-    });
+    var tryListen=function(){
+      if(!window._fbReady)return;
+      if(!window._fbOnValueModule)return;
+      if(_ziInviteListenerStarted)return;
+      _ziInviteListenerStarted=true;
+      var invRef=window._fbRefFn(window._fbPresenceDb,'zi_invites/'+me);
+      window._fbOnValueModule.onValue(invRef,function(snap){
+        var d=snap.val();
+        if(!d||d.status!=='pending')return;
+        if(_isAnyGameActive&&_isAnyGameActive())return;
+        if(_ziLobby.active)return;
+        _ziLobbyShowInviteToast(d.from,d.fromDisplay,d.roomCode);
+      });
+    };
+    if(window._fbReady){tryListen();}
+    else{
+      var poll=setInterval(function(){if(window._fbReady){tryListen();clearInterval(poll);}},500);
+    }
   };
 
   function _ziLobbyShowInviteToast(from,fromDisplay,code){

@@ -347,6 +347,18 @@ body{background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;}
   .menu-choice-desc{font-size:9px;}
   .menu-logout-btn{padding:7px;font-size:10px;}
 }
+/* ── Portrait phone fix: menu scrollable ── */
+@media (orientation:portrait) and (max-height:800px){
+  #mainMenuScreen{justify-content:flex-start;}
+  #menuCharLeft2,#menuCharRight2{display:none;}
+  #menuBg .ls-ground,#menuBg .ls-bldg,#menuBg .ls-island{display:none;}
+  .menu-box{padding:14px 16px;}
+  .menu-choices{gap:8px;margin-bottom:10px;}
+  .menu-choice-btn{padding:10px 12px;}
+  .menu-choice-icon{font-size:clamp(22px,5vw,32px);}
+  .menu-logout-btn{padding:7px;font-size:10px;}
+  .dash-stat-card{padding:6px 4px !important;}
+}
 #menuBg{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
 #menuBg .ls-star{position:absolute;border-radius:50%;background:#fff;animation:ls-twinkle 2s infinite alternate;}
 #menuBg .ls-ground{position:absolute;bottom:0;left:0;right:0;height:22%;background:linear-gradient(180deg,#1a3a1a,#0a1a0a);border-top:3px solid #2a5a2a;}
@@ -3381,7 +3393,7 @@ setTimeout(()=>{
         <!-- Question modal (overlays HUD but not game) -->
       </div>
       <div id="gkQModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;background:rgba(10,10,30,0.95);border:4px solid #ff6600;padding:20px 24px;text-align:center;max-width:min(380px,88vw);width:100%;font-family:'Press Start 2P',monospace;box-shadow:8px 8px 0 #552200,0 0 40px rgba(255,102,0,0.3);border-radius:4px;pointer-events:all;">
-        <div style="color:#ffd700;font-size:clamp(6px,1.3vw,9px);margin-bottom:6px;">🧮 JAWAB SIFIR UNTUK NITRO!</div>
+        <div style="color:#ffd700;font-size:clamp(6px,1.3vw,9px);margin-bottom:6px;">🧮 JAWAB SOALAN UNTUK NITRO!</div>
         <div id="gkQText" style="color:#fff;font-size:clamp(26px,7vw,44px);font-weight:bold;margin:10px 0 16px;text-shadow:3px 3px 0 #ff6600;letter-spacing:2px;"></div>
         <div id="gkQBtns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;"></div>
         <div id="gkQFeedback" style="min-height:16px;font-size:clamp(6px,1.5vw,10px);"></div>
@@ -4470,7 +4482,7 @@ null, // 0
     ()=>{ const a=rand(1,7),b=rand(2,9),c=rand(1,7),d=b; return {text:`${a}/${b} + ${c}/${d} = ?\n(jawapan sebagai pecahan)` ,ans:(a+c),_frac:true,_den:d}; },
     ()=>{ const a=rand(2,9),b=rand(1,7); const r=a*b; const n=rand(1,a-1)*b; return {text:`${n}/${r} = ?/${a}\nBilang yang kosong?`,ans:n/b}; },
     ()=>{ const w=rand(1,3),n=rand(1,8),d=rand(2,8); return {text:`${w} ${n}/${d} = ?\n(tukar kepada pecahan tidak wajar)`,ans:w*d+n,_frac:true,_den:d}; },
-    ()=>{ const a=rand(2,8),b=rand(2,8); return {text:`${a}/${b} × ${b} = ?\nPecahan × penyebilang`,ans:a}; },
+    ()=>{ const a=rand(2,8),b=rand(2,8); return {text:`${a}/${b} × ${b} = ?\nPecahan × pembilang`,ans:a}; },
     ()=>{ const a=rand(1,9),b=rand(2,9),c=rand(1,5),d=b; return {text:`${a}/${b} - ${c}/${d} = ?\n(jawapan sebagai pecahan)`,ans:a-c,_frac:true,_den:d}; },
   ]},
   {name:'Faktor Dan Gandaan',qs:[
@@ -4496,7 +4508,7 @@ null, // 0
   ]},
   {name:'Ungkapan Algebra',qs:[
     ()=>{ const a=rand(2,9),b=rand(1,12); return {text:`Ringkaskan: ${a}x + ${b}x = ?\n(jawapan sebagai ungkapan)`,ans:(a+b),_x:true}; },
-    ()=>{ const a=rand(2,8),x=rand(1,10),b=rand(1,12); return {text:`Jika x = ${x}, berapakah\n${a}x + ${b} = ?`,ans:a*x+b}; },
+    ()=>{ const a=rand(2,8),x=rand(1,10),b=rand(1,12); return {text:`Jika x = ${x}, berapa\n${a}x + ${b} = ?`,ans:a*x+b}; },
     ()=>{ const a=rand(2,6),b=rand(1,10); return {text:`Kembangkan: ${a}(x + ${b})\n= ?x + ?\nPemalar = ?`,ans:a*b}; },
     ()=>{ const a=rand(2,5),b=rand(1,8),x=rand(1,10); return {text:`${a}x - ${b} bila x = ${x}\n= ?`,ans:a*x-b}; },
     ()=>{ const a=rand(3,8),b=rand(2,6),c=rand(1,5); return {text:`${a}x + ${b}x - ${c}x = ?x`,ans:a+b-c,_x:true}; },
@@ -4560,11 +4572,11 @@ null, // 0
 ],
 [ // ═══ TINGKATAN 2 (13 bab) ═══
   {name:'Pola Dan Jujukan',qs:[
-    ()=>{ const a=rand(2,5),d=rand(1,8); return {text:`Urusan: ${a}, ${a+d}, ${a+2*d}, ...\nUkiran ke-4 = ?`,ans:a+3*d}; },
-    ()=>{ const a=rand(1,5),r=rand(2,4); return {text:`Urusan: ${a}, ${a*r}, ${a*r*r}, ...\nUkiran ke-4 = ?`,ans:a*r*r*r}; },
-    ()=>{ const a=rand(2,8),d=rand(1,5); return {text:`Urusan: ${a}, ${a+d}, ${a+2*d}\nUkiran ke-10 = ?`,ans:a+9*d}; },
-    ()=>{ const n=rand(3,10),d=rand(2,6); const a1=2; return {text:`Urusan aritmetik: a₁=${a1}, d=${d}\nUₙ = a₁ + (n-1)d\nU${n} = ?`,ans:a1+(n-1)*d}; },
-    ()=>{ const d=rand(1,5); return {text:`Urusan: 5, ${5+d}, ${5+2*d}, ...\nBeza kepleran = ?`,ans:d}; },
+    ()=>{ const a=rand(2,5),d=rand(1,8); return {text:`Baris: ${a}, ${a+d}, ${a+2*d}, ...\nSebutan ke-4 = ?`,ans:a+3*d}; },
+    ()=>{ const a=rand(1,5),r=rand(2,4); return {text:`Baris: ${a}, ${a*r}, ${a*r*r}, ...\nSebutan ke-4 = ?`,ans:a*r*r*r}; },
+    ()=>{ const a=rand(2,8),d=rand(1,5); return {text:`Baris: ${a}, ${a+d}, ${a+2*d}\nSebutan ke-10 = ?`,ans:a+9*d}; },
+    ()=>{ const n=rand(3,10),d=rand(2,6); const a1=2; return {text:`Baris aritmetik: a₁=${a1}, d=${d}\nUₙ = a₁ + (n-1)d\nU${n} = ?`,ans:a1+(n-1)*d}; },
+    ()=>{ const d=rand(1,5); return {text:`Baris: 5, ${5+d}, ${5+2*d}, ...\nBeza am = ?`,ans:d}; },
   ]},
   {name:'Pemfaktoran Dan Pecahan Algebra',qs:[
     ()=>{ const a=rand(2,6),b=rand(1,8); return {text:`Faktorkan: ${a}x + ${a*b}\n= ${a}(x + ?)`,ans:b}; },
@@ -4791,9 +4803,9 @@ null, // 0
 [ // ═══ TINGKATAN 5 (8 bab) ═══
   {name:'Ubahan',qs:[
     ()=>{ const k=rand(2,10),x=rand(2,8); return {text:`y berubah terus dengan x\ny = ${k}x\nJika x = ${x}, y = ?`,ans:k*x}; },
-    ()=>{ const k=rand(2,8),y=rand(4,20); return {text:`y berubahsongsang dengan x\ny = ${k}/x\nJika x = ${k}, y = ?`,ans:1}; },
+    ()=>{ const k=rand(2,8),y=rand(4,20); return {text:`y berubah songsang dengan x\ny = ${k}/x\nJika x = ${k}, y = ?`,ans:1}; },
     ()=>{ const k=rand(2,8),x1=rand(2,5),x2=rand(6,12); const y1=k*x1,y2=k*x2; return {text:`y = ${k}x\nx=${x1} → y=${y1}\nx=${x2} → y=?`,ans:y2}; },
-    ()=>{ const k=rand(3,12),y=rand(2,8); const x=k/y; return {text:`y berubahsongsang x\ny = ${k}/x\nJika y = ${y}, x = ?`,ans:x}; },
+    ()=>{ const k=rand(3,12),y=rand(2,8); const x=k/y; return {text:`y berubah songsang x\ny = ${k}/x\nJika y = ${y}, x = ?`,ans:x}; },
     ()=>{ const a=rand(2,6),b=rand(2,6),x=rand(1,10); return {text:`y = ${a}x + ${b}\ny berubah langsung + pemalar\nJika x=${x}, y = ?`,ans:a*x+b}; },
   ]},
   {name:'Matriks',qs:[
@@ -43649,6 +43661,8 @@ function gkCloseModeMenu(){
 
 // ── Game Start ──
 let _gk=null;
+let _gkQHistory=[];
+const _GK_Q_MAX=50;
 function gkStart(mode){
   gkCloseModeMenu();
   if(_gk&&_gk.running) return;
@@ -43964,19 +43978,79 @@ function _gkUpdateHUD(){
   }
 }
 
+// ── Go Kart Question System: Pola, Urutan, Nombor +/- ──
+function gkMakeQ(){
+  let q, correct, attempts = 0;
+  do {
+    attempts++;
+    const roll = Math.random();
+    if(roll < 0.30){
+      // ── POLA: nombor naik ──
+      var start = rand(1,10);
+      var step = rand(2,5);
+      var seq = [start, start+step, start+step*2, start+step*3];
+      correct = start + step * 4;
+      q = seq.join(', ') + ', ?';
+    } else if(roll < 0.50){
+      // ── POLA: nombor turun ──
+      var start = rand(40,80);
+      var step = rand(2,6);
+      var seq = [start, start-step, start-step*2, start-step*3];
+      correct = start - step * 4;
+      q = seq.join(', ') + ', ?';
+    } else if(roll < 0.65){
+      // ── POLA: nombor berganda ──
+      var base = rand(2,5);
+      var seq = [base, base*2, base*4, base*8];
+      correct = base * 16;
+      q = seq.join(', ') + ', ?';
+    } else if(roll < 0.80){
+      // ── URUTAN: kuasa dua ──
+      var n = rand(3,8);
+      var seq = [];
+      for(var i=1;i<=n;i++) seq.push(i*i);
+      correct = (n+1)*(n+1);
+      q = seq.join(', ') + ', ?';
+    } else if(roll < 0.90){
+      // ── NOMBOR NEGATIF: tambah ──
+      var a = -rand(1,20), b = -rand(1,20);
+      correct = a + b;
+      q = '(' + a + ') + (' + b + ') = ?';
+    } else {
+      // ── NOMBOR POSITIF / NEGATIF: tolak ──
+      var a = rand(1,30), b = -rand(1,20);
+      correct = a - b;
+      q = a + ' \u2212 (' + b + ') = ?';
+    }
+  } while(_gkQHistory.indexOf(q)!==-1 && attempts<30);
+  _gkQHistory.push(q);
+  if(_gkQHistory.length>_GK_Q_MAX) _gkQHistory.shift();
+  // Jana 3 jawapan salah
+  var opts = [[correct,true]];
+  var used = {};
+  while(opts.length < 4){
+    var off = [-3,-2,-1,1,2,3,5,-5,10,-10][rand(0,9)];
+    var w = correct + off;
+    if(w!==correct && !used[w]){used[w]=1;opts.push([w,false]);}
+  }
+  // Shuffle
+  for(var i=opts.length-1;i>0;i--){var j=rand(0,i);var t=opts[i];opts[i]=opts[j];opts[j]=t;}
+  return {q:q, ans:correct, opts:opts};
+}
+
 // ── Question System ──
 function _gkAskQuestion(){
   if(!_gk||_gk.qPending) return;
-  const q=damMakeQuestion();
+  const q=gkMakeQ();
   _gk._currentQ=q;
   _gk.qPending=true;
   _gk.qAnswered=false;
   const modal=document.getElementById('gkQModal');
   const capEl=modal?modal.querySelector('div:first-child'):null;
   if(capEl){
-    if(_gk.qForP2) capEl.textContent='🎮 P2 (🔵): JAWAB SIFIR UNTUK NITRO!';
-    else if(_gk.mode==='duo') capEl.textContent='🎮 P1 (🟠): JAWAB SIFIR UNTUK NITRO!';
-    else capEl.textContent='🧮 JAWAB SIFIR UNTUK NITRO!';
+    if(_gk.qForP2) capEl.textContent='🎮 P2 (🔵): JAWAB SOALAN UNTUK NITRO!';
+    else if(_gk.mode==='duo') capEl.textContent='🎮 P1 (🟠): JAWAB SOALAN UNTUK NITRO!';
+    else capEl.textContent='🧮 JAWAB SOALAN UNTUK NITRO!';
   }
   const qText=document.getElementById('gkQText'),btns=document.getElementById('gkQBtns'),fb=document.getElementById('gkQFeedback');
   if(!modal||!qText||!btns) return;
@@ -44041,6 +44115,7 @@ function _gkFinishRace(){
 
 function gkEnd(){
   if(!_gk) return;
+  _gkQHistory=[];
   _gk.running=false;_gk.raceOver=false;
   _gkAStop();
   const modal=document.getElementById('gkQModal');
@@ -44119,7 +44194,7 @@ let _gkInviteUnsub=null;
 let _gkInviteRefreshInt=null;
 
 function _gkMyKey(){
-  return (window.playerProfile&&(window.playerProfile.username||window.playerProfile.name)||'ANON').toString().toUpperCase().slice(0,12);
+  return (typeof smapGetPlayerName==='function')?smapGetPlayerName():((window.playerProfile&&(window.playerProfile.username||window.playerProfile.name)||'ANON').toString().toUpperCase().slice(0,14));
 }
 
 function gkInviteStartListen(){
@@ -44284,8 +44359,8 @@ function gkGenCode(){
 
 // ── Host creates room ──
 function gkCreateRoom(){
-  const user=window._sifirLiveUsername||'Guest'+Math.floor(Math.random()*1000);
-  const disp=window._sifirLiveDisplay||user;
+  const user=smapGetPlayerName();
+  const disp=(window.playerProfile&&(window.playerProfile.name||window.playerProfile.username))||user;
   const code=gkGenCode();
   const roomId='gk_'+user+'_'+Date.now();
   const db=window._fbPresenceDb;
@@ -44325,8 +44400,8 @@ function gkCreateRoom(){
 function gkJoinRoom(){
   const code=document.getElementById('gkJoinCode').value.trim().toUpperCase();
   if(code.length<3){document.getElementById('gkRoomMsg').textContent='❌ Masukkan kod bilik';return;}
-  const user=window._sifirLiveUsername||'Guest'+Math.floor(Math.random()*1000);
-  const disp=window._sifirLiveDisplay||user;
+  const user=smapGetPlayerName();
+  const disp=(window.playerProfile&&(window.playerProfile.name||window.playerProfile.username))||user;
   const db=window._fbPresenceDb,ref=window._fbRefFn,get=window._fbGetFn;
 
   get(ref(db,'gk_codes/'+code)).then(snap=>{
@@ -44647,7 +44722,7 @@ function gkOnlineUpdateHUD(){
 
 function _gkOnlineAskQuestion(){
   if(!_gk||_gk.qPending) return;
-  const q=damMakeQuestion();
+  const q=gkMakeQ();
   _gk._currentQ=q;
   _gk.qPending=true;
   _gk.qAnswered=false;
@@ -48069,6 +48144,8 @@ function _m3Project(gx,gy,gh){
 
 // ── State ─────────────────────────────────────────────────────────
 let _m = null; // game state
+let _mobaQHistory = [];
+const _MOBA_Q_MAX = 50;
 let _mobaMinionIdSeq=1;
 
 function _fresh(){
@@ -48305,11 +48382,66 @@ function _lobbyShow(){
   if(startBtn) startBtn.style.display='none';
 }
 
-// ── Soalan dalam-permainan: SIFIR 2-12 (darab) ─────────────────────
+// ── Soalan MOBA: Pecahan & Peratus ────────────────────────────────
 function mobaGenQ(){
-  const a=rand(2,12), b=rand(1,12);
-  return { text:`${a} × ${b}\n= ?`, ans:a*b, table:a, num:b };
+  let q, correct, attempts = 0;
+  do {
+    attempts++;
+    const roll = Math.random();
+    if(roll < 0.30){
+      // ── PECAHAN: simpelkan n/d → ?/x ──
+      var baseD = [4,6,8,9,10,12][rand(0,5)];
+      var factor = rand(2,5);
+      var origN = baseD * factor;
+      var origD = baseD;
+      var g = gcd(origN, origD);
+      correct = origN / g;
+      q = origN + '/' + origD + ' = ?/' + (origD / g);
+    } else if(roll < 0.55){
+      // ── PECAHAN: tambah (sama pembilang) ──
+      var d = [2,3,4,5,6,8][rand(0,5)];
+      var n1 = rand(1,d-1), n2 = rand(1,d-n1);
+      var sumN = n1 + n2;
+      var g = gcd(sumN, d);
+      correct = sumN / g;
+      q = n1 + '/' + d + ' + ' + n2 + '/' + d + ' = ?/' + (d / g);
+    } else if(roll < 0.70){
+      // ── PECAHAN: tolak (sama pembilang) ──
+      var d = [3,4,5,6,8][rand(0,4)];
+      var n1 = rand(2,d), n2 = rand(1,n1-1);
+      var diff = n1 - n2;
+      var g = gcd(diff, d);
+      correct = diff / g;
+      q = n1 + '/' + d + ' \u2212 ' + n2 + '/' + d + ' = ?/' + (d / g);
+    } else if(roll < 0.85){
+      // ── PERATUS: x% dari Y (jamin integer) ──
+      var base = [40,50,60,80,100,120,150,200][rand(0,7)];
+      var pctPool = [];
+      for(var pi=0;pi<[10,20,25,30,40,50].length;pi++){
+        var pp=[10,20,25,30,40,50][pi];
+        if((base*pp)%100===0) pctPool.push(pp);
+      }
+      var pct = pctPool[rand(0,pctPool.length-1)]||10;
+      correct = (pct * base) / 100;
+      q = pct + '% daripada ' + base + ' = ?';
+    } else {
+      // ── PERATUS: X ialah ?% dari Y (jamin integer) ──
+      var base = [20,25,40,50,80,100,200][rand(0,6)];
+      var pctPool = [];
+      for(var pi=0;pi<[10,20,25,30,40,50].length;pi++){
+        var pp=[10,20,25,30,40,50][pi];
+        if((base*pp)%100===0) pctPool.push(pp);
+      }
+      var pct = pctPool[rand(0,pctPool.length-1)]||10;
+      correct = pct;
+      q = (base*pct/100) + ' ialah ?% daripada ' + base;
+    }
+  } while(_mobaQHistory.indexOf(q)!==-1 && attempts<30);
+  _mobaQHistory.push(q);
+  if(_mobaQHistory.length>_MOBA_Q_MAX) _mobaQHistory.shift();
+  return { text:q, ans:correct };
 }
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=b;b=a%b;a=t;}return a||1;}
 
 function _fbLobbyListen(){
   if(!window._fbPresenceDb||!window._fbRefFn||!window._fbOnValueFn) return;
@@ -50479,8 +50611,8 @@ function _answerQ(chosen,btn,container){
     container.querySelectorAll('.moba-q-opt').forEach(b=>{ if(+b.textContent===_m.qPending.ans) b.classList.add('correct'); });
   }
   // Log penguasaan sifir — sama struktur dengan Dam & Futsal
-  if(playerProfile&&playerProfile.name&&_m.qPending.table){
-    damLogSifirMastery(playerProfile.name, _m.qPending.table, correct);
+  if(playerProfile&&playerProfile.name&&_m.qPending&&_m.qPending.topic){
+    damLogSifirMastery(playerProfile.name, _m.qPending.topic, correct);
   }
   setTimeout(()=>{
     document.getElementById('mobaQPanel').classList.remove('show');
@@ -50543,6 +50675,7 @@ function _addKillfeed(msg,color){
 function _endGame(reason){
   if(!_m||_m.phase==='end') return;
   _m.phase='end';
+  _mobaQHistory = [];
   cancelAnimationFrame(_m.raf);
 
   // ── Cleanup match data from Firebase (immediate) ──
@@ -53747,6 +53880,8 @@ function petUpdateBagCount(){
 let _petPvPState = null; // {active, myPet, oppPet, myHP, myMaxHP, oppHP, oppMaxHP, turn, skillCds:[]}
 let _petPvPInvite = null; // {from, fromName, myPet, oppPet}
 let _petPvPQuestionActive = false; // true while question is being answered
+let _petPvPQHistory = []; // track recent questions to avoid repeats
+const _PETPVP_Q_MAX = 50; // keep last 50 questions in memory
 
 // ── Synced PVP: Firebase shared battle state ──
 let _petPvPBattleId = null;     // deterministic key: "NAMEA_vs_NAMEB"
@@ -54234,27 +54369,76 @@ function petPvPAskQuestion(sk, callback){
   const s = _petPvPState;
   if(!s) return;
   playSound('sfx_alert');
-  // Generate soalan mudah (sifir / algebra ringkas)
-  const isEasy = Math.random() < 0.5;
-  let q, correct, wrongs = [];
-  if(isEasy){
-    const a = Math.floor(Math.random()*11)+2, b = Math.floor(Math.random()*12)+1;
-    correct = a*b;
-    q = a+' × '+b+' = ?';
-    while(wrongs.length < 3){
-      const w = correct + [-b,b,-a,a,-(a+1),(b+1)][Math.floor(Math.random()*6)];
-      if(w!==correct && w>0 && !wrongs.includes(w)) wrongs.push(w);
+  let q, correct, wrongs = [], attempts = 0;
+  // Generate soalan unik (ulang sehingga dapat soalan baru)
+  do {
+    wrongs = [];
+    attempts++;
+    const roll = Math.random();
+    if(roll < 0.30){
+      // ── ax + b = c ──
+      var a = Math.floor(Math.random()*8)+2, x = Math.floor(Math.random()*9)+2;
+      var b = Math.floor(Math.random()*10)+1;
+      correct = x;
+      q = a+'x + '+b+' = '+(a*x+b);
+      var used = {};
+      while(wrongs.length < 3){
+        var w = correct + [-3,-2,-1,1,2,3][Math.floor(Math.random()*6)];
+        if(w!==correct && w>0 && !used[w]){used[w]=1;wrongs.push(w);}
+      }
+    } else if(roll < 0.55){
+      // ── ax - b = c ──
+      var a = Math.floor(Math.random()*8)+2, x = Math.floor(Math.random()*9)+2;
+      var b = Math.floor(Math.random()*10)+1;
+      correct = x;
+      q = a+'x \u2212 '+b+' = '+(a*x-b);
+      var used = {};
+      while(wrongs.length < 3){
+        var w = correct + [-3,-2,-1,1,2,3][Math.floor(Math.random()*6)];
+        if(w!==correct && w>0 && !used[w]){used[w]=1;wrongs.push(w);}
+      }
+    } else if(roll < 0.75){
+      // ── ax + bx = c ──
+      var a = Math.floor(Math.random()*5)+2, b = Math.floor(Math.random()*5)+1;
+      var x = Math.floor(Math.random()*8)+2;
+      correct = x;
+      q = a+'x + '+b+'x = '+(a*x+b*x);
+      var used = {};
+      while(wrongs.length < 3){
+        var w = correct + [-3,-2,-1,1,2,3][Math.floor(Math.random()*6)];
+        if(w!==correct && w>0 && !used[w]){used[w]=1;wrongs.push(w);}
+      }
+    } else if(roll < 0.88){
+      // ── a(x + b) = c ──
+      var a = Math.floor(Math.random()*4)+2, x = Math.floor(Math.random()*8)+2;
+      var b = Math.floor(Math.random()*6)+1;
+      correct = x;
+      q = a+'(x + '+b+') = '+(a*(x+b));
+      var used = {};
+      while(wrongs.length < 3){
+        var w = correct + [-3,-2,-1,1,2,3][Math.floor(Math.random()*6)];
+        if(w!==correct && w>0 && !used[w]){used[w]=1;wrongs.push(w);}
+      }
+    } else {
+      // ── ax - bx = c ──
+      var a = Math.floor(Math.random()*5)+4, b = Math.floor(Math.random()*3)+1;
+      var x = Math.floor(Math.random()*6)+2;
+      correct = x;
+      q = a+'x \u2212 '+b+'x = '+((a-b)*x);
+      var used = {};
+      while(wrongs.length < 3){
+        var w = correct + [-2,-1,1,2,3,-3][Math.floor(Math.random()*6)];
+        if(w!==correct && w>0 && !used[w]){used[w]=1;wrongs.push(w);}
+      }
     }
-  } else {
-    const a = Math.floor(Math.random()*8)+2, x = Math.floor(Math.random()*9)+2;
-    const b = Math.floor(Math.random()*10)+1;
-    correct = x;
-    const plus = Math.random()<0.5;
-    q = plus ? a+'x + '+b+' = '+(a*x+b) : a+'x - '+b+' = '+(a*x-b);
-    while(wrongs.length < 3){
-      const w = correct + [-2,-1,1,2,3,-3][Math.floor(Math.random()*6)];
-      if(w!==correct && !wrongs.includes(w)) wrongs.push(w);
-    }
+  } while(_petPvPQHistory.indexOf(q)!==-1 && attempts<30);
+  // Simpan soalan dalam sejarah
+  _petPvPQHistory.push(q);
+  if(_petPvPQHistory.length > _PETPVP_Q_MAX) _petPvPQHistory.shift();
+  // Pastikan ada 3 wrong answers (safety)
+  while(wrongs.length<3){
+    var w=correct+[-3,-2,-1,1,2,3][Math.floor(Math.random()*6)];
+    if(w!==correct && w>=0 && wrongs.indexOf(w)===-1) wrongs.push(w);
   }
   const opts = [[correct,true], ...[...wrongs].map(v=>[v,false])].sort(()=>Math.random()-0.5);
 
@@ -54356,6 +54540,7 @@ function petPvPBattleOnUpdate(data){
 // ── Tamat PVP (SYNCED) ──
 function petPvPEnd(win){
   _petPvPQuestionActive = false;
+  _petPvPQHistory = [];
   petPvPStopHeartbeat();
   petPvPStopTimeoutCheck();
   _pkmnCleanupBattleRenderers();
@@ -60372,12 +60557,12 @@ const MMORPG_MATH_QUESTIONS = [
   {q:"0.75 + 0.6 = ?",o:["A. 1.35","B. 0.81","C. 1.25","D. 0.15"],a:0},
   {q:"2.5 × 0.4 = ?",o:["A. 0.1","B. 10.0","C. 1.0","D. 0.01"],a:2},
   // Bab 2: Faktor dan Gandaan (11-18)
-  {q:"Faktor bagi 12 adalah...",o:["A. 2,3,4,6","B. 1,2,3,4,6,12","C. 2,3,4,6,12","D. 1,2,3,6,12"],a:1},
-  {q:"Faktor perdana bagi 30 adalah...",o:["A. 2,3,5","B. 2,5,6","C. 3,5,10","D. 2,3,6"],a:0},
-  {q:"GSTK (HCF) bagi 18 dan 24 adalah...",o:["A. 3","B. 6","C. 9","D. 12"],a:1},
-  {q:"FSTB (HCF) bagi 6 dan 15 adalah...",o:["A. 2","B. 5","C. 3","D. 1"],a:2},
-  {q:"GSPK (LCM) bagi 4 dan 6 adalah...",o:["A. 12","B. 24","C. 8","D. 10"],a:0},
-  {q:"GSTK (LCM) bagi 8, 12 dan 18 adalah...",o:["A. 36","B. 48","C. 72","D. 24"],a:2},
+  {q:"Faktor bagi 12 ialah...",o:["A. 2,3,4,6","B. 1,2,3,4,6,12","C. 2,3,4,6,12","D. 1,2,3,6,12"],a:1},
+  {q:"Faktor perdana bagi 30 ialah...",o:["A. 2,3,5","B. 2,5,6","C. 3,5,10","D. 2,3,6"],a:0},
+  {q:"GSTK (HCF) bagi 18 dan 24 ialah...",o:["A. 3","B. 6","C. 9","D. 12"],a:1},
+  {q:"FSTB (HCF) bagi 6 dan 15 ialah...",o:["A. 2","B. 5","C. 3","D. 1"],a:2},
+  {q:"GSPK (LCM) bagi 4 dan 6 ialah...",o:["A. 12","B. 24","C. 8","D. 10"],a:0},
+  {q:"GSTK (LCM) bagi 8, 12 dan 18 ialah...",o:["A. 36","B. 48","C. 72","D. 24"],a:2},
   {q:"24 = 2³ × 3. Bilangan faktor 24?",o:["A. 6","B. 8","C. 10","D. 12"],a:1},
   {q:"Faktor perdana terkecil bagi 45?",o:["A. 5","B. 9","C. 3","D. 15"],a:2},
   // Bab 3: Kuasa Dua & Tiga (19-26)

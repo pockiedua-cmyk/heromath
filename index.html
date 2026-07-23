@@ -33477,7 +33477,12 @@ function heroBagRender(tab){
   const d=shopLoadData(u);
   const owned=d.owned||{};
   const equipped=d.equipped||{};
-  const items=SHOP_ITEMS.filter(i=>i.cat===tab);
+  let items;
+  if(tab==='skin'){
+    items=SHOP_ITEMS.filter(i=>i.cat==='skin'||i.cat==='glb_skin');
+  } else {
+    items=SHOP_ITEMS.filter(i=>i.cat===tab);
+  }
   // Only show items player owns
   const myItems=items.filter(i=>{
     if(i.type==='wearable') return !!owned[i.id];
@@ -33491,15 +33496,29 @@ function heroBagRender(tab){
   }
   body.innerHTML='<div class="hbag-grid">'+myItems.map(item=>{
     const qty=item.type==='wearable'?null:(owned[item.id]||0);
-    const isEquipped=item.type==='wearable'&&(item.cat==='skin'?equipped['skin']===item.id:equipped[item.id]);
+    let isEquipped=false;
+    if(item.cat==='glb_skin'){
+      isEquipped=!!(equipped['glb_skin']&&equipped['glb_skin']===item.glbSkin);
+    } else {
+      isEquipped=item.type==='wearable'&&(item.cat==='skin'?equipped['skin']===item.id:equipped[item.id]);
+    }
     const canUse=item.type==='consumable'&&qty>0;
     let btnHtml='';
     if(item.type==='wearable'){
-      if(isEquipped){
-        btnHtml=`<button class="hbag-use-btn equipped" disabled style="opacity:0.6;">✅ DIPAKAI</button>`;
-        if(item.cat==='skin') btnHtml+=`<button class="hbag-use-btn" style="background:#3a1a00;color:#ffa500;border:2px solid #ffa500;margin-top:4px;" onclick="heroBagUnequipSkin()">✖ TANGGAL</button>`;
+      if(item.cat==='glb_skin'){
+        if(isEquipped){
+          btnHtml=`<button class="hbag-use-btn equipped" disabled style="opacity:0.6;">✅ DIPAKAI</button>`;
+          btnHtml+=`<button class="hbag-use-btn" style="background:#3a1a00;color:#ffa500;border:2px solid #ffa500;margin-top:4px;" onclick="shopEquipGlbSkin('${item.id}')">✖ TANGGAL</button>`;
+        } else {
+          btnHtml=`<button class="hbag-use-btn equip" onclick="shopEquipGlbSkin('${item.id}')">🎨 PAKAI</button>`;
+        }
       } else {
-        btnHtml=`<button class="hbag-use-btn equip" onclick="heroBagEquip('${item.id}')">👗 PAKAI</button>`;
+        if(isEquipped){
+          btnHtml=`<button class="hbag-use-btn equipped" disabled style="opacity:0.6;">✅ DIPAKAI</button>`;
+          if(item.cat==='skin') btnHtml+=`<button class="hbag-use-btn" style="background:#3a1a00;color:#ffa500;border:2px solid #ffa500;margin-top:4px;" onclick="heroBagUnequipSkin()">✖ TANGGAL</button>`;
+        } else {
+          btnHtml=`<button class="hbag-use-btn equip" onclick="heroBagEquip('${item.id}')">👗 PAKAI</button>`;
+        }
       }
     } else {
       btnHtml=`<button class="hbag-use-btn${canUse?'':''}" onclick="heroBagUse('${item.id}')"${canUse?'':' disabled'}>▶ GUNA</button>`;
@@ -33507,7 +33526,7 @@ function heroBagRender(tab){
     return `<div class="hbag-item${isEquipped?' equipped':''}">
       <span class="hbag-item-icon">${item.icon}</span>
       <div class="hbag-item-name">${item.name}</div>
-      ${qty!==null?`<div class="hbag-item-qty${qty>0?' green':' red'}">x${qty} BAKI</div>`:'<div class="hbag-item-qty green">MILIK</div>'}
+      ${item.cat==='glb_skin'?'<div class="hbag-item-qty green">3D MODEL</div>':(qty!==null?`<div class="hbag-item-qty${qty>0?' green':' red'}">x${qty} BAKI</div>`:'<div class="hbag-item-qty green">MILIK</div>')}
       ${btnHtml}
     </div>`;
   }).join('')+'</div>';
@@ -44188,6 +44207,7 @@ const GK_AI_ONLINE_NAMES=['Rex','Luna','Max','Nova','Skye','Blaze'];
 
 // ── Invite System ──
 let _gkInviteListener=null;
+let _gkInviteListenerKey=null;
 let _gkPendingFrom=null;
 let _gkPendingRoom=null;
 let _gkInviteUnsub=null;
@@ -44204,29 +44224,31 @@ function gkInviteStartListen(){
   const tryListen=()=>{
     if(!window._fbReady) return;
     if(!window._fbOnValueModule) return;
-    if(_gkInviteListener) return;
+    if(_gkInviteListener&&_gkInviteListenerKey===me) return;
+    if(_gkInviteListener){try{_gkInviteListener();}catch(e){}_gkInviteListener=null;_gkInviteListenerKey=null;}
     const invRef=window._fbRefFn(window._fbPresenceDb,'gk_invites/'+me);
     _gkInviteListener=window._fbOnValueModule.onValue(invRef,snap=>{
       const d=snap.val();
       if(!d||d.status!=='pending') return;
-      // Invite basi (lebih 40s) — abaikan & bersihkan supaya tak muncul semula bila listener re-sync/reconnect
       if(!d.ts||Date.now()-d.ts>40000){ _gkCleanInvite(me); return; }
-      if(_isAnyGameActive()) return;
       _gkPendingFrom=d.from;
       _gkPendingRoom=d.roomId||null;
-      document.getElementById('gkInviteFrom').textContent=(d.fromDisplay||d.from);
-      document.getElementById('gkInviteRoom').textContent=d.roomId||'------';
       const toast=document.getElementById('gkInviteToast');
-      if(toast) toast.style.display='block';
+      if(toast){
+        document.getElementById('gkInviteFrom').textContent=(d.fromDisplay||d.from);
+        document.getElementById('gkInviteRoom').textContent=d.roomId||'------';
+        toast.style.display='block';
+      }
       setTimeout(()=>{
         if(_gkPendingFrom===d.from){
           const t=document.getElementById('gkInviteToast');
           if(t) t.style.display='none';
           _gkPendingFrom=null;_gkPendingRoom=null;
-          _gkCleanInvite(me); // buang rekod basi supaya tak "hantu" muncul lagi
+          _gkCleanInvite(me);
         }
       },15000);
     });
+    _gkInviteListenerKey=me;
   };
   if(window._fbReady){tryListen();}
   else{const p=setInterval(()=>{if(window._fbReady){tryListen();clearInterval(p);}},500);}

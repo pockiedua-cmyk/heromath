@@ -2044,6 +2044,36 @@ window.addEventListener('error', function(e){
 </script>
 <script>
 // ══════════════════════════════════════════════════════════════════
+//  GLOBAL THREE.JS MEMORY CLEANUP HELPERS
+// ══════════════════════════════════════════════════════════════════
+function _disposeScene(scene){
+  if(!scene) return;
+  scene.traverse(function(o){
+    if(o.geometry) try{o.geometry.dispose();}catch(e){}
+    if(o.material){
+      if(Array.isArray(o.material)) o.material.forEach(function(m){
+        if(m.map) try{m.map.dispose();}catch(e){}
+        if(m.normalMap) try{m.normalMap.dispose();}catch(e){}
+        try{m.dispose();}catch(e){}
+      });
+      else{
+        if(o.material.map) try{o.material.map.dispose();}catch(e){}
+        if(o.material.normalMap) try{o.material.normalMap.dispose();}catch(e){}
+        try{o.material.dispose();}catch(e){}
+      }
+    }
+  });
+  while(scene.children.length) scene.remove(scene.children[0]);
+}
+function _disposeRenderer(ren){
+  if(!ren) return;
+  try{ren.setAnimationLoop(null);}catch(e){}
+  try{ren.dispose();}catch(e){}
+  try{var gl=ren.getContext&&ren.getContext();
+    if(gl){var ext=gl.getExtension('WEBGL_lose_context');if(ext)ext.loseContext();}
+  }catch(e){}
+}
+// ══════════════════════════════════════════════════════════════════
 //  SISTEM BAHASA / DUAL LANGUAGE (MS/EN)
 // ══════════════════════════════════════════════════════════════════
 const _LANG_STORAGE_KEY = 'heromath_lang_v1';
@@ -10548,7 +10578,7 @@ function soloEnsureEngine(){
 
 function soloClearWorld(){
   if(!soloScene) return;
-  while(soloScene.children.length) soloScene.remove(soloScene.children[0]);
+  _disposeScene(soloScene);
   soloEnemies=[]; soloPortalMesh=null; soloOccluders=[];
 }
 
@@ -11414,6 +11444,9 @@ function soloTowerClose(){
   document.getElementById('soloEndOverlay').classList.remove('show');
   document.getElementById('soloTowerOverlay').classList.remove('show');
   document.getElementById('mainMenuScreen')?.classList.add('show');
+  // Dispose Solo Tower scene + renderer to prevent WebGL context leak
+  _disposeScene(soloScene); soloScene=null;
+  _disposeRenderer(soloRenderer); soloRenderer=null;
   // BUGFIX: masuk Menara Solo (dari butang GERBANG di Peta Sekolah) alihkan
   // canvas kongsi ('#c') keluar drpd smap balik ke konteks scene utama —
   // tapi tiada tempat lain panggil applyCostume() utk scene ni bila kita
@@ -11463,6 +11496,9 @@ function soloJoyEnd(){
 
 function menuGoMap(){
   document.getElementById('mainMenuScreen').classList.remove('show');
+  // Stop login/main menu coin animations — no longer visible
+  if(window._lsCoinInterval){clearInterval(window._lsCoinInterval);window._lsCoinInterval=null;}
+  if(window._lsOnlineInterval){clearInterval(window._lsOnlineInterval);window._lsOnlineInterval=null;}
   smapOpen();
   // Start listening untuk invite dam & futsal & moba
   setTimeout(damInviteStartListen, 800);
@@ -20854,10 +20890,15 @@ function smapBuild3D(){
   };
 
   // AUTO-SETUP: Ensure listener is always running, independent of login hooks
-  setInterval(function(){
+  // Store interval ID for cleanup — stops once listener is started
+  window._ziInviteAutoRetryInterval = setInterval(function(){
     if(window._fbReady && !_ziInviteListenerStarted && typeof _ziLobbyInviteStartListen==='function'){
       console.log('[ZI-INVITE] auto-retry setup');
       _ziLobbyInviteStartListen();
+      // Stop polling once listener is started
+      if(_ziInviteListenerStarted && window._ziInviteAutoRetryInterval){
+        clearInterval(window._ziInviteAutoRetryInterval); window._ziInviteAutoRetryInterval=null;
+      }
     }
   },3000);
 
@@ -21113,6 +21154,10 @@ function smapBuild3D(){
     _ziNestRemoveHud();
     _ziNestRemoveLight();
     var ls=document.getElementById('ziLoseScreen');if(ls)ls.style.display='none';
+    // Dispose ZI scene — geometry, materials, textures
+    if(typeof ziScene!=='undefined'&&ziScene){
+      _disposeScene(ziScene);
+    }
     if(typeof smapOpen==='function') smapOpen();
   };
 
@@ -29356,10 +29401,16 @@ function gsExit(){
   var up=document.getElementById('gsUpgradePanel');if(up)up.style.display='none';
   // Remove dock button
   var db=document.getElementById('gsDockBtn');if(db)db.remove();
-  GS.active=false;GS.scene=null;GS.camera=null;
+  GS.active=false;
+  // Dispose GS scene + renderer to prevent WebGL context leak
+  _disposeScene(GS.scene); GS.scene=null;
+  _disposeRenderer(GS.ren); GS.ren=null;
+  GS.camera=null;
   GS.keys={};
   // Disconnect room
   if(GS.unsub)try{GS.unsub();}catch(e){}
+  if(GS._questionTimerInterval){clearInterval(GS._questionTimerInterval);GS._questionTimerInterval=null;}
+  if(typeof _gsInviteListener==='function'){try{_gsInviteListener();}catch(e){}_gsInviteListener=null;}
   GS.roomCode=null;GS.isHost=false;GS.roomData=null;
   GS._portalsSpawned=false;
   // Restore school map — move canvas back, show overlay, restart RAF
@@ -29391,9 +29442,9 @@ document.addEventListener('keydown',function(e){
 });
 
 // ═══════════════════════════════════════════════════════
-//  QUESTION TIMER COUNTDOWN
+//  QUESTION TIMER COUNTDOWN (store ID for cleanup)
 // ═══════════════════════════════════════════════════════
-setInterval(function(){
+GS._questionTimerInterval = setInterval(function(){
   if(!GS.questionActive)return;
   GS.questionTimer-=1;
   var el=document.getElementById('gsQTimer');
@@ -35235,7 +35286,7 @@ function dashExportCSV(){
     setTimeout(()=>c.remove(),(dur+2)*1000);
   }
   for(let i=0;i<10;i++) setTimeout(spawnCoin,i*600);
-  setInterval(spawnCoin,2200);
+  window._lsCoinInterval = setInterval(spawnCoin,2200);
   // Online counter — papar bilangan player sebenar dari Firebase presence
   function updateOnlineCount(){
     const cache = window._fbPresenceCache || {};
@@ -35246,7 +35297,7 @@ function dashExportCSV(){
     if(el) el.textContent = count > 0 ? count : 0;
   }
   // Kemas kini setiap 5 saat
-  setInterval(updateOnlineCount, 15000); // OPTIMASI: 15s cukup untuk online counter
+  window._lsOnlineInterval = setInterval(updateOnlineCount, 15000); // OPTIMASI: 15s cukup untuk online counter
   // Juga update bila presence cache berubah
   window._onPresenceCacheUpdate = updateOnlineCount;
 })();
@@ -37211,6 +37262,7 @@ function chessGameClose(){
   document.getElementById('chessOverlay').style.display='none';
   chessAITimeout&&clearTimeout(chessAITimeout);
   if(_chessRoomUnsub){ _chessRoomUnsub(); _chessRoomUnsub=null; }
+  if(_chessInviteListener){try{_chessInviteListener();}catch(e){}_chessInviteListener=null;}
   window._chessTournamentRoomCtx=null;
   _chessClockStop();
   _chessClockShow(false);
@@ -38724,6 +38776,8 @@ function damLaunchGame(){
 function damGameClose(){
   document.getElementById('damOverlay').style.display='none';
   document.getElementById('damQModal').style.display='none';
+  // Cleanup invite listener
+  if(_damInviteListener){try{_damInviteListener();}catch(e){}_damInviteListener=null;}
   // Reset 3D state
   if(_dam3DActive){ _dam3DActive=false; _dam3DDestroy(); document.getElementById('damBoardWrap2D').style.display=''; document.getElementById('damBoardWrap3D').style.display='none'; const btn=document.getElementById('dam3dToggleBtn'); if(btn){btn.textContent='🎲 3D';btn.style.background='#7c3aed';btn.style.borderColor='#a855f7';} }
 }
@@ -41569,7 +41623,8 @@ function arenaCleanup(){
     try{ window._fbRemoveFn(window._fbRefFn(window._fbPresenceDb,'arena_shots/'+_arenaMyKey)); }catch(e){}
   }
   arenaRemoveMyPresence();
-  if(_amRenderer){ _amRenderer.dispose(); _amRenderer=null; }
+  _disposeScene(_amScene);
+  if(_amRenderer){ _disposeRenderer(_amRenderer); _amRenderer=null; }
   window.removeEventListener('keydown',arenaKeyDown);
   window.removeEventListener('keyup',arenaKeyUp);
   _arenaResizeUnbind();
@@ -43304,6 +43359,9 @@ function futsalEnd(){
   if(!_fss) return;
   _fss.running=false;
   _fss.goalPending=false;
+  // Cleanup invite listeners
+  if(_fsInviteListener){try{_fsInviteListener();}catch(e){}_fsInviteListener=null;}
+  if(_fol5vInviteListener){try{_fol5vInviteListener();}catch(e){}_fol5vInviteListener=null;}
   window._fsCurrentGoalQ=null;
   const fsqm=document.getElementById('fsQModal');
   if(fsqm) fsqm.style.display='none';
@@ -44145,6 +44203,8 @@ function gkEnd(){
 
   // Online cleanup
   if(_gk.online&&_gk.online.inRoom) gkOnlineCleanupRoom();
+  // Cleanup invite listener
+  if(_gkInviteUnsub){try{_gkInviteUnsub();}catch(e){}_gkInviteUnsub=null;}
 
   const sc=_gk.raceScene;
   if(_gk.mode==='online'&&_gk.cars){
@@ -47251,11 +47311,9 @@ function _moba3DResize(){
 function _moba3DDispose(){
   if(!_m3d) return;
   try{
-    _m3d.scene.traverse(o=>{
-      if(o.geometry) o.geometry.dispose();
-      if(o.material){ if(Array.isArray(o.material)) o.material.forEach(m=>m.dispose()); else o.material.dispose(); }
-    });
+    _disposeScene(_m3d.scene);
   }catch(e){}
+  try{if(_m3d.renderer){_disposeRenderer(_m3d.renderer);}}catch(e){}
   _m3d=null;
 }
 
@@ -49133,6 +49191,7 @@ window.mobaLeaveRoom = function(){
 function _mobaLeaveRoomCleanup(){
   if(_mobaRoomListenUnsub){ try{ _mobaRoomListenUnsub(); }catch(e){} _mobaRoomListenUnsub=null; }
   if(_m&&_m._roomMetaUnsub){ try{ _m._roomMetaUnsub(); }catch(e){} _m._roomMetaUnsub=null; }
+  if(_mobaInviteListener){try{_mobaInviteListener();}catch(e){}_mobaInviteListener=null;}
   _mobaRoomId=null; _mobaRoomCode=null;
   if(_m) _m._mobaRoomId=null;
   if(_m) _m.joined=false;
@@ -51839,9 +51898,9 @@ const _mobaProxPatch = ()=>{
   pvqBtn.style.display=nearAM?'flex':'none';
 };
 
-// Hook into smap RAF loop
+// Hook into smap RAF loop — store interval ID for cleanup
 const _origSmapRAFUpdate = ()=>{};
-setInterval(_mobaProxPatch, 50); // poll every 50ms when smap active
+window._mobaProxPatchInterval = setInterval(_mobaProxPatch, 200); // poll every 200ms (was 50ms — 4x less CPU)
 
 })(); // end MOBA IIFE
 
@@ -57725,6 +57784,7 @@ function pbCleanupScene(){
   _pbPlayers.forEach(p=>{ if(p.mesh) _pbScene.remove(p.mesh); });
   _pbBullets.forEach(b=>{ if(b.mesh) _pbScene.remove(b.mesh); });
   if(_pbHero) _pbScene.remove(_pbHero);
+  _disposeScene(_pbScene);
   _pbPlayers=[]; _pbBullets=[]; _pbHero=null;
   _pbScene=null; _pbCamera=null;
 }
@@ -64567,6 +64627,8 @@ function mmoEndBattle(result, xp, gold) {
   if (mmoBattle.ren) { mmoBattle.ren.setAnimationLoop(null); }
   if (mmoBattle._resize) window.removeEventListener('resize', mmoBattle._resize);
 
+  // Dispose battle scene geometry/materials/textures to prevent leak per battle
+  _disposeScene(mmoBattle.scene);
   mmoBattle.scene = null; mmoBattle.cam = null; mmoBattle.ren = null;
   mmoBattle.heroMesh = null; mmoBattle.monsterMesh = null;
 
@@ -72322,8 +72384,8 @@ function mmoCoopEndBattle(result){
     mmorpgState.heroLevel=Math.max(1,(mmorpgState.heroLevel||1)-1);
   }
   setTimeout(()=>{
-    if(_bossCoopScene){_bossCoopScene=null;}
-    if(_bossCoopRen){_bossCoopRen.setAnimationLoop(null);_bossCoopRen.dispose();_bossCoopRen=null;}
+    _disposeScene(_bossCoopScene);_bossCoopScene=null;
+    _disposeRenderer(_bossCoopRen);_bossCoopRen=null;
     if(_bossCoopOverlay)_bossCoopOverlay.remove();
     _bossCoopUI=null;
     _bossCoopBossHud=null;
@@ -72338,7 +72400,7 @@ function mmoCoopEndBattle(result){
 // Cleanup
 function bossCoopCleanup(){
   if(_bossCoopRoomUnsub){_bossCoopRoomUnsub();_bossCoopRoomUnsub=null;}
-  if(_bossCoopRen){_bossCoopRen.setAnimationLoop(null);_bossCoopRen.dispose();_bossCoopRen=null;}
+  _disposeScene(_bossCoopScene);_disposeRenderer(_bossCoopRen);_bossCoopRen=null;
   if(_bossCoopOverlay)_bossCoopOverlay.remove();
   _bossCoopActive=false;_bossCoopMenuOpen=false;_bossCoopProcessingAction=false;_bossCoopScene=null;_bossCoopUI=null;_bossCoopBossHud=null;_bossCoopPartyHud=null;_bossCoopHeroMeshes=[];_bossCoopMinionMeshes=[];_bossCoopMonsterTurnProcessed=false;_bossCoopMinionsData=[];
 }
@@ -73273,8 +73335,8 @@ function pvpEndBattle(winner){
     bossShowToast('💀 Anda kalah...');
   }
   setTimeout(()=>{
-    if(_pvpScene){_pvpScene=null;}
-    if(_pvpRen){_pvpRen.setAnimationLoop(null);_pvpRen.dispose();_pvpRen=null;}
+    _disposeScene(_pvpScene);_pvpScene=null;
+    _disposeRenderer(_pvpRen);_pvpRen=null;
     if(_pvpOverlay)_pvpOverlay.remove();
     _pvpUI=null;_pvpHeroMeshes=[];_pvpDeathQuestionActive=false;_pvpActionProcessed=false;_pvpActiveSkills=[];_pvpCurrentMp=0;_pvpMaxMp=0;_pvpActionsDiv=null;
     mmoSaveData();
@@ -73282,7 +73344,7 @@ function pvpEndBattle(winner){
 }
 function pvpCleanup(){
   if(_pvpRoomUnsub){_pvpRoomUnsub();_pvpRoomUnsub=null;}
-  if(_pvpRen){_pvpRen.setAnimationLoop(null);_pvpRen.dispose();_pvpRen=null;}
+  _disposeScene(_pvpScene);_disposeRenderer(_pvpRen);_pvpRen=null;
   if(_pvpOverlay)_pvpOverlay.remove();
   if(_pvpInviteListener){try{_pvpInviteListener();}catch(e){}_pvpInviteListener=null;}
   if(_pvpInviteInterval){clearInterval(_pvpInviteInterval);_pvpInviteInterval=null;}
@@ -73634,7 +73696,8 @@ function mmorpgClose(){
     mmoDungeonState._keyDown=null;
   }
   if(mmoDungeonState._resizeCave)window.removeEventListener('resize',mmoDungeonState._resizeCave);
-  if(mmoDungeonState._ren){mmoDungeonState._ren.setAnimationLoop(null);mmoDungeonState._ren.dispose();}
+  _disposeScene(mmoDungeonState._scene);mmoDungeonState._scene=null;
+  _disposeRenderer(mmoDungeonState._ren);mmoDungeonState._ren=null;
   const cOv=document.getElementById('mmoCaveOverlay');
   if(cOv)cOv.style.display='none';
   // Cleanup garden
@@ -73647,10 +73710,8 @@ function mmorpgClose(){
     window.removeEventListener('resize',mmoGardenState._resize);
     mmoGardenState._resize=null;
   }
-  if(mmoGardenState.ren){
-    mmoGardenState.ren.setAnimationLoop(null);
-    mmoGardenState.ren.dispose();
-  }
+  _disposeScene(mmoGardenState.scene);mmoGardenState.scene=null;
+  _disposeRenderer(mmoGardenState.ren);mmoGardenState.ren=null;
   const gOv=document.getElementById('mmoGardenOverlay');
   if(gOv)gOv.style.display='none';
   // Cleanup mine
@@ -73663,10 +73724,8 @@ function mmorpgClose(){
     window.removeEventListener('resize',mmoMineState._resize);
     mmoMineState._resize=null;
   }
-  if(mmoMineState.ren){
-    mmoMineState.ren.setAnimationLoop(null);
-    mmoMineState.ren.dispose();
-  }
+  _disposeScene(mmoMineState.scene);mmoMineState.scene=null;
+  _disposeRenderer(mmoMineState.ren);mmoMineState.ren=null;
   const mOv=document.getElementById('mmoMineOverlay');
   if(mOv)mOv.style.display='none';
   // Cleanup fishing
@@ -73679,10 +73738,8 @@ function mmorpgClose(){
     window.removeEventListener('resize',mmoFishState._resize);
     mmoFishState._resize=null;
   }
-  if(mmoFishState.ren){
-    mmoFishState.ren.setAnimationLoop(null);
-    mmoFishState.ren.dispose();
-  }
+  _disposeScene(mmoFishState.scene);mmoFishState.scene=null;
+  _disposeRenderer(mmoFishState.ren);mmoFishState.ren=null;
   const fOv=document.getElementById('mmoFishOverlay');
   if(fOv)fOv.style.display='none';
   // Cleanup wheat
@@ -73695,10 +73752,8 @@ function mmorpgClose(){
     window.removeEventListener('resize',mmoWheatState._resize);
     mmoWheatState._resize=null;
   }
-  if(mmoWheatState.ren){
-    mmoWheatState.ren.setAnimationLoop(null);
-    mmoWheatState.ren.dispose();
-  }
+  _disposeScene(mmoWheatState.scene);mmoWheatState.scene=null;
+  _disposeRenderer(mmoWheatState.ren);mmoWheatState.ren=null;
   const wOv=document.getElementById('mmoWheatOverlay');
   if(wOv)wOv.style.display='none';
   // Cleanup oak
@@ -73711,10 +73766,8 @@ function mmorpgClose(){
     window.removeEventListener('resize',mmoOakState._resize);
     mmoOakState._resize=null;
   }
-  if(mmoOakState.ren){
-    mmoOakState.ren.setAnimationLoop(null);
-    mmoOakState.ren.dispose();
-  }
+  _disposeScene(mmoOakState.scene);mmoOakState.scene=null;
+  _disposeRenderer(mmoOakState.ren);mmoOakState.ren=null;
   const oOv=document.getElementById('mmoOakOverlay');
   if(oOv)oOv.style.display='none';
   // Cleanup training
@@ -73727,10 +73780,8 @@ function mmorpgClose(){
     window.removeEventListener('resize',mmoTrainState._resize);
     mmoTrainState._resize=null;
   }
-  if(mmoTrainState.ren){
-    mmoTrainState.ren.setAnimationLoop(null);
-    mmoTrainState.ren.dispose();
-  }
+  _disposeScene(mmoTrainState.scene);mmoTrainState.scene=null;
+  _disposeRenderer(mmoTrainState.ren);mmoTrainState.ren=null;
   const tOv=document.getElementById('mmoTrainOverlay');
   if(tOv)tOv.style.display='none';
   // Cleanup guild
@@ -73743,20 +73794,16 @@ function mmorpgClose(){
     mmoGuildState._resize=null;
   }
   if(mmoGuildState._raf)cancelAnimationFrame(mmoGuildState._raf);
-  if(mmoGuildState.ren){
-    mmoGuildState.ren.setAnimationLoop(null);
-    mmoGuildState.ren.dispose();
-  }
+  _disposeScene(mmoGuildState.scene);mmoGuildState.scene=null;
+  _disposeRenderer(mmoGuildState.ren);mmoGuildState.ren=null;
   mmoGuildActive=false;
   const gOv2=document.getElementById('mmoGuildOverlay');
   if(gOv2)gOv2.style.display='none';
   mmoGuildState={scene:null,cam:null,ren:null,guildGroup:null,tab:'quests'};
   // Cleanup greendale
   mmoGreendaleActive=false;
-  if(mmoGreendaleState.ren){
-    mmoGreendaleState.ren.setAnimationLoop(null);
-    mmoGreendaleState.ren.dispose();
-  }
+  _disposeScene(mmoGreendaleState.scene);mmoGreendaleState.scene=null;
+  _disposeRenderer(mmoGreendaleState.ren);mmoGreendaleState.ren=null;
   mmoGreendaleState={scene:null,cam:null,ren:null,shopGroup:null};
   const gdOv=document.getElementById('mmoGreendaleOverlay');
   if(gdOv)gdOv.style.display='none';
@@ -73768,12 +73815,14 @@ function mmorpgClose(){
   if(mmorpgState.renderer&&mmorpgState.renderer.domElement.parentNode){
     mmorpgState.renderer.domElement.remove();
   }
-  // Cleanup
+  // Cleanup scene — dispose all geometry, materials, textures
   if(mmorpgState.scene){
-    // Remove all children
-    while(mmorpgState.scene.children.length)mmorpgState.scene.remove(mmorpgState.scene.children[0]);
+    _disposeScene(mmorpgState.scene);
     mmorpgState.scene=null;
   }
+  // Dispose MMORPG renderer + lose WebGL context
+  _disposeRenderer(mmorpgState.renderer);
+  mmorpgState.renderer=null;
   mmorpgState.hero=null;
   mmorpgState.camera=null;
   mmorpgState._heroLabel=null;
@@ -73802,7 +73851,7 @@ function mmorpgClose(){
   const gkPr=document.getElementById('mmoGkPrompt');if(gkPr)gkPr.style.display='none';
   // Cleanup battle
   mmoBattle.active=false;
-  if(window._mmoBattlePersistentRen){window._mmoBattlePersistentRen.setAnimationLoop(null);window._mmoBattlePersistentRen.dispose();window._mmoBattlePersistentRen=null;window._mmoBattlePersistentCanvas=null;}
+  if(window._mmoBattlePersistentRen){_disposeRenderer(window._mmoBattlePersistentRen);window._mmoBattlePersistentRen=null;window._mmoBattlePersistentCanvas=null;}
   if(mmoBattle._resize)window.removeEventListener('resize',mmoBattle._resize);
   const bOv=document.getElementById('mmoBattleOverlay');if(bOv)bOv.style.display='none';
   const bT=document.getElementById('mmoBattleToast');if(bT)bT.style.display='none';
